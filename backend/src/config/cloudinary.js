@@ -1,18 +1,19 @@
-// Cloudinary configuration — isolated here so no other file needs to
-// know about Cloudinary directly. This will be wired up in the
-// Listings phase (Phase 3), once image upload is actually implemented.
+const cloudinary = require('cloudinary').v2;
+
+// Cloudinary configuration - isolated here so no other file needs to
+// know about Cloudinary directly (see middleware/upload.js, the only
+// consumer of this module).
 //
-// Usage later will look like:
-//
-//   const cloudinary = require('./cloudinary');
-//   cloudinary.uploader.upload(...)
-//
-// Requires these environment variables (see .env.example):
+// Requires these environment variables in backend/.env:
 //   CLOUDINARY_CLOUD_NAME
 //   CLOUDINARY_API_KEY
 //   CLOUDINARY_API_SECRET
 //
-// Left as a stub for now so the folder structure is in place without
-// installing the cloudinary package before it's actually used.
+// These are read server-side only and are never sent to the frontend.
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-module.exports = null;
+module.exports = cloudinary;

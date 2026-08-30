@@ -11,9 +11,15 @@ const notFound = (req, res, next) => {
 
 // Final error handler — must be registered last, after all routes.
 const errorHandler = (err, req, res, next) => {
-  // If a status code was already set (e.g. 400 for bad input), use it.
-  // Otherwise default to 500 (unexpected server error).
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  // Multer (file upload) errors don't set res.statusCode themselves,
+  // so without this they'd fall through to the 500 default below even
+  // though they're really a client input problem (bad file type, too
+  // large, too many files). This is additive - every other error type
+  // behaves exactly as before.
+  let statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+  }
 
   res.status(statusCode).json({
     success: false,

@@ -2,7 +2,7 @@
 
 A sustainable clothing exchange platform where users list, browse, and swap clothing items without money changing hands.
 
-**Status: Phase 2 — Authentication**
+**Status: Phase 3 — Clothing Listings**
 
 ## Stack
 - Frontend: React (Vite), React Router, Axios
@@ -35,6 +35,14 @@ clothing-exchange/
 - Frontend `AuthContext` restoring session on page refresh via `/api/auth/me`
 - `ProtectedRoute` component, auth-aware `Navbar`, Login/Register pages
 - Minimal `HomePage` and `DashboardPage` placeholders (full versions come in later phases)
+
+## Phase 3 — What's included
+- Listing model, full CRUD (`POST/GET/PUT/DELETE /api/listings`), ownership enforced server-side
+- Search + category/size/condition/city/state filtering on `GET /api/listings`
+- Cloudinary image upload via `multer` + `multer-storage-cloudinary` (isolated in `config/cloudinary.js` and `middleware/upload.js`)
+- Deterministic swap value estimator (`utils/valueEstimator.js`) with a live `GET /api/listings/estimate-value` endpoint
+- Real Marketplace (`HomePage`), Item Details, Create/Edit Listing (with image preview + value suggestion), and My Listings pages on the frontend
+- "Request Swap" button present but disabled — swap requests are Phase 5
 
 ## Setup
 

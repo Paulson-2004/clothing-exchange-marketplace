@@ -19,6 +19,7 @@ function Navbar() {
       <div className="navbar-links">
         {isAuthenticated ? (
           <>
+            <Link to="/my-listings">My Listings</Link>
             <Link to="/dashboard">Dashboard</Link>
             <span className="navbar-user">Hi, {user.name}</span>
             <button className="btn btn-secondary" onClick={handleLogout}>
