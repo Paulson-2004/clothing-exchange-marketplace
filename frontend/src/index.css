@@ -1,0 +1,58 @@
+:root {
+  --color-bg: #faf9f6;
+  --color-text: #1f2421;
+  --color-primary: #2f6f4f;
+  --color-primary-dark: #244f39;
+  --color-danger: #b5443b;
+  --color-muted: #6b6f6d;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.status-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  max-width: 420px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-dot.connected {
+  background-color: var(--color-primary);
+}
+
+.status-dot.error {
+  background-color: var(--color-danger);
+}
+
+.status-dot.loading {
+  background-color: var(--color-muted);
+}
