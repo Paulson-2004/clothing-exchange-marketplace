@@ -2,7 +2,7 @@
 
 A sustainable clothing exchange platform where users list, browse, and swap clothing items without money changing hands.
 
-**Status: Phase 1 — Project Scaffolding**
+**Status: Phase 2 — Authentication**
 
 ## Stack
 - Frontend: React (Vite), React Router, Axios
@@ -26,6 +26,16 @@ clothing-exchange/
 - React (Vite) app that calls `/api/health` on load and displays connection status
 - Full folder structure for all upcoming features (auth, listings, swaps, chat, admin), currently empty placeholders
 
+## Phase 2 — What's included
+- User model (`backend/src/models/User.js`) with hashed password (`select: false`)
+- Register, login, logout, and `/api/auth/me` endpoints
+- JWT stored in an httpOnly cookie (not accessible to JS, not in localStorage)
+- `protect` middleware (verifies the cookie) and `requireAdmin` middleware (not used by any route yet)
+- Admin seed script (`npm run seed:admin`), run manually and separately from registration
+- Frontend `AuthContext` restoring session on page refresh via `/api/auth/me`
+- `ProtectedRoute` component, auth-aware `Navbar`, Login/Register pages
+- Minimal `HomePage` and `DashboardPage` placeholders (full versions come in later phases)
+
 ## Setup
 
 ### 1. Backend
@@ -36,8 +46,9 @@ cp .env.example .env
 ```
 Edit `.env` and fill in:
 - `MONGO_URI` — your MongoDB Atlas connection string
-- `JWT_SECRET` — any long random string (used starting Phase 2)
-- Leave Cloudinary and admin seed vars blank for now — not used until later phases
+- `JWT_SECRET` — any long random string
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD` — only needed if you want to run the admin seed script (optional in Phase 2, no admin panel exists yet)
+- Leave Cloudinary vars blank for now — not used until the Listings phase
 
 Run the server:
 ```bash

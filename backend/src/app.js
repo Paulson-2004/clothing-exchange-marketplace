@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const healthRoutes = require('./routes/healthRoutes');
+const authRoutes = require('./routes/authRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -22,10 +23,10 @@ app.use(
 
 // --- Routes ---
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 
-// More route groups (auth, listings, swaps, chat, value, admin) will
-// be mounted here in later phases, e.g.:
-// app.use('/api/auth', authRoutes);
+// More route groups (listings, swaps, chat, value, admin) will
+// be mounted here in later phases.
 
 // --- Error handling (must be last) ---
 app.use(notFound);
