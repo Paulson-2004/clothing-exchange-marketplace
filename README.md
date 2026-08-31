@@ -2,7 +2,7 @@
 
 A sustainable clothing exchange platform where users list, browse, and swap clothing items without money changing hands.
 
-**Status: Phase 3 — Clothing Listings**
+**Status: Phase 4 — Swap Request System**
 
 ## Stack
 - Frontend: React (Vite), React Router, Axios
@@ -43,6 +43,13 @@ clothing-exchange/
 - Deterministic swap value estimator (`utils/valueEstimator.js`) with a live `GET /api/listings/estimate-value` endpoint
 - Real Marketplace (`HomePage`), Item Details, Create/Edit Listing (with image preview + value suggestion), and My Listings pages on the frontend
 - "Request Swap" button present but disabled — swap requests are Phase 5
+
+## Phase 4 — What's included
+- SwapRequest model + full state machine (`pending → accepted → completed`, or `pending → rejected/cancelled`)
+- `POST /api/swaps`, `GET /api/swaps/incoming`, `GET /api/swaps/sent`, `PATCH /api/swaps/:id/{accept,reject,cancel,complete}`
+- Ownership enforced server-side on every mutation; duplicate-request and listing-availability checks on create
+- Auto-rejection of conflicting pending requests when one is accepted (see explanation in the Phase 4 discussion)
+- Frontend: enabled "Request Swap" button on Item Details (with an inline listing-picker + value comparison), and a new Swap Requests page with Incoming/Sent tabs
 
 ## Setup
 

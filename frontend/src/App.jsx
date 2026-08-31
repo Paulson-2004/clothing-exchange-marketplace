@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import ItemDetailsPage from './pages/ItemDetailsPage';
 import CreateEditListingPage from './pages/CreateEditListingPage';
 import MyListingsPage from './pages/MyListingsPage';
+import SwapRequestsPage from './pages/SwapRequestsPage';
 
 function App() {
   return (
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyListingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/swap-requests"
+            element={
+              <ProtectedRoute>
+                <SwapRequestsPage />
               </ProtectedRoute>
             }
           />

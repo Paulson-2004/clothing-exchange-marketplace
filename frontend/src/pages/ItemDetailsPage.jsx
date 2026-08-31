@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getListingById } from '../api/listingApi';
 import { useAuth } from '../context/AuthContext';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
+import RequestSwapForm from '../components/swap/RequestSwapForm';
 
 function ItemDetailsPage() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const [listing, setListing] = useState(null);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error' | 'notfound'
   const [activeImage, setActiveImage] = useState(0);
+  const [showSwapForm, setShowSwapForm] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -108,10 +111,26 @@ function ItemDetailsPage() {
               Edit Listing
             </Link>
           </div>
-        ) : (
-          <button className="btn btn-primary" disabled title="Swap requests are coming in a future update">
-            Request Swap (coming soon)
+        ) : !isAuthenticated ? (
+          <button className="btn btn-primary" onClick={() => navigate('/login', { state: { from: { pathname: `/listings/${id}` } } })}>
+            Log In to Request Swap
           </button>
+        ) : listing.status !== 'available' ? (
+          <button className="btn btn-primary" disabled title="This item is not currently available">
+            Not Available
+          </button>
+        ) : (
+          <button className="btn btn-primary" onClick={() => setShowSwapForm(true)}>
+            Request Swap
+          </button>
+        )}
+
+        {showSwapForm && (
+          <RequestSwapForm
+            requestedListing={listing}
+            onClose={() => setShowSwapForm(false)}
+            onSuccess={() => navigate('/swap-requests')}
+          />
         )}
       </div>
     </div>
