@@ -21,6 +21,7 @@ function Navbar() {
           <>
             <Link to="/my-listings">My Listings</Link>
             <Link to="/swap-requests">Swap Requests</Link>
+            <Link to="/chat">Chat</Link>
             <Link to="/dashboard">Dashboard</Link>
             <span className="navbar-user">Hi, {user.name}</span>
             <button className="btn btn-secondary" onClick={handleLogout}>

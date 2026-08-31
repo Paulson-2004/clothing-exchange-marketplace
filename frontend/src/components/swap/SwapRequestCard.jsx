@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { createOrFindConversation } from '../../api/chatApi';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -40,9 +41,25 @@ function MiniListing({ listing, label }) {
 // `variant` is 'incoming' or 'sent' - controls which action buttons show.
 function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, onComplete, busy }) {
   const { _id, requester, requestedListing, offeredListing, status, createdAt } = swapRequest;
+  const navigate = useNavigate();
 
   const valueDifference =
     requestedListing && offeredListing ? offeredListing.estimatedValue - requestedListing.estimatedValue : null;
+
+  // The "other" party depends on which side of the exchange we're
+  // viewing: for an incoming request it's the requester; for a sent
+  // request it's the owner of the item we requested.
+  const otherUserId = variant === 'incoming' ? requester?._id : requestedListing?.owner?._id;
+
+  const handleOpenNegotiation = async () => {
+    if (!otherUserId) return;
+    try {
+      const data = await createOrFindConversation({ otherUserId, swapRequestId: _id });
+      navigate(`/chat?conversation=${data.conversation._id}`);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not open the conversation. Please try again.');
+    }
+  };
 
   return (
     <div className="swap-request-card">
@@ -75,6 +92,12 @@ function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, o
       )}
 
       <div className="swap-request-actions">
+        {otherUserId && (
+          <button className="btn btn-secondary" onClick={handleOpenNegotiation} disabled={busy}>
+            Open Negotiation
+          </button>
+        )}
+
         {variant === 'incoming' && status === 'pending' && (
           <>
             <button className="btn btn-primary" onClick={() => onAccept(_id)} disabled={busy}>

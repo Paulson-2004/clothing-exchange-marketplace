@@ -10,6 +10,7 @@ import ItemDetailsPage from './pages/ItemDetailsPage';
 import CreateEditListingPage from './pages/CreateEditListingPage';
 import MyListingsPage from './pages/MyListingsPage';
 import SwapRequestsPage from './pages/SwapRequestsPage';
+import ChatPage from './pages/ChatPage';
 
 function App() {
   return (
@@ -58,6 +59,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SwapRequestsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
               </ProtectedRoute>
             }
           />

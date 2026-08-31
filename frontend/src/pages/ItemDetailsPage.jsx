@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getListingById } from '../api/listingApi';
+import { createOrFindConversation } from '../api/chatApi';
 import { useAuth } from '../context/AuthContext';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -49,6 +50,15 @@ function ItemDetailsPage() {
   }
 
   const isOwner = user && listing.owner?._id === user.id;
+
+  const handleMessageSeller = async () => {
+    try {
+      const data = await createOrFindConversation({ otherUserId: listing.owner._id });
+      navigate(`/chat?conversation=${data.conversation._id}`);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not open the conversation. Please try again.');
+    }
+  };
 
   return (
     <div className="page-container item-details-page">
@@ -116,13 +126,23 @@ function ItemDetailsPage() {
             Log In to Request Swap
           </button>
         ) : listing.status !== 'available' ? (
-          <button className="btn btn-primary" disabled title="This item is not currently available">
-            Not Available
-          </button>
+          <div className="item-details-action-row">
+            <button className="btn btn-primary" disabled title="This item is not currently available">
+              Not Available
+            </button>
+            <button className="btn btn-secondary" onClick={handleMessageSeller}>
+              Message Seller
+            </button>
+          </div>
         ) : (
-          <button className="btn btn-primary" onClick={() => setShowSwapForm(true)}>
-            Request Swap
-          </button>
+          <div className="item-details-action-row">
+            <button className="btn btn-primary" onClick={() => setShowSwapForm(true)}>
+              Request Swap
+            </button>
+            <button className="btn btn-secondary" onClick={handleMessageSeller}>
+              Message Seller
+            </button>
+          </div>
         )}
 
         {showSwapForm && (
