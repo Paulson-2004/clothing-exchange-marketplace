@@ -100,12 +100,14 @@ clothing-exchange/
 │   │   ├── utils/
 │   │   │   ├── asyncHandler.js     wraps async route handlers, forwards errors to next()
 │   │   │   ├── generateToken.js    signs a JWT {id, role}
-│   │   │   └── valueEstimator.js   deterministic swap-value formula (see below)
+│   │   │   ├── valueEstimator.js   deterministic swap-value formula
+│   │   │   └── valueComparator.js  deterministic value comparison & classification formula (Phase 6)
 │   │   └── scripts/
 │   │       └── seedAdmin.js        manual, one-off admin-account creation (npm run seed:admin)
 │   └── tests/
 │       ├── phase4-swap-tests.js    standalone integration test script (real HTTP calls)
-│       └── phase5-chat-tests.js    standalone integration test script (real HTTP calls)
+│       ├── phase5-chat-tests.js    standalone integration test script (real HTTP calls)
+│       └── phase6-value-comparator-tests.js standalone integration test script (real HTTP calls)
 └── frontend/
     ├── index.html
     ├── vite.config.js
@@ -118,6 +120,8 @@ clothing-exchange/
         ├── index.css                single global stylesheet for the whole app
         ├── context/
         │   └── AuthContext.jsx      auth state, register/login/logout, session restore on refresh
+        ├── utils/
+        │   └── valueComparator.js   mirrors backend comparison formula for synchronous UI display
         ├── api/
         │   ├── axiosClient.js       shared axios instance (withCredentials: true)
         │   ├── listingApi.js
@@ -264,6 +268,7 @@ No `/api/admin` mount exists yet — the comment in `app.js` (`// More route gro
 | GET | / | public | query params: search, category, size, condition, city, state, status (default `available`) |
 | GET | /mine/all | protected | must be defined before `/:id` in Express |
 | GET | /estimate-value | public | `?category=&brand=&condition=` → `{estimatedValue}` |
+| GET | /compare | public | `?listingA=&listingB=` → `{listingA, listingB, comparison}` (Phase 6) |
 | POST | / | protected | `multipart/form-data`, up to 5 images |
 | GET | /:id | public | |
 | PUT | /:id | protected + owner-only | partial update, appends new images rather than replacing |
@@ -369,6 +374,7 @@ cd backend && npm run seed:admin
 # Automated test suites (require the backend already running)
 cd backend && npm run test:phase4
 cd backend && npm run test:phase5
+cd backend && npm run test:phase6
 ```
 
 ---

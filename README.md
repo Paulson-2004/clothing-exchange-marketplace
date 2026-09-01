@@ -2,56 +2,98 @@
 
 A sustainable clothing exchange platform where users list, browse, and swap clothing items without money changing hands.
 
-**Status: Phase 4 — Swap Request System**
+**Status: Phase 6 — Swap Value Comparator (Complete)**
 
 ## Stack
 - Frontend: React (Vite), React Router, Axios
 - Backend: Node.js, Express
 - Database: MongoDB (Mongoose)
-- Auth: JWT in httpOnly cookies, bcryptjs (added in Phase 2)
-- Images: Cloudinary (added in Phase 3)
+- Auth: JWT in httpOnly cookies, bcryptjs (Phase 2)
+- Images: Cloudinary (Phase 3)
+- Real-time Negotiation: REST polling chat (Phase 5)
+- Valuation: Deterministic value estimator (Phase 3) & comparison utility (Phase 6)
 
 ## Project Structure
 ```
 clothing-exchange/
-├── backend/     Express API
-└── frontend/    React (Vite) client
+├── backend/     Express API & MongoDB models
+├── frontend/    React (Vite) client
+└── docs/        Persistent architectural & requirements documentation
 ```
 
-## Phase 1 — What's included
+## Phase Status Summary
+
+| Phase | Feature Area | Status | Evidence / Notes |
+|---|---|---|---|
+| 1 | Project Scaffolding | Complete | Working Express + MongoDB + React/Vite stack |
+| 2 | Authentication | Complete | JWT httpOnly cookies, register/login/logout, protected routes |
+| 3 | Clothing Listings / Marketplace | Complete | Full CRUD, Cloudinary upload, search/filter, value estimator |
+| 4 | Swap Request System | Complete | Full state machine, 20/20 tests passed |
+| 5 | Chat & Negotiation | Complete | Polling chat, swap-linked headers, 20/20 automated tests passed |
+| 6 | Swap Value Comparator | Complete | Reusable comparator, GET /api/listings/compare, 43/43 tests passed |
+| 7 | Location-Based Matching | **Not Started** | Planned (nearby & compatible value matching) |
+| 8 | Admin Panel | **Not Started** | Planned (dashboard, content moderation, analytics) |
+
+---
+
+## Completed Phases
+
+### Phase 1 — Project Scaffolding
 - Express server with MongoDB connection (`backend/`)
 - `/api/health` endpoint reporting API + DB status
-- Global error handling middleware skeleton
-- CORS configured for the frontend origin, with credentials enabled (needed for the cookie-based auth added in Phase 2)
-- React (Vite) app that calls `/api/health` on load and displays connection status
-- Full folder structure for all upcoming features (auth, listings, swaps, chat, admin), currently empty placeholders
+- Global error handling middleware
+- CORS configured for frontend with credentials enabled
+- React (Vite) app calling `/api/health` on load
 
-## Phase 2 — What's included
-- User model (`backend/src/models/User.js`) with hashed password (`select: false`)
+### Phase 2 — Authentication
+- `User` model with salted password hashing (`select: false`)
 - Register, login, logout, and `/api/auth/me` endpoints
-- JWT stored in an httpOnly cookie (not accessible to JS, not in localStorage)
-- `protect` middleware (verifies the cookie) and `requireAdmin` middleware (not used by any route yet)
-- Admin seed script (`npm run seed:admin`), run manually and separately from registration
+- JWT stored in httpOnly cookie
+- `protect` auth middleware and `requireAdmin` middleware foundation
+- Admin seed script (`npm run seed:admin`)
 - Frontend `AuthContext` restoring session on page refresh via `/api/auth/me`
-- `ProtectedRoute` component, auth-aware `Navbar`, Login/Register pages
-- Minimal `HomePage` and `DashboardPage` placeholders (full versions come in later phases)
+- `ProtectedRoute` component, auth-aware `Navbar`, Login and Register pages
 
-## Phase 3 — What's included
-- Listing model, full CRUD (`POST/GET/PUT/DELETE /api/listings`), ownership enforced server-side
-- Search + category/size/condition/city/state filtering on `GET /api/listings`
-- Cloudinary image upload via `multer` + `multer-storage-cloudinary` (isolated in `config/cloudinary.js` and `middleware/upload.js`)
-- Deterministic swap value estimator (`utils/valueEstimator.js`) with a live `GET /api/listings/estimate-value` endpoint
-- Real Marketplace (`HomePage`), Item Details, Create/Edit Listing (with image preview + value suggestion), and My Listings pages on the frontend
-- "Request Swap" button present but disabled — swap requests are Phase 5
+### Phase 3 — Clothing Listings & Marketplace
+- `Listing` model, full CRUD (`POST/GET/PUT/DELETE /api/listings`), server-side ownership enforcement
+- Search + category, size, condition, city, and state filtering on `GET /api/listings`
+- Cloudinary image upload via `multer` memory storage + `upload_stream` (up to 5 images)
+- Deterministic swap value estimator (`utils/valueEstimator.js`) with live `GET /api/listings/estimate-value`
+- Marketplace (`HomePage`), Item Details, Create/Edit Listing (with live image preview and value suggestion), and My Listings pages
 
-## Phase 4 — What's included
-- SwapRequest model + full state machine (`pending → accepted → completed`, or `pending → rejected/cancelled`)
+### Phase 4 — Swap Request System
+- `SwapRequest` model with complete state machine (`pending → accepted → completed`, `pending → rejected`, `pending → cancelled`)
 - `POST /api/swaps`, `GET /api/swaps/incoming`, `GET /api/swaps/sent`, `PATCH /api/swaps/:id/{accept,reject,cancel,complete}`
-- Ownership enforced server-side on every mutation; duplicate-request and listing-availability checks on create
-- Auto-rejection of conflicting pending requests when one is accepted (see explanation in the Phase 4 discussion)
-- Frontend: enabled "Request Swap" button on Item Details (with an inline listing-picker + value comparison), and a new Swap Requests page with Incoming/Sent tabs
+- Ownership and availability enforcement on every mutation; duplicate-request prevention
+- Automatic rejection of conflicting pending requests when one is accepted
+- Frontend: enabled "Request Swap" flow on Item Details and Swap Requests page with Incoming/Sent tabs
+- 20/20 confirmed tests passed (5 manual UI + 15 automated integration tests)
 
-## Setup
+### Phase 5 — Chat & Negotiation
+- `Conversation` and `Message` models with read/unread tracking and sorted participant indexing
+- `GET/POST /api/chat/conversations`, `GET/POST /api/chat/conversations/:id/messages`, `PATCH /api/chat/conversations/:id/read`
+- Participant authorization enforced on every message and conversation action
+- Read-only swap linking: displays linked swap context and status badge in the chat header without altering the swap model
+- 4-second REST polling with auto-cleanup in `MessageThread.jsx`
+- Frontend: `ChatPage` with `ConversationList`, `MessageThread`, and `MessageInput`
+- 20/20 automated backend integration tests passed
+
+### Phase 6 — Swap Value Comparator
+- Canonical value comparator utility (`backend/src/utils/valueComparator.js` & `frontend/src/utils/valueComparator.js`)
+- Reuses Phase 3's deterministic `estimateValue` calculation without recreation
+- Computes absolute difference, percentage difference, and deterministic fairness classifications:
+  - $\le 20\%$ $\rightarrow$ `Close Match`
+  - $\le 50\%$ $\rightarrow$ `Moderate Difference`
+  - $> 50\%$ $\rightarrow$ `Large Difference`
+  - Zero-value edge case handled gracefully ($0\%$ diff, `Close Match`) without division-by-zero
+- Public read-only endpoint: `GET /api/listings/compare?listingA=<id>&listingB=<id>`
+- Integrated into `RequestSwapForm.jsx` (live preview before sending) and `SwapRequestCard.jsx` (incoming & sent request cards)
+- Informational only — zero authority over swap status transitions
+- 43/43 automated backend integration tests passed
+
+---
+
+## Setup & Running
 
 ### 1. Backend
 ```bash
@@ -59,20 +101,11 @@ cd backend
 npm install
 cp .env.example .env
 ```
-Edit `.env` and fill in:
-- `MONGO_URI` — your MongoDB Atlas connection string
-- `JWT_SECRET` — any long random string
-- `ADMIN_EMAIL` / `ADMIN_PASSWORD` — only needed if you want to run the admin seed script (optional in Phase 2, no admin panel exists yet)
-- Leave Cloudinary vars blank for now — not used until the Listings phase
+Edit `.env` and fill in your values (`MONGO_URI`, `JWT_SECRET`, Cloudinary credentials, etc.).
 
 Run the server:
 ```bash
 npm run dev
-```
-You should see:
-```
-MongoDB connected: <your-cluster-host>
-Server running in development mode on port 5000
 ```
 
 ### 2. Frontend
@@ -80,23 +113,25 @@ Server running in development mode on port 5000
 cd frontend
 npm install
 cp .env.example .env
+```
+Ensure `VITE_API_BASE_URL` is set (default `http://localhost:5000/api`).
+
+Run the client:
+```bash
 npm run dev
 ```
-Open the printed local URL (typically `http://localhost:5173`).
 
-## How to test Phase 1
+### 3. Automated Test Suites
+Run test scripts from the `backend/` directory while the backend server is running:
+```bash
+npm run test:phase4     # Phase 4 Swap Request tests (20/20 confirmed)
+npm run test:phase5     # Phase 5 Chat & Negotiation tests (20/20 passed)
+npm run test:phase6     # Phase 6 Swap Value Comparator tests (43/43 passed)
+```
 
-1. Start the backend (`npm run dev` in `backend/`) — confirm it logs a successful MongoDB connection.
-2. In a browser, visit `http://localhost:5000/api/health` directly — you should get JSON like:
-   ```json
-   { "success": true, "message": "API is running", "database": "connected", "timestamp": "..." }
-   ```
-3. Start the frontend (`npm run dev` in `frontend/`) and open it in a browser.
-4. The page should show a green status dot and "Backend + database connected", along with the raw health-check JSON below it.
-5. To verify error handling works: stop the backend server, refresh the frontend — it should show a red dot and "Could not reach backend" instead of crashing.
+---
 
-If all five checks pass, the full stack (React → Express → MongoDB) is correctly wired and we're ready for Phase 2 (Authentication).
+## Upcoming Phases
+- **Phase 7 — Location-Based Matching**: Show nearby swap opportunities and suggest compatible matches based on location (`city`, `state`) and estimated value (reusing Phase 6's `compareValues`). *(Not started)*
+- **Phase 8 — Admin Panel**: Admin dashboard, user and listing management, content moderation, and basic activity analytics. *(Not started)*
 
-## Notes
-- `backend/src/config/cloudinary.js` is currently a stub — it will be implemented in Phase 3 when image upload is built, so the `cloudinary` package isn't installed before it's needed.
-- Empty folders (`models/`, `controllers/`, `pages/`, etc.) contain a `.gitkeep` file just to preserve the structure in git; they'll be filled in as each phase is implemented.

@@ -11,13 +11,13 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 - Full swap request lifecycle: create → accept → complete, plus reject and cancel branches, with conflict auto-rejection when one request is accepted while others are still pending on the same listings.
 - Full chat: start/reuse a conversation (optionally linked to a swap request), send/receive messages via 4-second REST polling, read/unread tracking, chat header shows linked swap status.
 - Deterministic value estimator with a live "Suggest Value" button on the listing form; user can override the suggestion.
-- Two automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, per actual reported runs — not assumed).
+- Deterministic swap value comparator (`valueComparator.js`) with `GET /api/listings/compare`, calculating absolute difference, percentage difference, and fairness classification (`Close Match`, `Moderate Difference`, `Large Difference`), integrated into swap request preview and swap request cards.
+- Three automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, per actual reported runs — not assumed).
 
 ## 2. What Doesn't Work / Isn't Built
 
 - **Admin panel**: nothing beyond the `role` field, `requireAdmin` middleware, and `seedAdmin.js` script. No admin routes, no admin UI.
 - **Location-based matching**: only plain city/state filtering exists on the marketplace. No "nearby matches" or "compatible value + nearby" suggestion logic anywhere.
-- **Value comparison classification**: no percentage difference, no "Close Match/Moderate/Large Difference" labeling anywhere in the codebase — only a raw dollar difference, computed twice (duplicated, not shared) in `RequestSwapForm.jsx` and `SwapRequestCard.jsx`.
 - **Real user dashboard**: `DashboardPage.jsx` is still a Phase 2 placeholder (name/email/role only).
 - **No deployment setup**: no Dockerfile, no CI, no hosting-platform config of any kind exists yet.
 
