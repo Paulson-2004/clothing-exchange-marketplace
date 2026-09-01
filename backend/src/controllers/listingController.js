@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Listing = require('../models/Listing');
 const asyncHandler = require('../utils/asyncHandler');
 const { estimateValue } = require('../utils/valueEstimator');
+const { compareValues } = require('../utils/valueComparator');
 const { uploadBufferToCloudinary } = require('../middleware/upload');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -215,11 +216,67 @@ const deleteListing = asyncHandler(async (req, res) => {
 });
 
 // GET /api/listings/mine/all
-// Protected. Returns all of the logged-in user's own listings,
+// Protected. Returns all listings owned by the logged-in user
 // regardless of status (used by the "My Listings" page).
 const getMyListings = asyncHandler(async (req, res) => {
   const listings = await Listing.find({ owner: req.user._id }).sort({ createdAt: -1 });
   res.status(200).json({ success: true, count: listings.length, listings });
+});
+
+// GET /api/listings/compare?listingA=<id>&listingB=<id>
+// Public. Read-only. Compares the estimated values of two listings and
+// returns a structured comparison result (absolute difference, percentage
+// difference, fairness classification). Does NOT modify any documents.
+// The comparison is informational only — it has no authority over swap
+// status, acceptance, or rejection.
+const compareListings = asyncHandler(async (req, res) => {
+  const { listingA: idA, listingB: idB } = req.query;
+
+  if (!idA || !idB) {
+    res.status(400);
+    throw new Error('Both listingA and listingB query parameters are required');
+  }
+  if (!isValidObjectId(idA) || !isValidObjectId(idB)) {
+    res.status(400);
+    throw new Error('One or both listing IDs are not valid MongoDB ObjectIds');
+  }
+  if (idA === idB) {
+    res.status(400);
+    throw new Error('listingA and listingB must be different listings');
+  }
+
+  const [listingA, listingB] = await Promise.all([
+    Listing.findById(idA).select('title estimatedValue status'),
+    Listing.findById(idB).select('title estimatedValue status'),
+  ]);
+
+  if (!listingA) {
+    res.status(404);
+    throw new Error('listingA not found');
+  }
+  if (!listingB) {
+    res.status(404);
+    throw new Error('listingB not found');
+  }
+
+  const comparison = compareValues(listingA.estimatedValue, listingB.estimatedValue);
+
+  res.status(200).json({
+    success: true,
+    listingA: {
+      _id: listingA._id,
+      title: listingA.title,
+      estimatedValue: listingA.estimatedValue,
+      status: listingA.status,
+    },
+    listingB: {
+      _id: listingB._id,
+      title: listingB.title,
+      estimatedValue: listingB.estimatedValue,
+      status: listingB.status,
+    },
+    comparison,
+  });
 });
 
 module.exports = {
@@ -229,4 +286,5 @@ module.exports = {
   updateListing,
   deleteListing,
   getMyListings,
+  compareListings,
 };

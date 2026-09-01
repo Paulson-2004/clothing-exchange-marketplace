@@ -70,3 +70,15 @@ export const deleteListing = async (id) => {
   const response = await axiosClient.delete(`/listings/${id}`);
   return response.data;
 };
+
+// GET /api/listings/compare?listingA=<id>&listingB=<id>
+// Returns a structured value comparison from the backend (Phase 6).
+// Components that have both listing objects already loaded should use
+// the frontend/src/utils/valueComparator.js utility directly to avoid
+// an extra network round-trip for what is purely informational display.
+export const compareListings = async (listingAId, listingBId) => {
+  const response = await axiosClient.get('/listings/compare', {
+    params: { listingA: listingAId, listingB: listingBId },
+  });
+  return response.data;
+};

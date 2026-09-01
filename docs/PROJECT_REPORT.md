@@ -11,8 +11,9 @@ Unified Mentor Fullstack Web Development Internship
 | 3 | Clothing Listings (CRUD, Cloudinary image upload, value estimator) | Complete |
 | 4 | Swap Request System | Core workflow and all tested edge cases verified successfully — 20 of 20 confirmed tests passed (see below) |
 | 5 | Chat / Negotiation | Implemented and tested successfully — 20 of 20 automated backend tests passed, plus manual frontend verification (see below) |
-| 6 | Location-Based Matching | Not started |
-| 7 | Admin Panel | Not started |
+| 6 | Swap Value Comparator | Complete — 43 of 43 automated integration tests passed (see below) |
+| 7 | Location-Based Matching | Not started |
+| 8 | Admin Panel | Not started |
 
 ## Phase 4 — Swap Request System
 
@@ -182,10 +183,90 @@ The following behaviors were manually observed by the project owner while exerci
 
 This list reflects only the behaviors explicitly confirmed by the project owner. It is not a claim that every possible frontend scenario (e.g. live polling delivery timing, mobile responsive layout, empty/error states, unread-indicator styling) has been manually verified — those remain unconfirmed unless separately reported.
 
+## Phase 6 — Swap Value Comparator
+
+### Implementation Summary
+
+Phase 6 formalizes, consolidates, and enhances the swap value comparison functionality:
+
+- **Reused Existing Estimator**: Reuses the deterministic `estimateValue` formula in `backend/src/utils/valueEstimator.js` (`baseValue × brandMultiplier × conditionMultiplier`) from Phase 3 without recreation or alteration.
+- **Canonical Comparator Utility**: Created `backend/src/utils/valueComparator.js` (and mirrored in `frontend/src/utils/valueComparator.js`) as a pure, deterministic calculation engine.
+  - Formula:
+    $$\text{percentageDifference} = \left( \frac{|\text{valueA} - \text{valueB}|}{\max(\text{valueA}, \text{valueB})} \right) \times 100$$
+  - Thresholds:
+    - $\le 20\%$ $\rightarrow$ `Close Match`
+    - $\le 50\%$ $\rightarrow$ `Moderate Difference`
+    - $> 50\%$ $\rightarrow$ `Large Difference`
+  - Division-by-zero edge case: When both values are $0$, returns $0\%$ difference and classification `Close Match`.
+- **Backend Read-Only Endpoint**: Added `GET /api/listings/compare?listingA=<id>&listingB=<id>` in `listingController.js` and `listingRoutes.js`. Validates parameter presence, ObjectId formatting, distinct IDs, and existence of both listings. Purely read-only; does not alter listing status or swap requests.
+- **Frontend Integration**:
+  - `RequestSwapForm.jsx`: Replaced duplicated inline difference subtraction with `compareValues()`. Displays requested item estimated value, offered item estimated value, absolute difference, percentage difference, and fairness classification badge, along with explicit advisory copy that values are estimates for negotiation guidance.
+  - `SwapRequestCard.jsx`: Replaced duplicated inline difference subtraction with `compareValues()`. Displays requested and offered item values, difference with percentage, and classification badge.
+  - `listingApi.js`: Added `compareListings(listingAId, listingBId)` export for programmatic backend comparisons.
+- **State Machine Protection**: The comparator is strictly informational and has zero authority over swap status transitions (`pending → accepted`, `pending → rejected`, `accepted → completed`, `pending → cancelled`).
+
+### Phase 6 Automated Integration Test Results
+
+A dedicated automated test script (`backend/tests/phase6-value-comparator-tests.js`) was executed against the running backend with real HTTP requests and MongoDB fixtures with tracked cleanup.
+
+| Test Case | Expected Result | Actual Result | Status |
+|---|---|---|---|
+| estimate-value: known category+brand+condition | 200 | 200 | Passed |
+| estimate-value: response has estimatedValue number | number | number | Passed |
+| estimate-value: deterministic output | positive number | true | Passed |
+| estimate-value: unknown brand fallback | 200 | 200 | Passed |
+| estimate-value: unknown brand returns positive value | true | true | Passed |
+| estimate-value: same inputs produce same output | equal | equal (33) | Passed |
+| estimate-value: new condition > fair condition | true | true | Passed |
+| compare: missing both params | 400 | 400 | Passed |
+| compare: missing listingB | 400 | 400 | Passed |
+| compare: invalid ObjectId | 400 | 400 | Passed |
+| compare: same ID for both | 400 | 400 | Passed |
+| compare: non-existent listingA | 404 | 404 | Passed |
+| compare: valid request status | 200 | 200 | Passed |
+| compare: response has success:true | true | true | Passed |
+| compare: response has listingA | true | true | Passed |
+| compare: response has listingB | true | true | Passed |
+| compare: response has comparison object | true | true | Passed |
+| compare: comparison.valueA is a number | number | number | Passed |
+| compare: comparison.valueB is a number | number | number | Passed |
+| compare: comparison.absoluteDifference is a number | number | number | Passed |
+| compare: comparison.percentageDifference is a number | number | number | Passed |
+| compare: comparison.classification is a string | string | string | Passed |
+| compare: absoluteDifference matches \|valueA - valueB\| | 40 | 40 | Passed |
+| classify: equal values -> absoluteDifference = 0 | 0 | 0 | Passed |
+| classify: equal values -> percentageDifference = 0 | 0 | 0 | Passed |
+| classify: equal values -> Close Match | Close Match | Close Match | Passed |
+| classify: 100 vs 115 -> absoluteDifference = 15 | 15 | 15 | Passed |
+| classify: 100 vs 115 -> percentageDifference correct | 13 | 13 | Passed |
+| classify: 100 vs 115 -> Close Match (<=20%) | Close Match | Close Match | Passed |
+| classify: 100 vs 125 -> exactly 20% -> Close Match (boundary inclusive) | Close Match | Close Match | Passed |
+| classify: 100 vs 127 -> >20% -> Moderate Difference | Moderate Difference | Moderate Difference | Passed |
+| classify: 100 vs 175 -> ~42.9% -> Moderate Difference | Moderate Difference | Moderate Difference | Passed |
+| classify: 100 vs 200 -> exactly 50% -> Moderate Difference (boundary inclusive) | Moderate Difference | Moderate Difference | Passed |
+| classify: 100 vs 205 -> >50% -> Large Difference | Large Difference | Large Difference | Passed |
+| classify: 50 vs 500 -> 90% -> Large Difference | Large Difference | Large Difference | Passed |
+| classify: both 0 -> no error, 200 | 200 | 200 | Passed |
+| classify: both 0 -> absoluteDifference = 0 | 0 | 0 | Passed |
+| classify: both 0 -> percentageDifference = 0 (no div-by-zero) | 0 | 0 | Passed |
+| classify: both 0 -> Close Match | Close Match | Close Match | Passed |
+| compare: accessible without auth (public endpoint) | 200 | 200 | Passed |
+| compare: POST not allowed (not a write endpoint) | non-200 | true | Passed |
+| compare: does not alter listing status | available | available | Passed |
+| regression: swap creation still works after Phase 6 | 201 | 201 | Passed |
+
+**Final result:**
+- Passed: 43
+- Failed: 0
+- Total: 43
+
+No failures occurred in this run. Test data (3 test users, 14 test listings, 1 test swap request) was created and then fully removed by the script's cleanup step; no existing real data was affected.
+
 ## Notes
 
-- This document reflects only test results explicitly confirmed by the project owner. For Phase 4: five manually-tested UI cases, and fifteen automated backend integration test cases — 20 total, all passed, 0 failed. For Phase 5: twenty automated backend integration test cases, all passed, 0 failed, plus a set of manually-confirmed frontend UI behaviors.
-- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`) are standalone test files separate from the application source code. No application code was modified as part of running these tests or updating this documentation.
-- Phase 4's 20 confirmed tests cover the core swap lifecycle, ownership/authorization enforcement, duplicate and unavailable-listing handling, conflict auto-rejection, and invalid state-transition blocking.
-- Phase 5's 20 confirmed automated tests cover conversation creation/reuse, message sending and validation, chronological ordering, read/unread state, and authorization (unauthenticated access, non-participant access, self-conversation, invalid/nonexistent IDs, and swap-linked conversation party verification). The Frontend Manual Verification list covers only the specific UI behaviors explicitly confirmed by the project owner — broader frontend scenarios (e.g. live polling delivery timing, mobile responsive layout, empty/error states) have not been separately confirmed.
-- Any test case not explicitly listed as Passed in either phase has not been verified and should not be assumed to pass.
+- This document reflects only test results explicitly confirmed by testing runs.
+  - Phase 4: 20 confirmed tests (5 manual UI + 15 automated backend integration tests), all passed, 0 failed.
+  - Phase 5: 20 automated backend integration test cases, all passed, 0 failed, plus manually-confirmed frontend UI behaviors.
+  - Phase 6: 43 automated backend integration test cases, all passed, 0 failed.
+- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`) are standalone test files separate from the application source code.
+- Any test case not explicitly listed as Passed has not been verified and should not be assumed to pass.

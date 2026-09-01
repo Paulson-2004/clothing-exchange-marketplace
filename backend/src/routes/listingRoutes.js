@@ -9,6 +9,7 @@ const {
   updateListing,
   deleteListing,
   getMyListings,
+  compareListings,
 } = require('../controllers/listingController');
 
 const router = express.Router();
@@ -26,6 +27,11 @@ router.get('/estimate-value', (req, res) => {
   const value = estimateValue({ category, brand, condition });
   res.status(200).json({ success: true, estimatedValue: value });
 });
+
+// GET /api/listings/compare?listingA=<id>&listingB=<id>
+// Public. Read-only. Returns a structured value comparison (Phase 6).
+// Must be before /:id to prevent Express treating "compare" as an ID.
+router.get('/compare', compareListings);
 
 router.route('/')
   .get(getListings)
