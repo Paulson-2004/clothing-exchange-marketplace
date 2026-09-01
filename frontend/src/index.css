@@ -1039,3 +1039,86 @@ body {
   font-size: 0.92rem;
   max-height: 100px;
 }
+
+/* ═══════════════════════════════════════════════════
+   Phase 7 — Nearby Swap Matches (ItemDetailsPage)
+   ═══════════════════════════════════════════════════ */
+
+.matches-section {
+  grid-column: 1 / -1;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e8e8e4;
+}
+
+.matches-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.matches-subtitle {
+  color: #6b6e64;
+  font-size: 0.92rem;
+  margin-bottom: 1.5rem;
+}
+
+.matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.match-card-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Let the listing card fill the wrapper top */
+.match-card-wrapper .listing-card {
+  flex: 1;
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.match-reason {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  background: #f8f8f6;
+  border: 1px solid #e8e8e4;
+  border-top: none;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.match-tag {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.match-tag-exact {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.match-tag-state {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.match-tag-value-close {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.match-tag-value-moderate {
+  background: #fff8e1;
+  color: #f57f17;
+}
+

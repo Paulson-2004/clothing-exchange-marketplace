@@ -10,7 +10,8 @@
     "seed:admin": "node src/scripts/seedAdmin.js",
     "test:phase4": "node tests/phase4-swap-tests.js",
     "test:phase5": "node tests/phase5-chat-tests.js",
-    "test:phase6": "node tests/phase6-value-comparator-tests.js"
+    "test:phase6": "node tests/phase6-value-comparator-tests.js",
+    "test:phase7": "node tests/phase7-location-matching-tests.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -82,3 +82,10 @@ export const compareListings = async (listingAId, listingBId) => {
   });
   return response.data;
 };
+
+// GET /api/listings/:id/matches
+// Returns location + value compatible swap match suggestions (Phase 7).
+export const getListingMatches = async (id) => {
+  const response = await axiosClient.get(`/listings/${id}/matches`);
+  return response.data;
+};

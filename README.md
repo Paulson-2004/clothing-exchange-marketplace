@@ -2,7 +2,7 @@
 
 A sustainable clothing exchange platform where users list, browse, and swap clothing items without money changing hands.
 
-**Status: Phase 6 — Swap Value Comparator (Complete)**
+**Status: Phase 7 — Location-Based Matching (Complete)**
 
 ## Stack
 - Frontend: React (Vite), React Router, Axios
@@ -11,7 +11,7 @@ A sustainable clothing exchange platform where users list, browse, and swap clot
 - Auth: JWT in httpOnly cookies, bcryptjs (Phase 2)
 - Images: Cloudinary (Phase 3)
 - Real-time Negotiation: REST polling chat (Phase 5)
-- Valuation: Deterministic value estimator (Phase 3) & comparison utility (Phase 6)
+- Valuation & Matching: Deterministic value estimator (Phase 3), comparison utility (Phase 6), and location-based matching (Phase 7)
 
 ## Project Structure
 ```
@@ -31,7 +31,7 @@ clothing-exchange/
 | 4 | Swap Request System | Complete | Full state machine, 20/20 tests passed |
 | 5 | Chat & Negotiation | Complete | Polling chat, swap-linked headers, 20/20 automated tests passed |
 | 6 | Swap Value Comparator | Complete | Reusable comparator, GET /api/listings/compare, 43/43 tests passed |
-| 7 | Location-Based Matching | **Not Started** | Planned (nearby & compatible value matching) |
+| 7 | Location-Based Matching | Complete | Hierarchical proximity, value matching, GET /api/listings/:id/matches, 32/32 tests passed |
 | 8 | Admin Panel | **Not Started** | Planned (dashboard, content moderation, analytics) |
 
 ---
@@ -91,6 +91,15 @@ clothing-exchange/
 - Informational only — zero authority over swap status transitions
 - 43/43 automated backend integration tests passed
 
+### Phase 7 — Location-Based Matching
+- Deterministic hierarchical location matching (`exact` = same city + same state; `state` = same state only) without external geocoding/maps dependencies
+- Direct reuse of Phase 6's `compareValues()` for value compatibility (`Close Match` and `Moderate Difference` included, `Large Difference` excluded)
+- Simple deterministic ranking formula: `matchScore = locationScore + valueScore` (range 3–6), sorted by score desc $\rightarrow$ value difference asc $\rightarrow$ creation date desc
+- Public read-only endpoint: `GET /api/listings/:id/matches?limit=N`
+- Excludes source listing, own-owner listings, and non-available (pending/swapped) items
+- Frontend integration: "Nearby Swap Matches" section on `ItemDetailsPage.jsx` with match reason badges, reusing `ListingCard`, `Loader`, `EmptyState`, and `ErrorMessage`
+- 32/32 automated backend integration tests passed
+
 ---
 
 ## Setup & Running
@@ -127,11 +136,12 @@ Run test scripts from the `backend/` directory while the backend server is runni
 npm run test:phase4     # Phase 4 Swap Request tests (20/20 confirmed)
 npm run test:phase5     # Phase 5 Chat & Negotiation tests (20/20 passed)
 npm run test:phase6     # Phase 6 Swap Value Comparator tests (43/43 passed)
+npm run test:phase7     # Phase 7 Location-Based Matching tests (32/32 passed)
 ```
 
 ---
 
 ## Upcoming Phases
-- **Phase 7 — Location-Based Matching**: Show nearby swap opportunities and suggest compatible matches based on location (`city`, `state`) and estimated value (reusing Phase 6's `compareValues`). *(Not started)*
 - **Phase 8 — Admin Panel**: Admin dashboard, user and listing management, content moderation, and basic activity analytics. *(Not started)*
+
 

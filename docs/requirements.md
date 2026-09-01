@@ -70,11 +70,11 @@ Status legend: **Implemented** (working, present in code) / **Partially Implemen
 - Label result clearly as an estimate, not market price — Implemented (UI copy in `CreateEditListingPage.jsx`, `ItemDetailsPage.jsx`, `RequestSwapForm.jsx`)
 - Compare estimated values between two items — Implemented (`valueComparator.js`, `GET /api/listings/compare`, integrated in `RequestSwapForm.jsx` and `SwapRequestCard.jsx` with absolute difference, percentage difference, and deterministic classifications `Close Match`, `Moderate Difference`, `Large Difference`)
 
-### 1.7 Location-Based Matching — **Not Started**
-- Store user/listing location — Implemented (this part only — plain strings on `User` and `Listing`)
-- Filter listings by location — Implemented (exact-match city/state filter on the marketplace — this is basic filtering, not "matching")
-- Show nearby swap opportunities — **Not Started**: no code exists for this at all.
-- Suggest potential matches based on location and compatible estimated value — **Not Started**: no code exists for this at all.
+### 1.7 Location-Based Matching — **Implemented**
+- Store user/listing location — Implemented (plain `city`, `state`, `country` strings on `User` and `Listing`)
+- Filter listings by location — Implemented (exact-match city/state filter on `GET /api/listings`)
+- Show nearby swap opportunities — Implemented (`GET /api/listings/:id/matches`, hierarchical same city / same state proximity; "Nearby Swap Matches" section on `ItemDetailsPage.jsx`)
+- Suggest potential matches based on location and compatible estimated value — Implemented (combines location tier scoring with Phase 6's `compareValues()` value compatibility scoring into deterministic ranking, excluding Large Difference)
 
 ### 1.8 Admin Panel — **Not Started**
 - Admin dashboard — Not Started
@@ -202,6 +202,6 @@ These were explicitly deferred by project rules at various points and remain unt
 The phase-numbering question previously flagged here has been explicitly resolved by the project owner. The approved roadmap is:
 
 - **Phase 6 — Swap Value Comparator**: Formalizing the existing value-comparison functionality described in §1.6 — centralized comparison utility, percentage difference, fairness classification with deterministic thresholds. **Complete and tested (43/43 tests passed).**
-- **Phase 7 — Location-Based Matching**: Nearby swap opportunities and value-compatible suggestions described in §1.7. **Not started.** Depends on the Phase 6 comparison utility (Phase 7's "compatible estimated value" matching will reuse it).
+- **Phase 7 — Location-Based Matching**: Nearby swap opportunities and value-compatible suggestions described in §1.7 — deterministic location tiers, value compatibility via Phase 6 reuse, `GET /api/listings/:id/matches`, and "Nearby Swap Matches" section on Item Details. **Complete and tested (32/32 tests passed).**
 - **Phase 8 — Admin Panel**: Full admin dashboard, user/listing management, analytics described in §1.8. **Not started.**
 

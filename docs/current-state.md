@@ -12,12 +12,12 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 - Full chat: start/reuse a conversation (optionally linked to a swap request), send/receive messages via 4-second REST polling, read/unread tracking, chat header shows linked swap status.
 - Deterministic value estimator with a live "Suggest Value" button on the listing form; user can override the suggestion.
 - Deterministic swap value comparator (`valueComparator.js`) with `GET /api/listings/compare`, calculating absolute difference, percentage difference, and fairness classification (`Close Match`, `Moderate Difference`, `Large Difference`), integrated into swap request preview and swap request cards.
-- Three automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, per actual reported runs — not assumed).
+- Location-based swap matching (`GET /api/listings/:id/matches`) with hierarchical location proximity (exact same city vs. same state), Phase 6 value compatibility reuse (`compareValues`), deterministic ranking, and "Nearby Swap Matches" section on `ItemDetailsPage.jsx`.
+- Four automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, per actual reported runs — not assumed).
 
 ## 2. What Doesn't Work / Isn't Built
 
 - **Admin panel**: nothing beyond the `role` field, `requireAdmin` middleware, and `seedAdmin.js` script. No admin routes, no admin UI.
-- **Location-based matching**: only plain city/state filtering exists on the marketplace. No "nearby matches" or "compatible value + nearby" suggestion logic anywhere.
 - **Real user dashboard**: `DashboardPage.jsx` is still a Phase 2 placeholder (name/email/role only).
 - **No deployment setup**: no Dockerfile, no CI, no hosting-platform config of any kind exists yet.
 
@@ -49,7 +49,7 @@ Five route groups mounted: `/api/health`, `/api/auth`, `/api/listings`, `/api/sw
 
 ## 8. Current Frontend State
 
-9 pages routed in `App.jsx`: Home, Login, Register, Dashboard (placeholder), Item Details, Create/Edit Listing, My Listings, Swap Requests, Chat. All wrapped in a single `AuthProvider` + `BrowserRouter`. No admin page/route exists. No location-matching UI exists.
+9 pages routed in `App.jsx`: Home, Login, Register, Dashboard (placeholder), Item Details (with "Nearby Swap Matches" section for available items), Create/Edit Listing, My Listings, Swap Requests, Chat. All wrapped in a single `AuthProvider` + `BrowserRouter`. No admin page/route exists.
 
 ## 9. Current Authentication State
 
@@ -64,7 +64,7 @@ Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middlew
 | Phase 5 automated (`npm run test:phase5`) | 20/20 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 5 manual frontend verification | 11 specific behaviors confirmed | Actual reported results, recorded in `PROJECT_REPORT.md` — explicitly not a claim of exhaustive frontend testing |
 | Phase 6 automated (`npm run test:phase6`) | 43/43 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
-| Phase 7 — Location-Based Matching | No tests exist — no code exists yet | N/A |
+| Phase 7 automated (`npm run test:phase7`) | 32/32 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 8 — Admin Panel | No tests exist — no code exists yet | N/A |
 
 **No test has ever been marked "Passed" in this project without an actual reported result.** Continue that discipline — do not infer test outcomes from reading code.
@@ -79,6 +79,7 @@ npm run seed:admin       # one-off, requires ADMIN_EMAIL/ADMIN_PASSWORD in .env
 npm run test:phase4      # requires backend already running
 npm run test:phase5      # requires backend already running
 npm run test:phase6      # requires backend already running
+npm run test:phase7      # requires backend already running
 
 # Frontend (from frontend/)
 npm install
@@ -105,19 +106,20 @@ Both `.env.example` files in the repo document the shape/format without real val
 
 ## 13. Last Completed Feature/Phase
 
-**Phase 6 — Swap Value Comparator.** Confirmed complete and tested: 43/43 automated backend integration tests passed. Created `backend/src/utils/valueComparator.js`, `frontend/src/utils/valueComparator.js`, `GET /api/listings/compare`, integrated into `RequestSwapForm.jsx` and `SwapRequestCard.jsx`. Recorded in `docs/PROJECT_REPORT.md`.
+**Phase 7 — Location-Based Matching.** Confirmed complete and tested: 32/32 automated backend integration tests passed. Created `GET /api/listings/:id/matches`, deterministic scoring and ranking, reuse of Phase 6 `compareValues()`, and integrated "Nearby Swap Matches" section into `ItemDetailsPage.jsx`. Recorded in `docs/PROJECT_REPORT.md`.
 
 ## 14. Exact Recommended Next Task
 
-**Phase 7 — Location-Based Matching.**
-Requirements (from `requirements.md` §1.7):
-1. Show nearby swap opportunities based on user/listing location (`city`, `state`).
-2. Suggest potential matches based on location + compatible estimated value (reusing `compareValues` from Phase 6).
+**Phase 8 — Admin Panel.**
+Requirements (from `requirements.md` §1.8):
+1. Admin dashboard with summary statistics.
+2. User and listing moderation/management.
+3. Content moderation and activity monitoring.
 
 Per the established project process:
 1. Inspect existing code and formulate an architecture proposal.
 2. Present architecture and wait for explicit confirmation from the project owner.
-3. Implement Phase 7.
+3. Implement Phase 8.
 4. Test and verify (manual UI + automated backend test suite).
 5. Record results in `docs/PROJECT_REPORT.md`.
 

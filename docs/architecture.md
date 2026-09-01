@@ -2,7 +2,7 @@
 
 This document describes the architecture **as it actually exists in the repository today**. It does not describe planned or aspirational architecture — see `requirements.md` and `implementation-plan.md` for what's still to come.
 
-Last verified against repository contents: current session (Phases 1–6 implemented and tested; Phase 7 not yet started).
+Last verified against repository contents: current session (Phases 1–7 implemented and tested; Phase 8 not yet started).
 
 ---
 
@@ -107,7 +107,8 @@ clothing-exchange/
 │   └── tests/
 │       ├── phase4-swap-tests.js    standalone integration test script (real HTTP calls)
 │       ├── phase5-chat-tests.js    standalone integration test script (real HTTP calls)
-│       └── phase6-value-comparator-tests.js standalone integration test script (real HTTP calls)
+│       ├── phase6-value-comparator-tests.js standalone integration test script (real HTTP calls)
+│       └── phase7-location-matching-tests.js standalone integration test script (real HTTP calls)
 └── frontend/
     ├── index.html
     ├── vite.config.js
@@ -269,6 +270,7 @@ No `/api/admin` mount exists yet — the comment in `app.js` (`// More route gro
 | GET | /mine/all | protected | must be defined before `/:id` in Express |
 | GET | /estimate-value | public | `?category=&brand=&condition=` → `{estimatedValue}` |
 | GET | /compare | public | `?listingA=&listingB=` → `{listingA, listingB, comparison}` (Phase 6) |
+| GET | /:id/matches | public | `?limit=N` → `{sourceListing, matches, count}` (Phase 7) |
 | POST | / | protected | `multipart/form-data`, up to 5 images |
 | GET | /:id | public | |
 | PUT | /:id | protected + owner-only | partial update, appends new images rather than replacing |
@@ -308,7 +310,7 @@ All JSON responses use `{ success: boolean, ...payload }`. Errors: `{ success: f
 - **API layer**: one `axiosClient` instance (`withCredentials: true`, `baseURL` from `VITE_API_BASE_URL`) — all feature-specific API files (`listingApi.js`, `swapApi.js`, `chatApi.js`) wrap it; components never call axios directly.
 - **Component conventions**: pages live in `pages/`, reusable pieces in `components/<feature>/`, and three shared "state" components (`Loader`, `EmptyState`, `ErrorMessage`) live in `components/common/` and are reused across every feature area.
 - **Forms**: no form library — plain controlled `useState` objects, manual validation functions, inline error state.
-- **Styling**: one hand-written `index.css` (1041 lines) using CSS custom properties (`--color-primary`, etc.) for a small design-token system. No CSS-in-JS, no Tailwind, no component library.
+- **Styling**: one hand-written `index.css` using CSS custom properties (`--color-primary`, etc.) for a small design-token system. No CSS-in-JS, no Tailwind, no component library.
 - **Image upload UX**: `ImageUploadPreview.jsx` builds local `URL.createObjectURL` previews client-side; actual upload happens via `FormData` POST/PUT to the listings endpoints (multipart), never a separate "upload" endpoint.
 
 ---
@@ -336,6 +338,7 @@ These were explicit, reasoned choices during development — a future agent shou
 8. **No pagination on `GET /api/listings` or message retrieval** — a fixed message cap (200) and an unbounded listings query are used instead. Explicitly flagged as acceptable only at current/demo scale, not production scale.
 9. **REST polling instead of Socket.io for chat** — explicit phase requirement, not a technical limitation. Code is structured (isolated `useEffect` in `MessageThread.jsx`) so a future swap to Socket.io would only require changing that one function.
 10. **Admin role field and `requireAdmin` middleware exist pre-emptively** but are not wired to any route — foundation was laid during Phase 2 auth work but the actual admin panel (Phase 8 per `PROJECT_REPORT.md`) has not been built.
+11. **Location-based matching is deterministic and hierarchical (Phase 7)** — compares `city`/`state` directly without external geocoding/maps dependencies; reuses Phase 6's `compareValues()` for value compatibility.
 
 ---
 
@@ -375,6 +378,7 @@ cd backend && npm run seed:admin
 cd backend && npm run test:phase4
 cd backend && npm run test:phase5
 cd backend && npm run test:phase6
+cd backend && npm run test:phase7
 ```
 
 ---
@@ -383,10 +387,8 @@ cd backend && npm run test:phase6
 
 - **No real pagination** anywhere (listings, messages, incoming/sent swap requests) — fine at current scale, will need addressing before any production-scale deployment.
 - **No transactions** around multi-document writes that should be atomic (e.g. `swapController.acceptSwapRequest` updates a SwapRequest + two Listings + potentially many conflicting SwapRequests across four separate `save()`/`updateMany()` calls with no Mongo session/transaction wrapping). Acceptable at single-instance dev scale; a documented risk at higher concurrency.
-- **Value comparison logic consolidated in Phase 6** — extracted into `valueComparator.js` with shared `compareValues()` calculating absolute difference, percentage difference, and deterministic fairness classifications (`Close Match`, `Moderate Difference`, `Large Difference`), exposed via `GET /api/listings/compare`. Ready for reuse by Phase 7 Location-Based Matching.
 - **Cloudinary images are never deleted** when a listing is deleted (`deleteListing` only removes the MongoDB document) — orphaned images accumulate in the Cloudinary account over time. Known, documented, not fixed.
 - **`DashboardPage.jsx` is still the Phase 2 placeholder** — shows only name/email/role, never built into a real dashboard despite being one of the 8 originally-specified pages.
 - **`requireAdmin` middleware and `User.role` are unused** by any actual route — dead code from a product standpoint until an admin panel is built.
 - **No `GET /api/swaps/:id`** — anything needing a single swap request by ID (beyond what chat's read-only population already covers) will need a new endpoint.
-- **No location-matching algorithm** — `city`/`state`/`country` fields exist on both `User` and `Listing`, but there is no "nearby matches" logic, no geocoding, no distance calculation anywhere in the codebase.
 - **No admin panel UI or API at all.**

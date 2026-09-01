@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Listing = require('../models/Listing');
 const asyncHandler = require('../utils/asyncHandler');
 const { estimateValue } = require('../utils/valueEstimator');
-const { compareValues } = require('../utils/valueComparator');
+const { compareValues, CLASSIFICATIONS } = require('../utils/valueComparator');
 const { uploadBufferToCloudinary } = require('../middleware/upload');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -279,6 +279,155 @@ const compareListings = asyncHandler(async (req, res) => {
   });
 });
 
+// GET /api/listings/:id/matches
+// Public. Read-only. Returns listings that are potential swap partners
+// for the given listing, based on location proximity and estimated-value
+// compatibility. Does NOT modify any documents.
+//
+// Location matching uses hierarchical string comparison on city/state:
+//   - "exact": same city AND same state (case-insensitive) — score 3
+//   - "state": same state, different/missing city               — score 2
+//
+// Value compatibility reuses Phase 6's compareValues():
+//   - "Close Match"       (≤20% difference) — included, score 3
+//   - "Moderate Difference" (≤50%)          — included, score 1
+//   - "Large Difference"   (>50%)           — excluded
+//
+// matchScore = locationScore + valueScore
+// Sorted by: score DESC, absoluteDifference ASC, createdAt DESC
+//
+// Filters: only 'available' listings, excludes source listing and
+// listings owned by the same user.
+const getListingMatches = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    res.status(400);
+    throw new Error('Invalid listing ID');
+  }
+
+  const sourceListing = await Listing.findById(id)
+    .select('title estimatedValue location status owner')
+    .populate('owner', 'name');
+
+  if (!sourceListing) {
+    res.status(404);
+    throw new Error('Listing not found');
+  }
+
+  const sourceState = (sourceListing.location?.state || '').trim().toLowerCase();
+
+  // If the source listing has no state, we have no location basis for matching.
+  if (!sourceState) {
+    return res.status(200).json({
+      success: true,
+      sourceListing: {
+        _id: sourceListing._id,
+        title: sourceListing.title,
+        estimatedValue: sourceListing.estimatedValue,
+        location: sourceListing.location,
+        status: sourceListing.status,
+      },
+      matches: [],
+      count: 0,
+      message: 'Source listing has no state/region — location-based matching requires at least a state.',
+    });
+  }
+
+  // Parse optional limit (default 20, max 50).
+  let limit = parseInt(req.query.limit, 10);
+  if (Number.isNaN(limit) || limit < 1) limit = 20;
+  if (limit > 50) limit = 50;
+
+  const sourceCity = (sourceListing.location?.city || '').trim().toLowerCase();
+
+  // Find all available listings in the same state (case-insensitive),
+  // excluding the source listing itself and the source listing's owner.
+  const candidates = await Listing.find({
+    _id: { $ne: sourceListing._id },
+    owner: { $ne: sourceListing.owner._id || sourceListing.owner },
+    status: 'available',
+    'location.state': new RegExp(`^${sourceState.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+  })
+    .populate('owner', 'name email location')
+    .lean();
+
+  // Score, filter, and rank candidates.
+  const scored = [];
+
+  for (const candidate of candidates) {
+    const candState = (candidate.location?.state || '').trim().toLowerCase();
+    const candCity = (candidate.location?.city || '').trim().toLowerCase();
+
+    // Determine location tier.
+    // We already filtered to same-state in the DB query, but double-check
+    // and determine exact vs state tier.
+    if (candState !== sourceState) continue; // safety guard
+
+    let locationTier, locationLabel, locationScore;
+    if (sourceCity && candCity && candCity === sourceCity) {
+      locationTier = 'exact';
+      locationLabel = 'Same city';
+      locationScore = 3;
+    } else {
+      locationTier = 'state';
+      locationLabel = 'Same state';
+      locationScore = 2;
+    }
+
+    // Value compatibility via Phase 6's compareValues.
+    const valueComparison = compareValues(
+      sourceListing.estimatedValue,
+      candidate.estimatedValue
+    );
+
+    // Exclude Large Difference.
+    if (valueComparison.classification === CLASSIFICATIONS.LARGE) continue;
+
+    const valueScore = valueComparison.classification === CLASSIFICATIONS.CLOSE ? 3 : 1;
+    const score = locationScore + valueScore;
+
+    scored.push({
+      listing: candidate,
+      matchDetails: {
+        locationTier,
+        locationLabel,
+        valueComparison,
+        score,
+      },
+    });
+  }
+
+  // Deterministic sort: score DESC → absoluteDifference ASC → createdAt DESC
+  scored.sort((a, b) => {
+    if (b.matchDetails.score !== a.matchDetails.score) {
+      return b.matchDetails.score - a.matchDetails.score;
+    }
+    if (a.matchDetails.valueComparison.absoluteDifference !== b.matchDetails.valueComparison.absoluteDifference) {
+      return a.matchDetails.valueComparison.absoluteDifference - b.matchDetails.valueComparison.absoluteDifference;
+    }
+    // createdAt DESC (newer first) — candidates are lean objects, so use
+    // the raw timestamp.
+    return new Date(b.listing.createdAt) - new Date(a.listing.createdAt);
+  });
+
+  // Apply limit.
+  const limited = scored.slice(0, limit);
+
+  res.status(200).json({
+    success: true,
+    sourceListing: {
+      _id: sourceListing._id,
+      title: sourceListing.title,
+      estimatedValue: sourceListing.estimatedValue,
+      location: sourceListing.location,
+      status: sourceListing.status,
+    },
+    matches: limited,
+    count: limited.length,
+  });
+});
+
 module.exports = {
   createListing,
   getListings,
@@ -287,4 +436,6 @@ module.exports = {
   deleteListing,
   getMyListings,
   compareListings,
+  getListingMatches,
 };
+

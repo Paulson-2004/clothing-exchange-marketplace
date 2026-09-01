@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getListingById } from '../api/listingApi';
+import { getListingById, getListingMatches } from '../api/listingApi';
 import { createOrFindConversation } from '../api/chatApi';
 import { useAuth } from '../context/AuthContext';
 import Loader from '../components/common/Loader';
+import EmptyState from '../components/common/EmptyState';
 import ErrorMessage from '../components/common/ErrorMessage';
+import ListingCard from '../components/listing/ListingCard';
 import RequestSwapForm from '../components/swap/RequestSwapForm';
 
 function ItemDetailsPage() {
@@ -17,9 +19,15 @@ function ItemDetailsPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [showSwapForm, setShowSwapForm] = useState(false);
 
+  // Phase 7: Nearby swap matches
+  const [matches, setMatches] = useState([]);
+  const [matchesStatus, setMatchesStatus] = useState('idle'); // 'idle' | 'loading' | 'loaded' | 'error'
+
   useEffect(() => {
     const fetchListing = async () => {
       setStatus('loading');
+      setMatches([]);
+      setMatchesStatus('idle');
       try {
         const data = await getListingById(id);
         setListing(data.listing);
@@ -35,6 +43,23 @@ function ItemDetailsPage() {
     };
     fetchListing();
   }, [id]);
+
+  // Fetch matches once listing loads and is available
+  useEffect(() => {
+    if (!listing || listing.status !== 'available') return;
+
+    const fetchMatches = async () => {
+      setMatchesStatus('loading');
+      try {
+        const data = await getListingMatches(listing._id);
+        setMatches(data.matches || []);
+        setMatchesStatus('loaded');
+      } catch {
+        setMatchesStatus('error');
+      }
+    };
+    fetchMatches();
+  }, [listing]);
 
   if (status === 'loading') return <Loader message="Loading item…" />;
   if (status === 'notfound') {
@@ -153,6 +178,57 @@ function ItemDetailsPage() {
           />
         )}
       </div>
+
+      {/* Phase 7: Nearby Swap Matches */}
+      {listing.status === 'available' && (
+        <div className="matches-section">
+          <h2>Nearby Swap Matches</h2>
+          <p className="matches-subtitle">
+            Items in the same area with a compatible estimated value
+          </p>
+
+          {matchesStatus === 'loading' && <Loader message="Finding nearby matches…" />}
+
+          {matchesStatus === 'error' && (
+            <ErrorMessage
+              message="Could not load nearby matches."
+              onRetry={() => {
+                setMatchesStatus('idle');
+                // Re-trigger effect by updating listing reference
+                setListing((prev) => ({ ...prev }));
+              }}
+            />
+          )}
+
+          {matchesStatus === 'loaded' && matches.length === 0 && (
+            <EmptyState
+              title="No nearby matches"
+              message="There are no items with a compatible value in the same area right now. Check back later!"
+            />
+          )}
+
+          {matchesStatus === 'loaded' && matches.length > 0 && (
+            <div className="matches-grid">
+              {matches.map(({ listing: matchListing, matchDetails }) => (
+                <div key={matchListing._id} className="match-card-wrapper">
+                  <ListingCard listing={matchListing} />
+                  <div className="match-reason">
+                    <span className={`match-tag match-tag-${matchDetails.locationTier}`}>
+                      📍 {matchDetails.locationLabel}
+                    </span>
+                    <span className={`match-tag match-tag-value-${matchDetails.valueComparison.classification === 'Close Match' ? 'close' : 'moderate'}`}>
+                      💰 {matchDetails.valueComparison.classification}
+                      {matchDetails.valueComparison.absoluteDifference > 0
+                        ? ` ($${matchDetails.valueComparison.absoluteDifference} · ${matchDetails.valueComparison.percentageDifference}%)`
+                        : ' (even value)'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

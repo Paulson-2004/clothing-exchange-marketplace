@@ -12,7 +12,7 @@ Unified Mentor Fullstack Web Development Internship
 | 4 | Swap Request System | Core workflow and all tested edge cases verified successfully — 20 of 20 confirmed tests passed (see below) |
 | 5 | Chat / Negotiation | Implemented and tested successfully — 20 of 20 automated backend tests passed, plus manual frontend verification (see below) |
 | 6 | Swap Value Comparator | Complete — 43 of 43 automated integration tests passed (see below) |
-| 7 | Location-Based Matching | Not started |
+| 7 | Location-Based Matching | Complete — 32 of 32 automated integration tests passed (see below) |
 | 8 | Admin Panel | Not started |
 
 ## Phase 4 — Swap Request System
@@ -262,11 +262,86 @@ A dedicated automated test script (`backend/tests/phase6-value-comparator-tests.
 
 No failures occurred in this run. Test data (3 test users, 14 test listings, 1 test swap request) was created and then fully removed by the script's cleanup step; no existing real data was affected.
 
+## Phase 7 — Location-Based Matching
+
+### Implementation Summary
+
+Phase 7 implements deterministic, read-only location proximity and estimated-value matching for swap suggestions:
+
+- **Location Matching Tiers**:
+  - `exact` (Same city): same city AND same state (case-insensitive) — score 3
+  - `state` (Same state): same state, different/missing city — score 2
+  - Missing location: candidate or source lacking state is never matched
+- **Value Compatibility Reuse**:
+  - Calls Phase 6's canonical `compareValues()` directly — zero duplication
+  - `Close Match` (≤20% diff): included, score 3
+  - `Moderate Difference` (≤50% diff): included, score 1
+  - `Large Difference` (>50% diff): excluded
+- **Deterministic Ranking**:
+  - `matchScore = locationScore + valueScore` (range 3–6)
+  - Sorted by: `score DESC → absoluteDifference ASC → createdAt DESC`
+- **Backend API**:
+  - `GET /api/listings/:id/matches?limit=N` (public read-only endpoint)
+  - Excludes source listing, own-owner listings, and non-available (pending/swapped) listings
+- **Frontend Integration**:
+  - `ItemDetailsPage.jsx`: "Nearby Swap Matches" section for available listings
+  - Reuses existing `ListingCard`, `Loader`, `EmptyState`, `ErrorMessage` components
+  - Displays match reason badges (`📍 Location tier`, `💰 Value classification`)
+  - `listingApi.js`: `getListingMatches` helper
+  - `index.css`: styles for `.matches-section`, `.matches-grid`, `.match-reason`, `.match-tag`
+
+### Phase 7 Automated Integration Test Results
+
+The test suite (`backend/tests/phase7-location-matching-tests.js`) was executed against the running backend with disposable test users/listings and tracked cleanup:
+
+| Test Case | Expected Result | Actual Result | Status |
+|---|---|---|---|
+| malformed listing ID -> 400 | 400 | 400 | Passed |
+| nonexistent listing -> 404 | 404 | 404 | Passed |
+| valid listing -> 200 | 200 | 200 | Passed |
+| response has expected structure | true | true | Passed |
+| source listing excluded from results | false | false | Passed |
+| same city+state -> included as "exact" | exact | exact | Passed |
+| same state, diff city -> included as "state" | state | state | Passed |
+| different state -> excluded | not found | not found | Passed |
+| candidate with no location -> excluded | not found | not found | Passed |
+| case-insensitive location matching works | true | true | Passed |
+| no-location source -> 200 | 200 | 200 | Passed |
+| no-location source -> empty matches | 0 | 0 | Passed |
+| no-location source -> has message | true | true | Passed |
+| Close Match (≤20%) -> included | Close Match | Close Match | Passed |
+| Moderate Difference (≤50%) -> included | Moderate Difference | Moderate Difference | Passed |
+| Large Difference (>50%) -> excluded | not found | not found | Passed |
+| equal value -> included as Close Match | Close Match | Close Match | Passed |
+| equal value -> 0% difference | 0 | 0 | Passed |
+| both zero-value -> included as Close Match | Close Match | Close Match | Passed |
+| exactly 20% diff -> Close Match | Close Match | Close Match | Passed |
+| exactly 50% diff -> Moderate Difference | Moderate Difference | Moderate Difference | Passed |
+| pending listing -> excluded from matches | not found | not found | Passed |
+| swapped listing -> excluded from matches | not found | not found | Passed |
+| exact match ranked above state match | true | true | Passed |
+| no duplicates in results | 6 | 6 | Passed |
+| match metadata structure correct | true | true | Passed |
+| own-owner listings excluded | false | false | Passed |
+| limit=1 returns at most 1 match | true | true | Passed |
+| matches request does NOT modify source listing | true | true | Passed |
+| matches request does NOT create swap requests | 2 | 2 | Passed |
+| matches request does NOT create conversations | 2 | 2 | Passed |
+| endpoint works without authentication | 200 | 200 | Passed |
+
+**Final result:**
+- Passed: 32
+- Failed: 0
+- Total: 32
+
+Test data (4 test users, 16 test listings) was created and then fully removed by the script's cleanup step; no existing real data was affected.
+
 ## Notes
 
 - This document reflects only test results explicitly confirmed by testing runs.
   - Phase 4: 20 confirmed tests (5 manual UI + 15 automated backend integration tests), all passed, 0 failed.
   - Phase 5: 20 automated backend integration test cases, all passed, 0 failed, plus manually-confirmed frontend UI behaviors.
   - Phase 6: 43 automated backend integration test cases, all passed, 0 failed.
-- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`) are standalone test files separate from the application source code.
+  - Phase 7: 32 automated backend integration test cases, all passed, 0 failed.
+- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`, `backend/tests/phase7-location-matching-tests.js`) are standalone test files separate from the application source code.
 - Any test case not explicitly listed as Passed has not been verified and should not be assumed to pass.

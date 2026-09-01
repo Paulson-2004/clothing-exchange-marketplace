@@ -14,8 +14,9 @@ A practical roadmap for continuing development **from the current repository sta
 | 4 | Swap Request System | Complete, tested | 20/20 tests passed (5 manual UI + 15 automated backend), see `PROJECT_REPORT.md` |
 | 5 | Chat & Negotiation | Complete, tested | 20/20 automated backend tests passed + manual frontend verification, see `PROJECT_REPORT.md` |
 | 6 | Swap Value Comparator | Complete, tested | 43/43 automated backend integration tests passed, see `PROJECT_REPORT.md` |
+| 7 | Location-Based Matching | Complete, tested | 32/32 automated backend integration tests passed, see `PROJECT_REPORT.md` |
 
-All six of the above are genuinely working, not just planned — verified by automated test suites against the live backend.
+All seven of the above are genuinely working, not just planned — verified by automated test suites against the live backend.
 
 ---
 
@@ -31,20 +32,21 @@ Status: **Complete and tested.**
 
 ---
 
-## 3. Remaining Phases
+## 3. Phase 7 — Location-Based Matching (Complete)
 
-### Phase 7 — Location-Based Matching
-**Not started. No code exists.**
+**Suggesting potential swap matches based on location proximity and compatible estimated value.**
 
-Requirements (from `requirements.md` §1.7):
-- Filter listings by location — **already partially done** (exact city/state filter exists in `GET /api/listings`); this phase is really about the two pieces that don't exist yet:
-- Show nearby swap opportunities — not started
-- Suggest potential matches based on location + compatible estimated value — not started
+Status: **Complete and tested.**
+- Hierarchical location proximity matching: `exact` (same city + state) vs `state` (same state).
+- Reuses Phase 6's canonical `compareValues()` directly — `Close Match` (≤20%) and `Moderate Difference` (≤50%) included; `Large Difference` (>50%) excluded.
+- Deterministic scoring: `matchScore = locationScore + valueScore`, sorted by `score DESC → absoluteDifference ASC → createdAt DESC`.
+- Public read-only endpoint: `GET /api/listings/:id/matches?limit=N`.
+- Frontend integration: "Nearby Swap Matches" section on `ItemDetailsPage.jsx` with match badges, reusing `ListingCard`, `Loader`, `EmptyState`, `ErrorMessage`.
+- 32/32 automated integration tests passed in `backend/tests/phase7-location-matching-tests.js`.
 
-Recommended approach (not yet agreed/built, offered as a starting point only):
-- No geocoding/external maps API per original project constraints ("Do NOT implement geocoding, GPS, or an external maps API... Location matching can prioritize same city, same state").
-- A "matches" endpoint could reasonably live at something like `GET /api/listings/:id/matches` or `GET /api/matches`, computing candidate listings where `location.city`/`location.state` matches the target and `estimatedValue` falls within some tolerance — this would naturally reuse the comparison utility built in Phase 6, which is one reason to finish Phase 6 first.
-- Needs its own explicit design/approval pass before implementation, per this project's established pattern (architecture proposal → wait for confirmation → implement).
+---
+
+## 4. Remaining Phases
 
 ### Phase 8 — Admin Panel
 **Not started. Only foundational pieces exist** (`role` field, `requireAdmin` middleware, `seedAdmin.js`).
@@ -62,24 +64,24 @@ Not tracked as its own numbered phase anywhere, but flagged here because it's an
 
 ---
 
-## 4. Dependencies Between Tasks
+## 5. Dependencies Between Tasks
 
-- **Phase 6 (Swap Value Comparator) is complete and unblocks Phase 7 (Location-Based Matching)**, whose "compatible estimated value" matching will reuse Phase 6's comparison logic (`compareValues`).
-- **Phase 8 (Admin Panel) has no hard dependency** on Phases 6 or 7 — it could be built in parallel or before them. It only depends on infrastructure that already exists (`requireAdmin`, `role`, `ProtectedRoute`'s `adminOnly` prop).
-- **No remaining phase requires touching Phases 1–5.** All prior work is additive-only by established project convention (see `architecture.md` §9, point 5 as the clearest example) — continue that pattern.
+- **Phases 6 and 7 are complete.** Phase 7 successfully reuses Phase 6's `compareValues()` for value compatibility.
+- **Phase 8 (Admin Panel) has no hard dependency** on Phases 6 or 7. It depends on infrastructure that already exists (`requireAdmin`, `role`, `ProtectedRoute`'s `adminOnly` prop).
+- **No remaining phase requires touching Phases 1–7.** All prior work is additive-only by established project convention — continue that pattern.
 
 ---
 
-## 5. Recommended Implementation Order
+## 6. Recommended Implementation Order
 
 1. **Phase 6 — Swap Value Comparator** — Complete and tested (43/43 automated backend integration tests passed).
-2. **Phase 7 — Location-Based Matching** (Next phase) — needs its own architecture proposal + explicit sign-off before coding, per established project process.
-3. **Phase 8 — Admin Panel** — can be done before or after Phase 7 without penalty; recommend after, purely to keep the "value/matching" conceptual thread together, but this is a preference, not a hard requirement.
+2. **Phase 7 — Location-Based Matching** — Complete and tested (32/32 automated backend integration tests passed).
+3. **Phase 8 — Admin Panel** (Next phase) — needs its own architecture proposal + explicit sign-off before coding, per established project process.
 4. **(Optional, unscheduled) Build out `DashboardPage.jsx`** into something real — low risk, no dependencies, could be slotted in anywhere.
 
 ---
 
-## 6. Important Prerequisites for Any New Work
+## 7. Important Prerequisites for Any New Work
 
 - **Do not modify `backend/.env`** — it contains real, working credentials (Mongo, JWT secret, Cloudinary, admin seed). Only `.env.example` should ever be edited to document new variables.
 - **Do not run `cp .env.example .env`** — this has been an explicit standing instruction throughout the project and would destroy working config.
