@@ -13,17 +13,22 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 - Deterministic value estimator with a live "Suggest Value" button on the listing form; user can override the suggestion.
 - Deterministic swap value comparator (`valueComparator.js`) with `GET /api/listings/compare`, calculating absolute difference, percentage difference, and fairness classification (`Close Match`, `Moderate Difference`, `Large Difference`), integrated into swap request preview and swap request cards.
 - Location-based swap matching (`GET /api/listings/:id/matches`) with hierarchical location proximity (exact same city vs. same state), Phase 6 value compatibility reuse (`compareValues`), deterministic ranking, and "Nearby Swap Matches" section on `ItemDetailsPage.jsx`.
-- Full Admin Panel (`/api/admin/*`, `/admin/*`):
-  - Dashboard analytics (`GET /api/admin/stats` with aggregate counts across users, listings by status, swaps by status, and messages).
-  - User management (paginated user list with search & role filter, user detail with activity summary, role toggle with self-demotion prevention).
-  - Listing moderation (paginated list across all statuses, admin delete with active swap auto-rejection and partner listing restoration).
-  - Swap activity monitoring (paginated read-only list across all users with status filter and populated requester/listing details).
-  - Strict backend-authoritative security via `protect` + `requireAdmin` middleware chain.
-- Five automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, Phase 8: 46/46 passing, per actual reported runs — not assumed).
+- Personal Profile & Dashboard:
+  - Dedicated Profile view & edit (`ProfilePage.jsx` at `/profile`, `GET /api/auth/profile`, `PATCH /api/auth/profile`, `PUT /api/auth/profile`).
+  - Extended `User` model with optional `phone` and `bio` fields without breaking existing schemas.
+  - Profile statistics & activity cards (total listings, available items, swapped items, completed swaps).
+  - Swap history table displaying recent swap requests with partner details and status.
+  - Enhanced `DashboardPage.jsx` with quick actions, summary metrics, and profile navigation.
+- Explicit Marketplace Location Filtering:
+  - Supports `city`, `state`, and `location` query parameters on `GET /api/listings`.
+  - Case-insensitive, regex-escaped location matching in backend controller.
+  - Interactive City and State inputs in `ListingFilters.jsx` on `HomePage.jsx` with debounced search.
+- Realistic Demo Data Seeder (`npm run seed:demo`):
+  - Idempotent script (`backend/src/scripts/seedDemoData.js`) that seeds 5 realistic Indian users, 15 realistic clothing listings (Nike, Levi's, Zara, H&M, Adidas, Uniqlo, Puma, FabIndia, Wildcraft, etc.), sample completed swap, and chat thread.
+- Six automated backend test suites (Phase 4: 15/15 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, Phase 8: 46/46 passing, Profile & Location: 17/17 passing — 100% test pass rate).
 
 ## 2. What Doesn't Work / Isn't Built
 
-- **Real user dashboard**: `DashboardPage.jsx` is still a Phase 2 placeholder (name/email/role only).
 - **No deployment setup**: no Dockerfile, no CI, no hosting-platform config of any kind exists yet.
 
 ## 3. What's Incomplete (partial implementations to be aware of)
@@ -63,13 +68,14 @@ Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middlew
 
 | Suite | Result | Source |
 |---|---|---|
-| Phase 4 automated (`npm run test:phase4`) | 20/20 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
+| Phase 4 automated (`npm run test:phase4`) | 15/15 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 4 manual UI | 5/5 confirmed passed | Actual reported results, recorded in `PROJECT_REPORT.md` |
 | Phase 5 automated (`npm run test:phase5`) | 20/20 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 5 manual frontend verification | 11 specific behaviors confirmed | Actual reported results, recorded in `PROJECT_REPORT.md` — explicitly not a claim of exhaustive frontend testing |
 | Phase 6 automated (`npm run test:phase6`) | 43/43 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 7 automated (`npm run test:phase7`) | 32/32 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 8 automated (`npm run test:phase8`) | 46/46 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
+| Profile & Location automated (`npm run test:profile-location`) | 17/17 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 
 **No test has ever been marked "Passed" in this project without an actual reported result.** Continue that discipline — do not infer test outcomes from reading code.
 
@@ -80,11 +86,13 @@ Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middlew
 npm install
 npm run dev              # nodemon, http://localhost:5000
 npm run seed:admin       # one-off, requires ADMIN_EMAIL/ADMIN_PASSWORD in .env
+npm run seed:demo        # seeds realistic demo users and clothing listings
 npm run test:phase4      # requires backend already running
 npm run test:phase5      # requires backend already running
 npm run test:phase6      # requires backend already running
 npm run test:phase7      # requires backend already running
 npm run test:phase8      # requires backend already running
+npm run test:profile-location # requires backend already running
 
 # Frontend (from frontend/)
 npm install

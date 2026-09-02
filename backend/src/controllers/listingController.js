@@ -73,10 +73,10 @@ const createListing = asyncHandler(async (req, res) => {
 
 // GET /api/listings
 // Public. Supports search + filtering via query params:
-//   search, category, size, condition, city, state, status
+//   search, category, size, condition, city, state, location, status
 // Defaults to only 'available' listings unless a status is explicitly requested.
 const getListings = asyncHandler(async (req, res) => {
-  const { search, category, size, condition, city, state, status } = req.query;
+  const { search, category, size, condition, city, state, location, status } = req.query;
 
   const query = {};
 
@@ -86,8 +86,25 @@ const getListings = asyncHandler(async (req, res) => {
   if (category) query.category = category;
   if (size) query.size = size;
   if (condition) query.condition = condition;
-  if (city) query['location.city'] = new RegExp(`^${city}$`, 'i');
-  if (state) query['location.state'] = new RegExp(`^${state}$`, 'i');
+
+  if (city && city.trim()) {
+    const escapedCity = city.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    query['location.city'] = new RegExp(`^${escapedCity}$`, 'i');
+  }
+  if (state && state.trim()) {
+    const escapedState = state.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    query['location.state'] = new RegExp(`^${escapedState}$`, 'i');
+  }
+  if (location && location.trim() && !city && !state) {
+    const escapedLoc = location.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const locRegex = new RegExp(escapedLoc, 'i');
+    query.$or = [
+      { 'location.city': locRegex },
+      { 'location.state': locRegex },
+      { 'location.country': locRegex },
+    ];
+  }
+
   query.status = status || 'available';
 
   const listings = await Listing.find(query)

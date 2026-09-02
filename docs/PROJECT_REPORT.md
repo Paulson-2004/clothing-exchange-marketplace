@@ -14,6 +14,7 @@ Unified Mentor Fullstack Web Development Internship
 | 6 | Swap Value Comparator | Complete — 43 of 43 automated integration tests passed (see below) |
 | 7 | Location-Based Matching | Complete — 32 of 32 automated integration tests passed (see below) |
 | 8 | Admin Panel | Complete — 46 of 46 automated integration tests passed (see below) |
+| Compliance | Personal Profile, Location Filtering & Realistic Demo Data | Complete — 17 of 17 automated integration tests passed (see below) |
 
 ## Phase 4 — Swap Request System
 
@@ -424,6 +425,61 @@ The test suite (`backend/tests/phase8-admin-panel-tests.js`) was executed agains
 
 Test data (4 test users, 5 test listings, 2 test swap requests, 1 conversation, 1 message) was created and then fully removed by the script's cleanup step; no existing real data was affected.
 
+## Compliance Improvements — Personal Profile, Location Filtering & Realistic Demo Data
+
+### Implementation Summary
+
+To address all remaining requirements compliance and presentation gaps:
+
+1. **Personal Profile Experience**:
+   - Extended `User` model with optional `phone` and `bio` fields (retaining defaults and backwards compatibility).
+   - Created protected backend endpoints `GET /api/auth/profile`, `PATCH /api/auth/profile`, and `PUT /api/auth/profile`.
+   - `GET /api/auth/profile`: Returns safe user data (without password hash or sensitive auth credentials), aggregated activity counts (total listings, available items, swapped items, sent/incoming/completed swaps), and recent swap history.
+   - `PATCH /api/auth/profile`: Allows users to update name (max 80 chars), phone, bio (max 300 chars), and location (`{city, state, country}`). Email, role, and password hashes are strictly immutable.
+   - Frontend: Created `frontend/src/pages/ProfilePage.jsx` at `/profile` supporting view mode (contact details, location, activity metrics, recent swap history table) and edit mode. Created `frontend/src/api/authApi.js`.
+   - Updated `DashboardPage.jsx` to display a clean overview dashboard with quick action links and member metrics.
+
+2. **Explicit Marketplace Location Filtering**:
+   - Backend `GET /api/listings` enhanced to accept `city`, `state`, and `location` query parameters with case-insensitive, regex-escaped matching.
+   - Preserves all existing filters (`category`, `size`, `condition`, `search`, `status`).
+   - Frontend `ListingFilters.jsx` provides interactive, styled City and State inputs with debounced live search.
+   - Phase 7 location-based swap matching remains completely intact and verified.
+
+3. **Realistic Demo Data Seeder**:
+   - Dedicated seed script: `backend/src/scripts/seedDemoData.js` (`npm run seed:demo`).
+   - Idempotent script that seeds 5 realistic Indian users (Aarav Sharma, Priya Patel, Rohan Verma, Ananya Iyer, Vikram Malhotra) and 15 realistic clothing items across brands like Nike, Levi's, Zara, H&M, Adidas, Uniqlo, Puma, FabIndia, Wildcraft with authentic descriptions, sizes, categories, and estimated values.
+   - Seeds sample completed swap and negotiation thread.
+   - Completely isolated from automated test suites.
+
+### Automated Integration Test Results
+
+The test suite (`backend/tests/profile-and-location-tests.js`) was executed against the running backend with disposable test fixtures and tracked cleanup:
+
+| Test Case | Expected Result | Actual Result | Status |
+|---|---|---|---|
+| unauthenticated GET /auth/profile -> 401 | 401 | 401 | Passed |
+| authenticated GET /auth/profile -> 200 with activity data | true | true | Passed |
+| profile payload never returns passwordHash | false | false | Passed |
+| unauthenticated PATCH /auth/profile -> 401 | 401 | 401 | Passed |
+| valid profile update succeeds -> 200 | true | true | Passed |
+| protected fields (email, role) immutable via profile update | true | true | Passed |
+| empty name rejected -> 400 | 400 | 400 | Passed |
+| name > 80 chars rejected -> 400 | 400 | 400 | Passed |
+| bio > 300 chars rejected -> 400 | 400 | 400 | Passed |
+| filter city=Bengaluru returns matching items | true | true | Passed |
+| filter state=Maharashtra returns matching items | true | true | Passed |
+| filter location=Delhi returns matching items | true | true | Passed |
+| combined category and city filter returns intersection | true | true | Passed |
+| case-insensitive city search works (bengaluru) | true | true | Passed |
+| non-matching location returns 200 with 0 items | true | true | Passed |
+| marketplace browse excludes non-available items | true | true | Passed |
+| regression: Phase 7 location matching remains functional | true | true | Passed |
+
+**Final result:**
+- Passed: 17
+- Failed: 0
+- Total: 17
+
 ## Notes
 
 - This document reflects only test results explicitly confirmed by testing runs.
@@ -432,5 +488,6 @@ Test data (4 test users, 5 test listings, 2 test swap requests, 1 conversation, 
   - Phase 6: 43 automated backend integration test cases, all passed, 0 failed.
   - Phase 7: 32 automated backend integration test cases, all passed, 0 failed.
   - Phase 8: 46 automated backend integration test cases, all passed, 0 failed.
-- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`, `backend/tests/phase7-location-matching-tests.js`, `backend/tests/phase8-admin-panel-tests.js`) are standalone test files separate from the application source code.
+  - Compliance (Profile & Location): 17 automated backend integration test cases, all passed, 0 failed.
+- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`, `backend/tests/phase7-location-matching-tests.js`, `backend/tests/phase8-admin-panel-tests.js`, `backend/tests/profile-and-location-tests.js`) are standalone test files separate from the application source code.
 - Any test case not explicitly listed as Passed has not been verified and should not be assumed to pass.

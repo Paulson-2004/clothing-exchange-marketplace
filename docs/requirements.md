@@ -8,13 +8,13 @@ Status legend: **Implemented** (working, present in code) / **Partially Implemen
 
 ## 1. Core Functional Requirements
 
-### 1.1 User Authentication — **Implemented**
+### 1.1 User Authentication & Personal Profile — **Implemented**
 - Register, login, logout — Implemented (`authController.js`, `authRoutes.js`)
 - Protected routes (frontend) — Implemented (`ProtectedRoute.jsx`)
 - Protected routes (backend) — Implemented (`protect` middleware)
-- User profiles — **Partially Implemented**: `User` model has `name`, `email`, `location`; there is no dedicated profile view/edit page. `DashboardPage.jsx` shows name/email/role only, read-only.
+- User profiles — **Implemented**: `User` model extended with optional `phone` and `bio`; dedicated `ProfilePage.jsx` at `/profile` (view & edit mode, contact details, location, activity summary, recent swap history); backend endpoints `GET /api/auth/profile`, `PATCH /api/auth/profile`, `PUT /api/auth/profile`; `DashboardPage.jsx` enhanced with activity overview and quick action cards.
 - Secure password handling — Implemented (bcryptjs, salted hash, `select: false` on schema)
-- User roles (user/admin) — **Partially Implemented**: the `role` field, `requireAdmin` middleware, and `seedAdmin.js` script all exist, but no route or UI actually checks/uses the admin role yet.
+- User roles (user/admin) — Implemented: `role` field, `requireAdmin` middleware, `seedAdmin.js`, and full Phase 8 Admin Panel with role toggling.
 
 ### 1.2 Clothing Listings — **Implemented**
 - Create listing — Implemented
@@ -92,15 +92,15 @@ Status legend: **Implemented** (working, present in code) / **Partially Implemen
 | # | Page | Status |
 |---|---|---|
 | 1 | Login / Register | Implemented (two separate pages: `LoginPage.jsx`, `RegisterPage.jsx`) |
-| 2 | Home / Clothing Listings | Implemented (`HomePage.jsx`) |
+| 2 | Home / Clothing Listings | Implemented (`HomePage.jsx` with category, condition, size, and explicit city/state/location filtering) |
 | 3 | Item Details | Implemented (`ItemDetailsPage.jsx`) |
 | 4 | Create/Edit Listing | Implemented (`CreateEditListingPage.jsx`, shared component) |
 | 5 | Swap Requests | Implemented (`SwapRequestsPage.jsx`) |
 | 6 | Chat | Implemented (`ChatPage.jsx`) |
-| 7 | User Dashboard | **Partially Implemented** — page exists and is routed, but is still the minimal Phase 2 placeholder (name/email/role only) |
+| 7 | User Dashboard & Profile | Implemented (`DashboardPage.jsx` for member activity overview + quick actions; `ProfilePage.jsx` for personal profile view & edit and swap history) |
 | 8 | Admin Panel | Implemented (`AdminDashboardPage.jsx`, `AdminUsersPage.jsx`, `AdminUserDetailPage.jsx`, `AdminListingsPage.jsx`, `AdminSwapsPage.jsx`) |
 
-Additionally implemented but not in the original 6–8 list: `MyListingsPage.jsx` (a practical necessity for listing management, reasonably considered part of "User Dashboard" territory but built as its own route).
+Additionally implemented: `MyListingsPage.jsx` (listing inventory management) and `ProfilePage.jsx` (personal profile view/edit at `/profile`).
 
 ---
 

@@ -110,6 +110,12 @@ clothing-exchange/
 - Frontend: 5 admin pages, reusable table rows, modal confirmation, pagination, and `<ProtectedRoute adminOnly>` route gating
 - 46/46 automated backend integration tests passed
 
+### Compliance Improvements — Profile, Location Filter & Realistic Demo Data
+- **Personal Profile & Dashboard**: Dedicated `ProfilePage.jsx` (`/profile`), protected `GET/PATCH/PUT /api/auth/profile`, activity summary metrics, recent swap history table, and enhanced `DashboardPage.jsx` overview
+- **Explicit Marketplace Location Filtering**: Backend `GET /api/listings` supports `city`, `state`, and `location` filters with case-insensitive search; frontend `ListingFilters.jsx` provides interactive city & state inputs with live debounced search
+- **Realistic Demo Data Seeder**: `backend/src/scripts/seedDemoData.js` (`npm run seed:demo`) seeds 5 realistic Indian users and 15 authentic clothing items (Nike, Levi's, Zara, H&M, Adidas, Uniqlo, FabIndia, Wildcraft, etc.)
+- 17/17 automated backend integration tests passed
+
 ---
 
 ## Setup & Running
@@ -121,6 +127,11 @@ npm install
 cp .env.example .env
 ```
 Edit `.env` and fill in your values (`MONGO_URI`, `JWT_SECRET`, Cloudinary credentials, etc.).
+
+Seed realistic demo data (optional):
+```bash
+npm run seed:demo
+```
 
 Run the server:
 ```bash
@@ -143,11 +154,12 @@ npm run dev
 ### 3. Automated Test Suites
 Run test scripts from the `backend/` directory while the backend server is running:
 ```bash
-npm run test:phase4     # Phase 4 Swap Request tests (20/20 confirmed)
-npm run test:phase5     # Phase 5 Chat & Negotiation tests (20/20 passed)
-npm run test:phase6     # Phase 6 Swap Value Comparator tests (43/43 passed)
-npm run test:phase7     # Phase 7 Location-Based Matching tests (32/32 passed)
-npm run test:phase8     # Phase 8 Admin Panel tests (46/46 passed)
+npm run test:phase4            # Phase 4 Swap Request tests (15/15 passed)
+npm run test:phase5            # Phase 5 Chat & Negotiation tests (20/20 passed)
+npm run test:phase6            # Phase 6 Swap Value Comparator tests (43/43 passed)
+npm run test:phase7            # Phase 7 Location-Based Matching tests (32/32 passed)
+npm run test:phase8            # Phase 8 Admin Panel tests (46/46 passed)
+npm run test:profile-location  # Profile & Location Filter tests (17/17 passed)
 ```
 
 

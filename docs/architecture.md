@@ -105,13 +105,15 @@ clothing-exchange/
 │   │   │   ├── valueEstimator.js   deterministic swap-value formula
 │   │   │   └── valueComparator.js  deterministic value comparison & classification formula (Phase 6)
 │   │   └── scripts/
-│   │       └── seedAdmin.js        manual, one-off admin-account creation (npm run seed:admin)
+│   │       ├── seedAdmin.js        manual, one-off admin-account creation (npm run seed:admin)
+│   │       └── seedDemoData.js     realistic demo clothing data seeder (npm run seed:demo)
 │   └── tests/
 │       ├── phase4-swap-tests.js    standalone integration test script (real HTTP calls)
 │       ├── phase5-chat-tests.js    standalone integration test script (real HTTP calls)
 │       ├── phase6-value-comparator-tests.js standalone integration test script (real HTTP calls)
 │       ├── phase7-location-matching-tests.js standalone integration test script (real HTTP calls)
-│       └── phase8-admin-panel-tests.js standalone integration test script (real HTTP calls)
+│       ├── phase8-admin-panel-tests.js standalone integration test script (real HTTP calls)
+│       └── profile-and-location-tests.js standalone integration test script (real HTTP calls)
 └── frontend/
     ├── index.html
     ├── vite.config.js
@@ -163,7 +165,8 @@ clothing-exchange/
             ├── HomePage.jsx              marketplace / browse listings (public)
             ├── LoginPage.jsx
             ├── RegisterPage.jsx
-            ├── DashboardPage.jsx         MINIMAL PLACEHOLDER — see Known Limitations
+            ├── DashboardPage.jsx         member dashboard overview + quick actions
+            ├── ProfilePage.jsx           personal profile view/edit & swap history (/profile)
             ├── ItemDetailsPage.jsx
             ├── CreateEditListingPage.jsx  shared component for both create and edit
             ├── MyListingsPage.jsx
@@ -191,6 +194,8 @@ MongoDB via Mongoose. Five collections exist. All schemas use `{ timestamps: tru
 | email | String | required, unique, lowercase, regex-validated |
 | passwordHash | String | required, `select: false` (never returned by default queries) |
 | role | String | enum `['user','admin']`, default `'user'` |
+| phone | String | optional, trimmed contact number, default `''` |
+| bio | String | optional, trimmed bio/preferences, max 300, default `''` |
 | location | `{city, state, country}` | all optional strings, default `''` |
 
 ### Listing
@@ -278,6 +283,9 @@ All routes are mounted under `/api` in `backend/src/app.js`, in this exact order
 | POST | /login | public | sets cookie, 200 |
 | POST | /logout | public (intentionally not `protect`-gated) | clears cookie |
 | GET | /me | protected | returns current user |
+| GET | /profile | protected | returns safe user + activity statistics + recent swap history |
+| PATCH | /profile | protected | updates name, phone, bio, location; protected fields immutable |
+| PUT | /profile | protected | alias to PATCH /profile |
 
 ### Listings (`/api/listings`)
 | Method | Path | Auth | Notes |

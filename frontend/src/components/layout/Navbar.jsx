@@ -24,6 +24,7 @@ function Navbar() {
             <Link to="/swap-requests">Swap Requests</Link>
             <Link to="/chat">Chat</Link>
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/profile">Profile</Link>
             <span className="navbar-user">Hi, {user.name}</span>
             <button className="btn btn-secondary" onClick={handleLogout}>
               Logout
