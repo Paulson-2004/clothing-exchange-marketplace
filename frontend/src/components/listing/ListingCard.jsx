@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+
+const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
 
 const STATUS_LABELS = {
   available: 'Available',
@@ -8,15 +11,21 @@ const STATUS_LABELS = {
 
 function ListingCard({ listing }) {
   const { _id, title, brand, size, condition, estimatedValue, location, status, images, owner } = listing;
+  const [currentSrc, setCurrentSrc] = useState(images?.[0] || DEFAULT_FALLBACK_IMAGE);
+
+  useEffect(() => {
+    setCurrentSrc(images?.[0] || DEFAULT_FALLBACK_IMAGE);
+  }, [images]);
 
   return (
     <Link to={`/listings/${_id}`} className="listing-card">
       <div className="listing-card-image">
-        {images && images.length > 0 ? (
-          <img src={images[0]} alt={title} loading="lazy" />
-        ) : (
-          <div className="listing-card-image-placeholder">No Image</div>
-        )}
+        <img
+          src={currentSrc}
+          alt={title}
+          loading="lazy"
+          onError={() => setCurrentSrc(DEFAULT_FALLBACK_IMAGE)}
+        />
         <span className={`listing-status listing-status-${status}`}>{STATUS_LABELS[status] || status}</span>
       </div>
 

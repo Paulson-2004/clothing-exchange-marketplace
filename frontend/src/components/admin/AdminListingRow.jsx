@@ -15,6 +15,9 @@ function AdminListingRow({ listing, onDelete }) {
               src={listing.images[0]}
               alt={listing.title}
               className="admin-listing-thumb"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+              }}
             />
           )}
           <Link to={`/listings/${listing._id}`}>{listing.title}</Link>

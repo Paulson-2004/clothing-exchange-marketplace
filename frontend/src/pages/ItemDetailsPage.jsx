@@ -90,7 +90,13 @@ function ItemDetailsPage() {
       <div className="item-details-images">
         <div className="item-details-main-image">
           {listing.images && listing.images.length > 0 ? (
-            <img src={listing.images[activeImage]} alt={listing.title} />
+            <img
+              src={listing.images[activeImage]}
+              alt={listing.title}
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+              }}
+            />
           ) : (
             <div className="listing-card-image-placeholder">No Image</div>
           )}
@@ -104,6 +110,9 @@ function ItemDetailsPage() {
                 alt={`${listing.title} thumbnail ${index + 1}`}
                 className={index === activeImage ? 'active' : ''}
                 onClick={() => setActiveImage(index)}
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+                }}
               />
             ))}
           </div>

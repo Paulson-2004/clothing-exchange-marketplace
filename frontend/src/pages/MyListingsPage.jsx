@@ -65,9 +65,12 @@ function MyListingsPage() {
           {listings.map((listing) => (
             <div key={listing._id} className="my-listing-row">
               <img
-                src={listing.images?.[0] || ''}
+                src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
                 alt={listing.title}
                 className="my-listing-thumb"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+                }}
               />
               <div className="my-listing-info">
                 <Link to={`/listings/${listing._id}`}>

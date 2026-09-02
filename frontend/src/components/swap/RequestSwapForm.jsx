@@ -82,7 +82,13 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
                   checked={selectedId === listing._id}
                   onChange={() => setSelectedId(listing._id)}
                 />
-                <img src={listing.images?.[0] || ''} alt={listing.title} />
+                <img
+                  src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
+                  alt={listing.title}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+                  }}
+                />
                 <div>
                   <p className="swap-mini-title">{listing.title}</p>
                   <p className="swap-mini-value">Est. ${listing.estimatedValue}</p>
