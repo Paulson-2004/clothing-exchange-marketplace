@@ -162,4 +162,41 @@ npm run test:phase8            # Phase 8 Admin Panel tests (46/46 passed)
 npm run test:profile-location  # Profile & Location Filter tests (17/17 passed)
 ```
 
+---
+
+## Production Deployment Guide
+
+### A. Backend Deployment (Render)
+1. In Render Dashboard, click **New +** $\rightarrow$ **Web Service**.
+2. Connect your GitHub repository: `clothing-exchange-marketplace`.
+3. Configure service settings:
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
+   - **Health Check Path**: `/api/health`
+4. Add Environment Variables in Render:
+   - `NODE_ENV`: `production`
+   - `PORT`: `5000`
+   - `CLIENT_URL`: `https://<your-vercel-project>.vercel.app`
+   - `MONGO_URI`: *(Your MongoDB Atlas connection string)*
+   - `JWT_SECRET`: *(Your random JWT secret)*
+   - `CLOUDINARY_CLOUD_NAME`: *(Your Cloudinary cloud name)*
+   - `CLOUDINARY_API_KEY`: *(Your Cloudinary API key)*
+   - `CLOUDINARY_API_SECRET`: *(Your Cloudinary API secret)*
+   - `ADMIN_EMAIL`: `admin@example.com`
+   - `ADMIN_PASSWORD`: `changeme123`
+5. Click **Deploy Web Service**.
+
+### B. Frontend Deployment (Vercel)
+1. In Vercel Dashboard, click **Add New...** $\rightarrow$ **Project**.
+2. Import your GitHub repository: `clothing-exchange-marketplace`.
+3. Configure project settings:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Add Environment Variable in Vercel:
+   - `VITE_API_BASE_URL`: `https://<your-render-backend-url>.onrender.com/api`
+5. Click **Deploy**. Vercel SPA routing is automatically handled via `frontend/vercel.json`.
+
 

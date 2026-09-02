@@ -409,13 +409,33 @@ cd frontend && npm install && npm run dev     # vite, port 5173
 # One-off admin creation (manual, not automatic)
 cd backend && npm run seed:admin
 
+# Demo realistic clothing data seeder
+cd backend && npm run seed:demo
+
 # Automated test suites (require the backend already running)
 cd backend && npm run test:phase4
 cd backend && npm run test:phase5
 cd backend && npm run test:phase6
 cd backend && npm run test:phase7
 cd backend && npm run test:phase8
+cd backend && npm run test:profile-location
 ```
+
+### Production Deployment Architecture
+- **Backend (Render)**:
+  - Runtime: Node.js (Web Service)
+  - Root directory: `backend`
+  - Build command: `npm install`
+  - Start command: `node server.js`
+  - Health check path: `/api/health`
+  - Environment variables: `NODE_ENV=production`, `PORT=5000`, `CLIENT_URL=https://<your-vercel-app>.vercel.app`, `MONGO_URI`, `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+- **Frontend (Vercel)**:
+  - Framework Preset: `Vite`
+  - Root directory: `frontend`
+  - Build command: `npm run build`
+  - Output directory: `dist`
+  - SPA Rewrites: Configured via `frontend/vercel.json` (`rewrites: [{"source": "/(.*)", "destination": "/index.html"}]`)
+  - Environment variables: `VITE_API_BASE_URL=https://<your-render-backend>.onrender.com/api`
 
 ---
 

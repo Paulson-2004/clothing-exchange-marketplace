@@ -9,12 +9,17 @@ const COOKIE_NAME = 'token';
 // Shared cookie options so login and register stay in sync, and logout
 // can clear the cookie with matching options (browsers require the
 // clearCookie options to match the ones used to set it).
-const cookieOptions = () => ({
-  httpOnly: true, // not accessible to JS -> protects against XSS token theft
-  secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-  sameSite: 'lax', // sent on top-level navigation & same-site requests
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, matches JWT expiry
-});
+// In production (Vercel <-> Render cross-domain), sameSite: 'none' and secure: true
+// are required for the browser to include the httpOnly cookie with cross-origin requests.
+const cookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true, // not accessible to JS -> protects against XSS token theft
+    secure: isProduction, // HTTPS only in production
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-origin production, 'lax' for local dev
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, matches JWT expiry
+  };
+};
 
 // Strips sensitive/internal fields before sending a user back to the client.
 const toSafeUser = (user) => ({
