@@ -19,6 +19,7 @@ function Navbar() {
       <div className="navbar-links">
         {isAuthenticated ? (
           <>
+            {user?.role === 'admin' && <Link to="/admin">Admin Panel</Link>}
             <Link to="/my-listings">My Listings</Link>
             <Link to="/swap-requests">Swap Requests</Link>
             <Link to="/chat">Chat</Link>

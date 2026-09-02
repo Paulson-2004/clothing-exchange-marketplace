@@ -2,7 +2,7 @@
 
 A sustainable clothing exchange platform where users list, browse, and swap clothing items without money changing hands.
 
-**Status: Phase 7 — Location-Based Matching (Complete)**
+**Status: Complete (Phases 1–8 Implemented & Verified)**
 
 ## Stack
 - Frontend: React (Vite), React Router, Axios
@@ -12,6 +12,7 @@ A sustainable clothing exchange platform where users list, browse, and swap clot
 - Images: Cloudinary (Phase 3)
 - Real-time Negotiation: REST polling chat (Phase 5)
 - Valuation & Matching: Deterministic value estimator (Phase 3), comparison utility (Phase 6), and location-based matching (Phase 7)
+- Administration: Full admin panel with dashboard analytics, user management, listing moderation, and swap activity monitoring (Phase 8)
 
 ## Project Structure
 ```
@@ -32,7 +33,7 @@ clothing-exchange/
 | 5 | Chat & Negotiation | Complete | Polling chat, swap-linked headers, 20/20 automated tests passed |
 | 6 | Swap Value Comparator | Complete | Reusable comparator, GET /api/listings/compare, 43/43 tests passed |
 | 7 | Location-Based Matching | Complete | Hierarchical proximity, value matching, GET /api/listings/:id/matches, 32/32 tests passed |
-| 8 | Admin Panel | **Not Started** | Planned (dashboard, content moderation, analytics) |
+| 8 | Admin Panel | Complete | Dashboard stats, user management, listing moderation, swap monitoring, 46/46 tests passed |
 
 ---
 
@@ -100,6 +101,15 @@ clothing-exchange/
 - Frontend integration: "Nearby Swap Matches" section on `ItemDetailsPage.jsx` with match reason badges, reusing `ListingCard`, `Loader`, `EmptyState`, and `ErrorMessage`
 - 32/32 automated backend integration tests passed
 
+### Phase 8 — Admin Panel
+- Dedicated admin routes under `/api/admin` guarded by `protect` + `requireAdmin`
+- Dashboard metrics (`GET /api/admin/stats`) aggregating users, listings, swaps, and messages
+- User management (`GET /api/admin/users`, `GET /api/admin/users/:id`, `PATCH /api/admin/users/:id/role`) with search, role filters, activity summary, and self-demotion lockout
+- Listing moderation (`GET /api/admin/listings`, `DELETE /api/admin/listings/:id`) across all statuses with active swap auto-rejection
+- Read-only swap activity monitoring (`GET /api/admin/swaps`) with status filters
+- Frontend: 5 admin pages, reusable table rows, modal confirmation, pagination, and `<ProtectedRoute adminOnly>` route gating
+- 46/46 automated backend integration tests passed
+
 ---
 
 ## Setup & Running
@@ -137,11 +147,7 @@ npm run test:phase4     # Phase 4 Swap Request tests (20/20 confirmed)
 npm run test:phase5     # Phase 5 Chat & Negotiation tests (20/20 passed)
 npm run test:phase6     # Phase 6 Swap Value Comparator tests (43/43 passed)
 npm run test:phase7     # Phase 7 Location-Based Matching tests (32/32 passed)
+npm run test:phase8     # Phase 8 Admin Panel tests (46/46 passed)
 ```
-
----
-
-## Upcoming Phases
-- **Phase 8 — Admin Panel**: Admin dashboard, user and listing management, content moderation, and basic activity analytics. *(Not started)*
 
 

@@ -15,8 +15,9 @@ A practical roadmap for continuing development **from the current repository sta
 | 5 | Chat & Negotiation | Complete, tested | 20/20 automated backend tests passed + manual frontend verification, see `PROJECT_REPORT.md` |
 | 6 | Swap Value Comparator | Complete, tested | 43/43 automated backend integration tests passed, see `PROJECT_REPORT.md` |
 | 7 | Location-Based Matching | Complete, tested | 32/32 automated backend integration tests passed, see `PROJECT_REPORT.md` |
+| 8 | Admin Panel | Complete, tested | 46/46 automated backend integration tests passed, see `PROJECT_REPORT.md` |
 
-All seven of the above are genuinely working, not just planned — verified by automated test suites against the live backend.
+All eight planned roadmap phases are genuinely working and verified by automated test suites against the live backend.
 
 ---
 
@@ -46,38 +47,44 @@ Status: **Complete and tested.**
 
 ---
 
-## 4. Remaining Phases
+## 4. Phase 8 — Admin Panel (Complete)
 
-### Phase 8 — Admin Panel
-**Not started. Only foundational pieces exist** (`role` field, `requireAdmin` middleware, `seedAdmin.js`).
+**Full platform overview, user management, listing moderation, and swap activity monitoring.**
 
-Requirements (from `requirements.md` §1.8): admin dashboard, view users, view listings, remove inappropriate listings, monitor swap activity, basic analytics, manage users.
+Status: **Complete and tested.**
+- Dedicated backend admin controller (`adminController.js`) and routes (`adminRoutes.js`) mounted at `/api/admin`, secured with `protect` + `requireAdmin`.
+- Dashboard statistics endpoint (`GET /api/admin/stats`) aggregating users, listings by status, swaps by status, and message counts.
+- User management: paginated user list with search & role filter (`GET /api/admin/users`), user detail with activity summary (`GET /api/admin/users/:id`), role toggling (`PATCH /api/admin/users/:id/role`) with self-demotion lockout.
+- Listing moderation: paginated listings across all statuses (`GET /api/admin/listings`), admin delete (`DELETE /api/admin/listings/:id`) with active swap auto-rejection and partner listing restoration.
+- Swap monitoring: read-only paginated swap requests (`GET /api/admin/swaps`) with status filtering.
+- Frontend: 5 admin pages, reusable admin components, conditional navbar link, route protection via `<ProtectedRoute adminOnly>`.
+- 46/46 automated integration tests passed in `backend/tests/phase8-admin-panel-tests.js`.
 
-Needs, at minimum:
-- `backend/src/controllers/adminController.js` + `backend/src/routes/adminRoutes.js`, mounted at `/api/admin`, every route behind `protect` + `requireAdmin`.
-- Endpoints likely needed: list users, list all listings (any status), delete/hide a listing, list all swap requests (for monitoring), some basic aggregate counts (users/listings/swaps by status) for "analytics."
-- Frontend: an `AdminPage.jsx` (or split into sub-pages), gated by `<ProtectedRoute adminOnly>` — note `ProtectedRoute.jsx` **already supports** an `adminOnly` prop, unused so far; this is ready to consume.
-- A way to actually log in as an admin for testing: run `npm run seed:admin` with `ADMIN_EMAIL`/`ADMIN_PASSWORD` set in `.env`.
+### Remaining Optional Items
 
-### Unresolved smaller item — DashboardPage
-Not tracked as its own numbered phase anywhere, but flagged here because it's an explicit gap against the original "8 required pages" spec: `DashboardPage.jsx` is still the Phase 2 placeholder. Building it out (e.g. summary of the user's own listings/incoming requests/unread messages) is a reasonable candidate to fold into whichever phase touches the dashboard next, or to do as a standalone small task. Not currently scheduled.
+#### DashboardPage (User Dashboard)
+Not a numbered phase, but flagged as a gap against the original 8-page spec: `DashboardPage.jsx` remains the Phase 2 placeholder (name/email/role only).
 
 ---
 
 ## 5. Dependencies Between Tasks
 
-- **Phases 6 and 7 are complete.** Phase 7 successfully reuses Phase 6's `compareValues()` for value compatibility.
-- **Phase 8 (Admin Panel) has no hard dependency** on Phases 6 or 7. It depends on infrastructure that already exists (`requireAdmin`, `role`, `ProtectedRoute`'s `adminOnly` prop).
-- **No remaining phase requires touching Phases 1–7.** All prior work is additive-only by established project convention — continue that pattern.
+- All 8 roadmap phases (Phases 1–8) are complete and tested.
+- All implementations follow the additive-only pattern, preserving existing contracts and state machines.
 
 ---
 
-## 6. Recommended Implementation Order
+## 6. Implementation Status
 
-1. **Phase 6 — Swap Value Comparator** — Complete and tested (43/43 automated backend integration tests passed).
-2. **Phase 7 — Location-Based Matching** — Complete and tested (32/32 automated backend integration tests passed).
-3. **Phase 8 — Admin Panel** (Next phase) — needs its own architecture proposal + explicit sign-off before coding, per established project process.
-4. **(Optional, unscheduled) Build out `DashboardPage.jsx`** into something real — low risk, no dependencies, could be slotted in anywhere.
+1. **Phase 1 — Project Scaffolding** — Complete.
+2. **Phase 2 — Authentication** — Complete.
+3. **Phase 3 — Clothing Listings** — Complete.
+4. **Phase 4 — Swap Request System** — Complete (20/20 tests confirmed).
+5. **Phase 5 — Chat & Negotiation** — Complete (20/20 automated backend tests passed).
+6. **Phase 6 — Swap Value Comparator** — Complete (43/43 automated backend integration tests passed).
+7. **Phase 7 — Location-Based Matching** — Complete (32/32 automated backend integration tests passed).
+8. **Phase 8 — Admin Panel** — Complete (46/46 automated backend integration tests passed).
+9. **Next steps**: Deployment setup & optional user dashboard polish.
 
 ---
 

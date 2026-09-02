@@ -13,11 +13,16 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 - Deterministic value estimator with a live "Suggest Value" button on the listing form; user can override the suggestion.
 - Deterministic swap value comparator (`valueComparator.js`) with `GET /api/listings/compare`, calculating absolute difference, percentage difference, and fairness classification (`Close Match`, `Moderate Difference`, `Large Difference`), integrated into swap request preview and swap request cards.
 - Location-based swap matching (`GET /api/listings/:id/matches`) with hierarchical location proximity (exact same city vs. same state), Phase 6 value compatibility reuse (`compareValues`), deterministic ranking, and "Nearby Swap Matches" section on `ItemDetailsPage.jsx`.
-- Four automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, per actual reported runs — not assumed).
+- Full Admin Panel (`/api/admin/*`, `/admin/*`):
+  - Dashboard analytics (`GET /api/admin/stats` with aggregate counts across users, listings by status, swaps by status, and messages).
+  - User management (paginated user list with search & role filter, user detail with activity summary, role toggle with self-demotion prevention).
+  - Listing moderation (paginated list across all statuses, admin delete with active swap auto-rejection and partner listing restoration).
+  - Swap activity monitoring (paginated read-only list across all users with status filter and populated requester/listing details).
+  - Strict backend-authoritative security via `protect` + `requireAdmin` middleware chain.
+- Five automated backend test suites (Phase 4: 20/20 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, Phase 8: 46/46 passing, per actual reported runs — not assumed).
 
 ## 2. What Doesn't Work / Isn't Built
 
-- **Admin panel**: nothing beyond the `role` field, `requireAdmin` middleware, and `seedAdmin.js` script. No admin routes, no admin UI.
 - **Real user dashboard**: `DashboardPage.jsx` is still a Phase 2 placeholder (name/email/role only).
 - **No deployment setup**: no Dockerfile, no CI, no hosting-platform config of any kind exists yet.
 
@@ -25,7 +30,7 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 
 - Swap "maintain swap history" — technically satisfied (completed/rejected/cancelled requests stay in MongoDB and remain visible in the Incoming/Sent lists), but there's no dedicated history view.
 - Swap "confirm agreement via chat" — chat can display live swap status, but there's no chat-embedded confirm button; users still go to the Swap Requests page to Accept/Complete.
-- Responsive design — some pages/components have explicit mobile handling (chat layout, item details), not formally verified everywhere.
+- Responsive design — some pages/components have explicit mobile handling (chat layout, item details, admin tables), not formally verified everywhere.
 - Accessible contrast — not formally audited.
 
 ## 4. Current Known Bugs
@@ -34,9 +39,8 @@ None currently tracked/reported as open bugs. (This does not mean none exist —
 
 ## 5. Current TODOs (explicit, in-code or in-doc)
 
-- `backend/src/app.js` has a comment: `// More route groups (admin) will be mounted here in later phases.`
 - Cloudinary images are never deleted when a listing is deleted — documented limitation, not fixed, not currently scheduled.
-- No pagination on listings or messages — documented limitation, acceptable at current scale only.
+- No pagination on public marketplace listings or messages — documented limitation, acceptable at current scale only (admin endpoints use server-side pagination).
 - No MongoDB transactions around multi-document swap-accept writes — documented limitation, acceptable at current scale only.
 
 ## 6. Current Database State/Schema
@@ -45,15 +49,15 @@ Five Mongoose collections: `User`, `Listing`, `SwapRequest`, `Conversation`, `Me
 
 ## 7. Current API State
 
-Five route groups mounted: `/api/health`, `/api/auth`, `/api/listings`, `/api/swaps`, `/api/chat`. Full endpoint-by-endpoint list is in `architecture.md` §6. No `/api/admin`. No `GET /api/swaps/:id` single-fetch endpoint (chat works around this via population instead of calling swap endpoints).
+Six route groups mounted: `/api/health`, `/api/auth`, `/api/listings`, `/api/swaps`, `/api/chat`, `/api/admin`. Full endpoint-by-endpoint list is in `architecture.md` §6. No `GET /api/swaps/:id` single-fetch endpoint (chat works around this via population instead of calling swap endpoints).
 
 ## 8. Current Frontend State
 
-9 pages routed in `App.jsx`: Home, Login, Register, Dashboard (placeholder), Item Details (with "Nearby Swap Matches" section for available items), Create/Edit Listing, My Listings, Swap Requests, Chat. All wrapped in a single `AuthProvider` + `BrowserRouter`. No admin page/route exists.
+14 pages/routes in `App.jsx`: Home, Login, Register, Dashboard (placeholder), Item Details (with "Nearby Swap Matches" section for available items), Create/Edit Listing, My Listings, Swap Requests, Chat, Admin Dashboard, Admin Users, Admin User Detail, Admin Listings, Admin Swaps. All wrapped in a single `AuthProvider` + `BrowserRouter`. Admin routes protected by `<ProtectedRoute adminOnly>`.
 
 ## 9. Current Authentication State
 
-Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middleware verified on every route that needs it, `requireAdmin` exists but is currently unused by any route (no admin endpoints to guard yet). Admin accounts can only be created via `npm run seed:admin` (manual, env-var driven, never automatic).
+Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middleware verified on every route that needs it, `requireAdmin` actively guards all `/api/admin/*` endpoints. Admin accounts can only be created via `npm run seed:admin` (manual, env-var driven, never automatic) or promoted via the admin user management panel.
 
 ## 10. Current Test Status
 
@@ -65,7 +69,7 @@ Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middlew
 | Phase 5 manual frontend verification | 11 specific behaviors confirmed | Actual reported results, recorded in `PROJECT_REPORT.md` — explicitly not a claim of exhaustive frontend testing |
 | Phase 6 automated (`npm run test:phase6`) | 43/43 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 7 automated (`npm run test:phase7`) | 32/32 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
-| Phase 8 — Admin Panel | No tests exist — no code exists yet | N/A |
+| Phase 8 automated (`npm run test:phase8`) | 46/46 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 
 **No test has ever been marked "Passed" in this project without an actual reported result.** Continue that discipline — do not infer test outcomes from reading code.
 
@@ -80,6 +84,7 @@ npm run test:phase4      # requires backend already running
 npm run test:phase5      # requires backend already running
 npm run test:phase6      # requires backend already running
 npm run test:phase7      # requires backend already running
+npm run test:phase8      # requires backend already running
 
 # Frontend (from frontend/)
 npm install
@@ -106,22 +111,14 @@ Both `.env.example` files in the repo document the shape/format without real val
 
 ## 13. Last Completed Feature/Phase
 
-**Phase 7 — Location-Based Matching.** Confirmed complete and tested: 32/32 automated backend integration tests passed. Created `GET /api/listings/:id/matches`, deterministic scoring and ranking, reuse of Phase 6 `compareValues()`, and integrated "Nearby Swap Matches" section into `ItemDetailsPage.jsx`. Recorded in `docs/PROJECT_REPORT.md`.
+**Phase 8 — Admin Panel.** Confirmed complete and tested: 46/46 automated backend integration tests passed. Built `adminController.js`, `adminRoutes.js` mounted at `/api/admin`, admin API client, dashboard stats, user management with role toggling and user detail activity summary, listing moderation with active swap auto-rejection, read-only swap monitoring, admin navigation and route gating via `<ProtectedRoute adminOnly>`, and full test suite. Recorded in `docs/PROJECT_REPORT.md`.
 
 ## 14. Exact Recommended Next Task
 
-**Phase 8 — Admin Panel.**
-Requirements (from `requirements.md` §1.8):
-1. Admin dashboard with summary statistics.
-2. User and listing moderation/management.
-3. Content moderation and activity monitoring.
-
-Per the established project process:
-1. Inspect existing code and formulate an architecture proposal.
-2. Present architecture and wait for explicit confirmation from the project owner.
-3. Implement Phase 8.
-4. Test and verify (manual UI + automated backend test suite).
-5. Record results in `docs/PROJECT_REPORT.md`.
+All 8 planned roadmap phases (Phases 1–8) are now **100% complete and tested**.
+Recommended subsequent tasks:
+1. Production deployment setup (Dockerfile, hosting on Render/Vercel or equivalent).
+2. Optional polish: User Dashboard (`DashboardPage.jsx`) buildout from Phase 2 placeholder.
 
 ## 15. Anything an Incoming Agent Must Know Before Modifying the Project
 

@@ -76,16 +76,14 @@ Status legend: **Implemented** (working, present in code) / **Partially Implemen
 - Show nearby swap opportunities — Implemented (`GET /api/listings/:id/matches`, hierarchical same city / same state proximity; "Nearby Swap Matches" section on `ItemDetailsPage.jsx`)
 - Suggest potential matches based on location and compatible estimated value — Implemented (combines location tier scoring with Phase 6's `compareValues()` value compatibility scoring into deterministic ranking, excluding Large Difference)
 
-### 1.8 Admin Panel — **Not Started**
-- Admin dashboard — Not Started
-- View users — Not Started
-- View listings — Not Started
-- Remove inappropriate listings — Not Started
-- Monitor swap activity — Not Started
-- Basic analytics — Not Started
-- Manage users — Not Started
-
-Note: the *foundation* for this (role field, `requireAdmin` middleware, seed script) is Implemented, but zero admin-facing routes, controllers, or pages exist.
+### 1.8 Admin Panel — **Implemented**
+- Admin dashboard — Implemented (`/admin`, `AdminDashboardPage.jsx`, `GET /api/admin/stats`)
+- View users — Implemented (`/admin/users`, `AdminUsersPage.jsx`, `GET /api/admin/users`)
+- View listings — Implemented (`/admin/listings`, `AdminListingsPage.jsx`, `GET /api/admin/listings`)
+- Remove inappropriate listings — Implemented (`DELETE /api/admin/listings/:id` with cascade swap auto-rejection)
+- Monitor swap activity — Implemented (`/admin/swaps`, `AdminSwapsPage.jsx`, `GET /api/admin/swaps`)
+- Basic analytics — Implemented (`GET /api/admin/stats` with user, listing, swap, message aggregate counts)
+- Manage users — Implemented (role toggling `PATCH /api/admin/users/:id/role`, user detail `GET /api/admin/users/:id` with activity summary)
 
 ---
 
@@ -100,7 +98,7 @@ Note: the *foundation* for this (role field, `requireAdmin` middleware, seed scr
 | 5 | Swap Requests | Implemented (`SwapRequestsPage.jsx`) |
 | 6 | Chat | Implemented (`ChatPage.jsx`) |
 | 7 | User Dashboard | **Partially Implemented** — page exists and is routed, but is still the minimal Phase 2 placeholder (name/email/role only) |
-| 8 | Admin Panel | **Not Started** |
+| 8 | Admin Panel | Implemented (`AdminDashboardPage.jsx`, `AdminUsersPage.jsx`, `AdminUserDetailPage.jsx`, `AdminListingsPage.jsx`, `AdminSwapsPage.jsx`) |
 
 Additionally implemented but not in the original 6–8 list: `MyListingsPage.jsx` (a practical necessity for listing management, reasonably considered part of "User Dashboard" territory but built as its own route).
 
@@ -203,5 +201,5 @@ The phase-numbering question previously flagged here has been explicitly resolve
 
 - **Phase 6 — Swap Value Comparator**: Formalizing the existing value-comparison functionality described in §1.6 — centralized comparison utility, percentage difference, fairness classification with deterministic thresholds. **Complete and tested (43/43 tests passed).**
 - **Phase 7 — Location-Based Matching**: Nearby swap opportunities and value-compatible suggestions described in §1.7 — deterministic location tiers, value compatibility via Phase 6 reuse, `GET /api/listings/:id/matches`, and "Nearby Swap Matches" section on Item Details. **Complete and tested (32/32 tests passed).**
-- **Phase 8 — Admin Panel**: Full admin dashboard, user/listing management, analytics described in §1.8. **Not started.**
+- **Phase 8 — Admin Panel**: Full admin dashboard, user/listing management, analytics described in §1.8. **Complete and tested (46/46 tests passed).**
 

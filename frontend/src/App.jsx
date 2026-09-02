@@ -11,6 +11,11 @@ import CreateEditListingPage from './pages/CreateEditListingPage';
 import MyListingsPage from './pages/MyListingsPage';
 import SwapRequestsPage from './pages/SwapRequestsPage';
 import ChatPage from './pages/ChatPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminUserDetailPage from './pages/AdminUserDetailPage';
+import AdminListingsPage from './pages/AdminListingsPage';
+import AdminSwapsPage from './pages/AdminSwapsPage';
 
 function App() {
   return (
@@ -67,6 +72,46 @@ function App() {
             element={
               <ProtectedRoute>
                 <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/:id"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminUserDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/listings"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminListingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/swaps"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminSwapsPage />
               </ProtectedRoute>
             }
           />

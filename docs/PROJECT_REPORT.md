@@ -13,7 +13,7 @@ Unified Mentor Fullstack Web Development Internship
 | 5 | Chat / Negotiation | Implemented and tested successfully — 20 of 20 automated backend tests passed, plus manual frontend verification (see below) |
 | 6 | Swap Value Comparator | Complete — 43 of 43 automated integration tests passed (see below) |
 | 7 | Location-Based Matching | Complete — 32 of 32 automated integration tests passed (see below) |
-| 8 | Admin Panel | Not started |
+| 8 | Admin Panel | Complete — 46 of 46 automated integration tests passed (see below) |
 
 ## Phase 4 — Swap Request System
 
@@ -336,6 +336,94 @@ The test suite (`backend/tests/phase7-location-matching-tests.js`) was executed 
 
 Test data (4 test users, 16 test listings) was created and then fully removed by the script's cleanup step; no existing real data was affected.
 
+## Phase 8 — Admin Panel
+
+### Implementation Summary
+
+Phase 8 implements the complete Admin Panel across backend and frontend, enabling platform administrators to monitor platform metrics, manage user roles, moderate listings, and monitor swap activity:
+
+- **Backend Architecture & Security**:
+  - Mounted dedicated admin routes at `/api/admin` via `adminRoutes.js` and `adminController.js`.
+  - All admin endpoints enforce the `protect` + `requireAdmin` middleware chain (`authMiddleware.js`), ensuring the backend is the authoritative security boundary.
+  - No admin credentials or private chat data exposed.
+- **Backend Endpoints**:
+  - `GET /api/admin/stats`: Aggregates counts across users (total, admins), listings (total, available, pending, swapped), swaps (total, pending, accepted, rejected, completed, cancelled), and messages.
+  - `GET /api/admin/users`: Server-side paginated user list with search (name/email) and role filter (`user`/`admin`). Excludes password hashes.
+  - `GET /api/admin/users/:id`: Fetches user profile with activity summary counts (listings created, swaps sent, messages sent).
+  - `PATCH /api/admin/users/:id/role`: Toggles user role (`user` ↔ `admin`) with self-demotion protection to prevent accidental admin lockout.
+  - `GET /api/admin/listings`: Server-side paginated listing list across all statuses (`available`, `pending`, `swapped`) with search, status, and category filters.
+  - `DELETE /api/admin/listings/:id`: Admin listing deletion with automatic auto-rejection/cancellation of active pending/accepted swap requests and restoration of the partner listing to available.
+  - `GET /api/admin/swaps`: Read-only server-side paginated list of all swap requests across all users with status filter and populated requester/listing details.
+- **Frontend Integration**:
+  - Protected admin routes in `App.jsx` (`/admin`, `/admin/users`, `/admin/users/:id`, `/admin/listings`, `/admin/swaps`) wrapped in `<ProtectedRoute adminOnly>`.
+  - Conditional "Admin Panel" link in `Navbar.jsx` shown only to admin users (`user?.role === 'admin'`).
+  - `AdminDashboardPage.jsx`: Overview cards for Users, Listings, Swaps, and Messages with quick navigation.
+  - `AdminUsersPage.jsx` & `AdminUserDetailPage.jsx`: User management table with search, role filter, role toggle confirmation modal, and activity stats.
+  - `AdminListingsPage.jsx`: Listing moderation table with search, filters, thumbnail previews, and deletion confirmation modal.
+  - `AdminSwapsPage.jsx`: Read-only swap activity monitoring table with status badges.
+  - Reusable components: `Pagination.jsx`, `ConfirmModal.jsx`, `StatsCard.jsx`, `AdminUserRow.jsx`, `AdminListingRow.jsx`, `AdminSwapRow.jsx`.
+  - Admin styles appended to `index.css`.
+
+### Phase 8 Automated Integration Test Results
+
+The test suite (`backend/tests/phase8-admin-panel-tests.js`) was executed against the running backend with disposable test fixtures and tracked cleanup:
+
+| Test Case | Expected Result | Actual Result | Status |
+|---|---|---|---|
+| unauthenticated /admin/stats -> 401 | 401 | 401 | Passed |
+| regular user /admin/stats -> 403 | 403 | 403 | Passed |
+| regular user /admin/users -> 403 | 403 | 403 | Passed |
+| regular user /admin/users/:id -> 403 | 403 | 403 | Passed |
+| regular user role toggle -> 403 | 403 | 403 | Passed |
+| regular user /admin/listings -> 403 | 403 | 403 | Passed |
+| regular user delete listing via admin endpoint -> 403 | 403 | 403 | Passed |
+| regular user /admin/swaps -> 403 | 403 | 403 | Passed |
+| admin /admin/stats -> 200 | 200 | 200 | Passed |
+| stats response has full expected structure | true | true | Passed |
+| stats.users.total >= 4 | true | true | Passed |
+| stats.users.admins >= 1 | true | true | Passed |
+| listings breakdown sum equals total | sum matches total | 9 | Passed |
+| swaps breakdown sum equals total | sum matches total | 4 | Passed |
+| stats.messages.total >= 1 | true | true | Passed |
+| list users returns paginated structure | true | true | Passed |
+| password hashes excluded from user list | false | false | Passed |
+| search users by name finds target user | true | true | Passed |
+| search users by email finds target user | true | true | Passed |
+| filter role=admin returns only admins | true | true | Passed |
+| filter role=user returns only regular users | true | true | Passed |
+| pagination limit=2 returns at most 2 items | true | true | Passed |
+| get single user returns profile + activity counts | true | true | Passed |
+| get user with invalid ID format -> 400 | 400 | 400 | Passed |
+| get nonexistent user -> 404 | 404 | 404 | Passed |
+| toggle role user -> admin | admin | admin | Passed |
+| toggle role admin -> user | user | user | Passed |
+| admin self-demotion blocked -> 400 | 400 | 400 | Passed |
+| admin listing list includes non-available listings | true | true | Passed |
+| filter status=available returns available only | true | true | Passed |
+| filter status=pending returns pending only | true | true | Passed |
+| filter category=outerwear returns matching category | true | true | Passed |
+| admin delete listing invalid ID -> 400 | 400 | 400 | Passed |
+| admin delete nonexistent listing -> 404 | 404 | 404 | Passed |
+| admin delete listing -> 200 | 200 | 200 | Passed |
+| listing removed from DB | null | null | Passed |
+| active swap referencing deleted listing auto-rejected | rejected | rejected | Passed |
+| admin swaps list returns all swaps across users | true | true | Passed |
+| filter swaps status=completed returns completed only | true | true | Passed |
+| swaps populate requester and listings details | true | true | Passed |
+| regression: public listings browse still works | 200 | 200 | Passed |
+| regression: Phase 4 swap creation still works | 201 | 201 | Passed |
+| regression: Phase 5 chat message fetch still works | 200 | 200 | Passed |
+| regression: Phase 6 value comparison still works | true | true | Passed |
+| regression: Phase 7 location matching still works | true | true | Passed |
+| privacy: no admin chat endpoint exists -> 404 | 404 | 404 | Passed |
+
+**Final result:**
+- Passed: 46
+- Failed: 0
+- Total: 46
+
+Test data (4 test users, 5 test listings, 2 test swap requests, 1 conversation, 1 message) was created and then fully removed by the script's cleanup step; no existing real data was affected.
+
 ## Notes
 
 - This document reflects only test results explicitly confirmed by testing runs.
@@ -343,5 +431,6 @@ Test data (4 test users, 16 test listings) was created and then fully removed by
   - Phase 5: 20 automated backend integration test cases, all passed, 0 failed, plus manually-confirmed frontend UI behaviors.
   - Phase 6: 43 automated backend integration test cases, all passed, 0 failed.
   - Phase 7: 32 automated backend integration test cases, all passed, 0 failed.
-- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`, `backend/tests/phase7-location-matching-tests.js`) are standalone test files separate from the application source code.
+  - Phase 8: 46 automated backend integration test cases, all passed, 0 failed.
+- The automated test scripts (`backend/tests/phase4-swap-tests.js`, `backend/tests/phase5-chat-tests.js`, `backend/tests/phase6-value-comparator-tests.js`, `backend/tests/phase7-location-matching-tests.js`, `backend/tests/phase8-admin-panel-tests.js`) are standalone test files separate from the application source code.
 - Any test case not explicitly listed as Passed has not been verified and should not be assumed to pass.
