@@ -19,10 +19,10 @@ function Footer() {
               <path d="M7 10h14l-4-4" />
               <path d="M17 14H3l4 4" />
             </svg>
-            <span>Clothing Exchange</span>
+            <span>ReWear</span>
           </Link>
           <p className="footer-tagline">
-            A direct item-for-item clothing swap marketplace. Trade pre-loved apparel locally and sustainably—with zero monetary transactions.
+            A peer-to-peer clothing exchange marketplace. Trade pre-loved apparel locally and sustainably—with zero monetary transactions.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ function Footer() {
 
       <div className="footer-bottom">
         <p className="footer-copyright">
-          &copy; 2026 Clothing Exchange & Swap Marketplace. Direct item-for-item clothing exchange.
+          &copy; 2026 ReWear. A peer-to-peer clothing exchange marketplace.
         </p>
         <p className="footer-meta">
           <span>Non-monetary exchange</span> • <span>Sustainable fashion</span> • <span>Community powered</span>

@@ -48,10 +48,10 @@ function HomePage() {
     <div className="page-container marketplace-page">
       <div className="marketplace-hero">
         <div className="marketplace-hero-content">
-          <span className="marketplace-hero-badge">Direct Item-for-Item Exchange</span>
-          <h1 className="marketplace-hero-title">Exchange Clothes. Not Money.</h1>
+          <span className="marketplace-hero-badge">Direct Item-for-Item Barter</span>
+          <h1 className="marketplace-hero-title">Swap Clothes. No Money Needed.</h1>
           <p className="marketplace-hero-desc">
-            Give unworn clothing a second life. List your items, discover compatible pieces locally, and swap directly with zero monetary transactions.
+            ReWear is a peer-to-peer clothing exchange marketplace. Give unworn clothing a second life, discover compatible pieces locally, and swap directly with zero monetary transactions.
           </p>
         </div>
         {isAuthenticated ? (

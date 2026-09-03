@@ -34,7 +34,7 @@ function Navbar() {
           <path d="M7 10h14l-4-4" />
           <path d="M17 14H3l4 4" />
         </svg>
-        <span>Clothing Exchange</span>
+        <span>ReWear</span>
       </Link>
 
       <div className={`navbar-links ${isOpen ? 'open' : ''}`}>

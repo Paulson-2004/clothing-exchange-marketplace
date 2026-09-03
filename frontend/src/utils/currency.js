@@ -1,5 +1,5 @@
 /**
- * Currency and swap value formatting utilities for Clothing Exchange.
+ * Currency and swap value formatting utilities for ReWear clothing exchange.
  * Native currency: Indian Rupee (INR), symbol: ₹.
  *
  * Formats numbers using standard Indian numbering system (e.g. ₹1,200, ₹2,100, ₹3,500).

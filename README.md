@@ -1,4 +1,4 @@
-# Clothing Exchange & Swap Marketplace
+# ReWear — Clothing Exchange & Swap Marketplace
 
 A sustainable web platform that facilitates direct, item-for-item clothing exchanges without monetary transactions.
 
@@ -7,7 +7,7 @@ A sustainable web platform that facilitates direct, item-for-item clothing excha
 **Major Technical Value:** A fully verified 8-phase production application featuring deterministic swap valuation, algorithmic location-based matching, and a highly resilient state machine for conflict-free direct exchanges.
 
 ## Overview
-The Clothing Exchange & Swap Marketplace is a platform designed to promote sustainable fashion by enabling users to trade clothing they no longer wear. Rather than relying on traditional e-commerce models where items are bought and sold with money, this application strictly focuses on direct item-for-item swaps, powered by algorithmic location matching and deterministic value estimation.
+ReWear is a sustainable peer-to-peer clothing exchange marketplace designed to promote circular fashion by enabling users to trade clothing they no longer wear. Rather than relying on traditional e-commerce models where items are bought and sold with money, this application strictly focuses on direct item-for-item swaps, powered by algorithmic location matching and deterministic value estimation.
 
 ## Problem
 The fashion industry generates significant waste, and individuals often have wearable clothing sitting unused in their wardrobes. While conventional marketplaces allow selling, they often require managing monetary transactions, payments, and shipping. Finding suitable exchange partners for direct swaps is challenging due to geographic barriers, uncertainty regarding the fairness of trades, and the lack of a structured platform specifically dedicated to item-for-item exchanges.
@@ -262,7 +262,10 @@ Additional detailed documentation can be found in the `docs/` directory:
 
 ## Future Enhancements
 - WebSocket-based realtime messaging.
-- Courier/shipping integration to support non-local exchanges.
+- Courier/shipping integration with shipment tracking to support non-local exchanges.
+- Meetup/exchange-location assistance and delivery/handoff confirmation.
+- User/listing reporting and formal dispute resolution.
+- Trust/reputation features, fraud/scam detection, and identity verification.
 - Expanded platform analytics.
 - Formal WCAG accessibility compliance certification.
 
@@ -277,7 +280,7 @@ Additional detailed documentation can be found in the `docs/` directory:
 8. Admin Panel — **COMPLETE**
 
 ## Project Status
-The Clothing Exchange & Swap Marketplace is **feature-complete**, successfully deployed to production, and manually verified. All functionality specified in the authoritative 8-phase roadmap is fully implemented and backed by a comprehensive passing test suite.
+The ReWear clothing exchange marketplace is **feature-complete**, successfully deployed to production, and manually verified. All functionality specified in the authoritative 8-phase roadmap is fully implemented and backed by a comprehensive passing test suite.
 
 ## License
 No license has currently been specified for this repository.

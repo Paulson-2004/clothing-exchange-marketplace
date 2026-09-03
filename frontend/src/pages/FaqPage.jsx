@@ -7,16 +7,16 @@ const FAQ_SECTIONS = [
     category: 'Platform Basics',
     items: [
       {
-        id: 'what-is-clothing-exchange',
-        question: 'What is Clothing Exchange?',
+        id: 'what-is-rewear',
+        question: 'What is ReWear?',
         answer:
-          'Clothing Exchange is a circular fashion marketplace where members trade unworn apparel directly with one another. Instead of buying or selling with money, you exchange clothing item-for-item, giving good clothes a second life.',
+          'ReWear is a circular fashion marketplace where members trade unworn apparel directly with one another. Instead of buying or selling with money, you exchange clothing item-for-item, giving good clothes a second life.',
       },
       {
         id: 'money-transactions',
         question: 'Are money transactions supported?',
         answer:
-          'No. Clothing Exchange is strictly a non-monetary, direct item-for-item exchange. There are no fees, wallet balances, or payment processing. Every trade is a direct one-to-one exchange between two members.',
+          'No. ReWear is strictly a non-monetary, direct item-for-item exchange. There are no fees, wallet balances, or payment processing. Every trade is a direct one-to-one exchange between two members.',
       },
       {
         id: 'how-swap-works',
@@ -86,13 +86,13 @@ const FAQ_SECTIONS = [
         id: 'cash-price-comparison',
         question: 'Is the estimated value the same as a cash price?',
         answer:
-          'No. There is no money or cash payment used on Clothing Exchange. Estimated values are presented in Indian Rupees (₹) purely as an informational reference benchmark to help you and your trade partner evaluate the relative balance of an exchange.',
+          'No. There is no money or cash payment used on ReWear. Estimated values are presented in Indian Rupees (₹) purely as an informational reference benchmark to help you and your trade partner evaluate the relative balance of an exchange.',
       },
       {
         id: 'unequal-value-swaps',
         question: 'Can I swap items with different estimated values or pay the difference?',
         answer:
-          'Clothing Exchange is strictly an item-for-item barter marketplace — cash payments, cash top-ups, and buying the difference are not supported. Unequal-value swaps are completely valid as long as both users mutually agree to the trade. The estimated swap value is only an informational guide to help you compare items, not an enforced price or payment requirement.',
+          'ReWear is strictly an item-for-item barter marketplace — cash payments, cash top-ups, and buying the difference are not supported. Unequal-value swaps are completely valid as long as both users mutually agree to the trade. The estimated swap value is only an informational guide to help you compare items, not an enforced price or payment requirement.',
       },
     ],
   },
@@ -134,6 +134,12 @@ const FAQ_SECTIONS = [
         question: 'What happens if an item involved in an unfinished swap is removed?',
         answer:
           'If an item is removed while a swap is still in progress, the affected request is cancelled so the other person\'s item can safely become available again for new trades.',
+      },
+      {
+        id: 'physical-exchange-safety',
+        question: 'How do members physically exchange clothes?',
+        answer:
+          'Once a swap is accepted, members coordinate the handoff directly through private chat. For local trades, we recommend meeting in a well-lit, public location (such as a busy cafe or transit station) and discourage unnecessary sharing of personal home addresses. If you choose to ship garments, please note that ReWear does not currently provide integrated courier booking, shipment tracking, escrow, or formal dispute resolution—shipping arrangements are handled independently by the trading partners.',
       },
     ],
   },
@@ -199,7 +205,7 @@ const FAQ_SECTIONS = [
 
 function FaqPage() {
   const [openIds, setOpenIds] = useState(
-    new Set(['what-is-clothing-exchange', 'money-transactions', 'how-swap-works'])
+    new Set(['what-is-rewear', 'money-transactions', 'how-swap-works'])
   );
 
   const toggleItem = (id) => {

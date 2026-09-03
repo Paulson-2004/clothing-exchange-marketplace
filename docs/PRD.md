@@ -1,14 +1,14 @@
 # Product Requirements Document
-## Clothing Exchange & Swap Marketplace
+## ReWear — Clothing Exchange & Swap Marketplace
 
 ### 1. Document Information
-- **Product Name:** Clothing Exchange & Swap Marketplace
+- **Product Name:** ReWear (Clothing Exchange & Swap Marketplace)
 - **Document Purpose:** Final Product Requirements Document detailing the as-built functionality of the completed system.
 - **Current Status:** Feature-Complete & Deployed (Production-Ready)
 - **Version/Date:** 1.0.0 (September 2026)
 
 ### 2. Product Overview
-The Clothing Exchange & Swap Marketplace is a sustainable web platform that facilitates direct, item-for-item clothing exchanges without any monetary transactions. It allows users to upload clothing they no longer wear, estimate the items' value, and securely trade them with other users. By focusing on reuse and localized matching, the platform solves the problem of clothing waste, enabling users to refresh their wardrobe sustainably and affordably.
+ReWear is a sustainable peer-to-peer clothing exchange marketplace that facilitates direct, item-for-item clothing exchanges without any monetary transactions. It allows users to upload clothing they no longer wear, estimate the items' value, and securely trade them with other users. By focusing on reuse and localized matching, the platform solves the problem of clothing waste, enabling users to refresh their wardrobe sustainably and affordably.
 
 ### 3. Problem Statement
 The product addresses the following practical problems:
@@ -220,7 +220,10 @@ Major functional pages include:
 
 ### 22. Future Enhancements
 - WebSocket-based real-time messaging to replace REST polling.
-- Courier/postal shipping integration for non-local swaps.
+- Courier and postal shipping integration with shipment tracking for non-local swaps.
+- Meetup/exchange-location assistance and delivery/handoff confirmation.
+- User/listing reporting and formal dispute resolution mechanisms.
+- Trust and reputation metrics, fraud/scam detection, and identity verification.
 - Comprehensive WCAG accessibility compliance certification.
 
 ### 23. Acceptance Criteria
@@ -234,5 +237,5 @@ Major functional pages include:
 - [x] Secure configuration is isolated from Git history.
 
 ### 24. Final Product Status
-The Clothing Exchange & Swap Marketplace has successfully completed the entirety of its authoritative 8-phase roadmap. Production deployment and verification have been executed successfully. The product is complete, robust, and prepared for final delivery and evaluation.
+The ReWear clothing exchange marketplace has successfully completed the entirety of its authoritative 8-phase roadmap. Production deployment and verification have been executed successfully. The product is complete, robust, and prepared for final delivery and evaluation.
 

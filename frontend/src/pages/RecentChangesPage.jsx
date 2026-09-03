@@ -151,7 +151,7 @@ const MILESTONES = [
     date: 'Phase 1',
     title: 'Phase 1 — Project Foundation',
     summary:
-      'Established the foundation, data architecture, and visual design system for the Clothing Exchange marketplace.',
+      'Established the foundation, data architecture, and visual design system for the ReWear clothing exchange marketplace.',
     bullets: [
       'System Architecture: Decoupled web client and application server architecture.',
       'Data Models: Structured schemas for members, listings, swap requests, conversations, and messages.',
@@ -167,7 +167,7 @@ function RecentChangesPage() {
         <span className="changelog-header-badge">Product Updates</span>
         <h1>Recent Changes</h1>
         <p className="changelog-subtitle">
-          A look at the latest improvements and milestones across the Clothing Exchange marketplace.
+          A look at the latest improvements and milestones across the ReWear marketplace.
         </p>
       </div>
 
