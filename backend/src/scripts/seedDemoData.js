@@ -64,15 +64,14 @@ const DEMO_USERS = [
 const DEMO_LISTINGS = [
   {
     userEmail: 'aarav.sharma@example.com',
-    title: 'Nike Dri-FIT Running T-Shirt',
+    title: 'Nike Dri-FIT Legend Training T-Shirt',
     category: 'activewear',
     brand: 'Nike',
     size: 'M',
     condition: 'like-new',
-    description: 'Breathable moisture-wicking Dri-FIT tee in midnight blue. Worn twice for light jogs.',
+    description: 'Clean white athletic training tee in lightweight moisture-wicking Dri-FIT fabric. Crewneck cut with clean hemline, worn twice for light workouts.',
     estimatedValue: 1200,
     images: [
-      'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
@@ -84,59 +83,55 @@ const DEMO_LISTINGS = [
     category: 'bottoms',
     brand: "Levi's",
     size: 'L',
-    condition: 'good',
-    description: 'Classic dark indigo wash denim with slight stretch. Excellent condition with no fraying.',
+    condition: 'like-new',
+    description: 'Classic dark indigo wash slim-fit denim jeans with subtle stretch. Clean structured finish with no distressing or fraying.',
     estimatedValue: 2200,
     images: [
-      'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1582552938357-32b906df40cb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Mumbai', state: 'Maharashtra', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'priya.patel@example.com',
-    title: 'Zara Linen Casual Shirt',
+    title: 'Zara Chambray Button-Down Casual Shirt',
     category: 'tops',
     brand: 'Zara',
     size: 'L',
-    condition: 'new',
-    description: 'Brand new 100% pure linen button-down shirt in olive green. Tags still attached.',
+    condition: 'like-new',
+    description: 'Soft washed blue chambray button-down shirt with subtle micro-print and spread collar. Lightweight breathable cotton, perfect for smart-casual styling.',
     estimatedValue: 1800,
     images: [
       'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Mumbai', state: 'Maharashtra', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'aarav.sharma@example.com',
-    title: 'H&M Relaxed Fit Cotton Hoodie',
+    title: 'H&M Relaxed Fit Cotton Crew Sweatshirt',
     category: 'outerwear',
     brand: 'H&M',
     size: 'XL',
     condition: 'good',
-    description: 'Cozy heavyweight cotton fleece pullover in heather grey. Soft interior with drawstring hood.',
+    description: 'Cozy relaxed-fit cotton fleece crewneck sweatshirt in vibrant warm pumpkin orange. Ribbed cuffs and hem with soft interior lining.',
     estimatedValue: 1500,
     images: [
-      'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'rohan.verma@example.com',
-    title: 'Adidas Originals Track Jacket',
+    title: 'Zara Faux-Leather Biker Jacket',
     category: 'outerwear',
-    brand: 'Adidas',
+    brand: 'Zara',
     size: 'M',
     condition: 'like-new',
-    description: 'Iconic 3-Stripes retro track jacket in black and white. Full front zipper and ribbed cuffs.',
+    description: 'Edgy black moto-style faux-leather biker jacket with asymmetrical silver zip closure and lapel snaps. Clean interior lining with no scuffs.',
     estimatedValue: 2800,
     images: [
-      'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Delhi', state: 'Delhi', country: 'India' },
@@ -144,31 +139,29 @@ const DEMO_LISTINGS = [
   },
   {
     userEmail: 'aarav.sharma@example.com',
-    title: 'Uniqlo Oxford Cotton Shirt',
+    title: 'Uniqlo Slim-Fit Oxford Cotton Shirt',
     category: 'tops',
     brand: 'Uniqlo',
     size: 'M',
     condition: 'like-new',
-    description: 'Crisp Oxford cotton button-down in sky blue. Great smart-casual essential.',
+    description: 'Crisp white slim-fit Oxford cotton button-down shirt. Button-down collar and barrel cuffs, versatile for office wear or weekend layering.',
     estimatedValue: 1600,
     images: [
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1584865288642-42078afe6942?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'rohan.verma@example.com',
-    title: 'Puma Windbreaker Sports Jacket',
-    category: 'activewear',
-    brand: 'Puma',
+    title: 'Wildcraft Tactical Outdoor Cargo Trousers',
+    category: 'bottoms',
+    brand: 'Wildcraft',
     size: 'L',
     condition: 'good',
-    description: 'Lightweight weather-resistant windrunner with zip pockets and reflective accents.',
+    description: 'Durable charcoal grey outdoor cargo trousers with multiple utility flap pockets and articulated knees. Ideal for trekking and travel.',
     estimatedValue: 2000,
     images: [
-      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Delhi', state: 'Delhi', country: 'India' },
@@ -181,26 +174,24 @@ const DEMO_LISTINGS = [
     brand: "Levi's",
     size: 'L',
     condition: 'like-new',
-    description: 'Timeless mid-wash blue denim jacket with brass button hardware. Rugged and authentic.',
+    description: 'Timeless mid-wash blue denim trucker jacket with brass button hardware and flap chest pockets. Authentic structured fit in excellent condition.',
     estimatedValue: 3200,
     images: [
-      'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1551537482-f2075a1d41f2?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Pune', state: 'Maharashtra', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'ananya.iyer@example.com',
-    title: 'FabIndia Handblock Print Kurta',
-    category: 'tops',
+    title: 'FabIndia Chanderi Silk Saree',
+    category: 'dresses',
     brand: 'FabIndia',
-    size: 'M',
+    size: 'One Size',
     condition: 'new',
-    description: 'Traditional artisan handblock indigo print straight kurta. 100% breathable organic cotton.',
+    description: 'Traditional handcrafted Chanderi silk saree in royal deep purple with an ornate gold zari temple border and woven pallu. Unstitched blouse piece included.',
     estimatedValue: 1400,
     images: [
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Chennai', state: 'Tamil Nadu', country: 'India' },
@@ -213,10 +204,9 @@ const DEMO_LISTINGS = [
     brand: 'Marks & Spencer',
     size: 'M',
     condition: 'like-new',
-    description: 'Tailored slim-fit stretch chinos in neutral khaki. Perfect for workplace or weekend wear.',
+    description: 'Tailored slim-fit stretch chinos in neutral khaki. Breathable cotton twill with button-tab waist, perfect for workplace or weekend wear.',
     estimatedValue: 2100,
     images: [
-      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
@@ -229,10 +219,9 @@ const DEMO_LISTINGS = [
     brand: 'Mango',
     size: 'S',
     condition: 'new',
-    description: 'Breezy botanical print midi dress with tie-up waist and V-neckline. Elegant and chic.',
+    description: 'Breezy white botanical floral wrap midi dress with tie-up waist, short flutter sleeves, and subtle side slit. Elegant resort and summer piece.',
     estimatedValue: 2500,
     images: [
-      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Mumbai', state: 'Maharashtra', country: 'India' },
@@ -240,64 +229,61 @@ const DEMO_LISTINGS = [
   },
   {
     userEmail: 'rohan.verma@example.com',
-    title: 'Nike Air Zoom Pegasus Road Running Shoes',
+    title: 'Nike Free RN Flyknit Running Shoes',
     category: 'footwear',
     brand: 'Nike',
     size: 'L',
-    condition: 'good',
-    description: 'Responsive cushioned road runners with engineered mesh upper. Tread in solid shape.',
-    estimatedValue: 3500,
+    condition: 'like-new',
+    description: 'Lightweight crimson red Nike Free Flyknit running shoes with white swoosh branding. Breathable engineered knit upper with flexible cushioned sole in excellent condition.',
+    estimatedValue: 3200,
     images: [
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Delhi', state: 'Delhi', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'vikram.malhotra@example.com',
-    title: 'Vero Moda Ribbed Knit Cardigan',
+    title: 'Vero Moda Bohemian Fringe Knit Poncho',
     category: 'outerwear',
     brand: 'Vero Moda',
-    size: 'M',
+    size: 'One Size',
     condition: 'like-new',
-    description: 'Soft textured ribbed cardigan in beige melange. Tortoiseshell button closure.',
-    estimatedValue: 1900,
+    description: 'Bohemian open-weave crochet knit poncho in neutral oatmeal cream with V-neckline and fringed hemline. Perfect lightweight layering piece for transitional weather.',
+    estimatedValue: 1800,
     images: [
       'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Pune', state: 'Maharashtra', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'rohan.verma@example.com',
-    title: 'Ray-Ban Classic Gold Aviator Sunglasses',
+    title: 'Ray-Ban Classic Wayfarer Sunglasses',
     category: 'accessories',
     brand: 'Ray-Ban',
     size: 'One Size',
     condition: 'like-new',
-    description: 'Classic teardrop aviators with crystal green G-15 lenses and gold metal frame. Includes leather case.',
+    description: 'Authentic Ray-Ban classic Wayfarer sunglasses in polished black acetate with polarized G-15 dark grey lenses. Features iconic silver temple rivets and signature Ray-Ban script.',
     estimatedValue: 4500,
     images: [
-      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Delhi', state: 'Delhi', country: 'India' },
     status: 'available',
   },
   {
     userEmail: 'aarav.sharma@example.com',
-    title: 'Wildcraft Waterproof Hooded Trekking Jacket',
-    category: 'outerwear',
-    brand: 'Wildcraft',
-    size: 'XL',
-    condition: 'good',
-    description: 'Seam-sealed all-weather hiking shell with adjustable storm hood and breathable mesh lining.',
-    estimatedValue: 2600,
+    title: 'Zara Cropped Graphic Cotton T-Shirt',
+    category: 'tops',
+    brand: 'Zara',
+    size: 'M',
+    condition: 'like-new',
+    description: 'Boxy cropped crewneck graphic t-shirt in washed vintage black with white skeleton hand motif. Soft breathable 100% cotton jersey with clean distressed hems.',
+    estimatedValue: 1000,
     images: [
-      'https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1503342394128-c104d54dba01?auto=format&fit=crop&w=800&q=80',
     ],
     location: { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
     status: 'available',
@@ -347,6 +333,25 @@ async function seedDemoData() {
     console.log('\n--- 2. Seeding Realistic Clothing Listings ---');
     const listingMap = {};
 
+    // Remove obsolete demo listing titles for demo accounts to prevent duplicates upon re-seeding
+    const obsoleteTitles = [
+      'Nike Dri-FIT Running T-Shirt',
+      'Zara Linen Casual Shirt',
+      'H&M Relaxed Fit Cotton Hoodie',
+      'Adidas Originals Track Jacket',
+      'Uniqlo Oxford Cotton Shirt',
+      'Puma Windbreaker Sports Jacket',
+      'FabIndia Handblock Print Kurta',
+      'Nike Air Zoom Pegasus Road Running Shoes',
+      'Vero Moda Ribbed Knit Cardigan',
+      'Ray-Ban Classic Gold Aviator Sunglasses',
+      'Wildcraft Waterproof Hooded Trekking Jacket',
+    ];
+    await Listing.deleteMany({
+      owner: { $in: Object.values(userMap).map((u) => u._id) },
+      title: { $in: obsoleteTitles },
+    });
+
     for (const item of DEMO_LISTINGS) {
       const owner = userMap[item.userEmail];
       if (!owner) continue;
@@ -368,6 +373,10 @@ async function seedDemoData() {
         });
         console.log(`Created listing: "${item.title}" — ₹${item.estimatedValue} (${item.brand}, Size ${item.size})`);
       } else {
+        listing.category = item.category;
+        listing.brand = item.brand;
+        listing.size = item.size;
+        listing.condition = item.condition;
         listing.estimatedValue = item.estimatedValue;
         listing.description = item.description;
         listing.location = item.location;
@@ -380,8 +389,8 @@ async function seedDemoData() {
 
     // 3. Seed Sample Completed & Pending Swaps for Rich Activity
     console.log('\n--- 3. Seeding Realistic Swap Activity ---');
-    const itemA = listingMap['Nike Dri-FIT Running T-Shirt'];
-    const itemB = listingMap['FabIndia Handblock Print Kurta'];
+    const itemA = listingMap['Nike Dri-FIT Legend Training T-Shirt'];
+    const itemB = listingMap['FabIndia Chanderi Silk Saree'];
     const userA = userMap['aarav.sharma@example.com'];
     const userD = userMap['ananya.iyer@example.com'];
 
@@ -411,7 +420,7 @@ async function seedDemoData() {
         await Message.create({
           conversation: conv._id,
           sender: userA._id,
-          text: 'Hi Ananya! I love the FabIndia Kurta. Would you be interested in swapping for my Nike Dri-FIT tee?',
+          text: 'Hi Ananya! I love your FabIndia Silk Saree. Would you be interested in swapping for my Nike training tee?',
           readBy: [userA._id, userD._id],
         });
 
