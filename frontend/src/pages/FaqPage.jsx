@@ -10,119 +10,188 @@ const FAQ_SECTIONS = [
         id: 'what-is-clothing-exchange',
         question: 'What is Clothing Exchange?',
         answer:
-          'Clothing Exchange is a web-based circular fashion marketplace designed for direct item-for-item apparel trades. Members list garments they no longer wear, browse items listed by others, and propose trades locally without any monetary transactions.',
+          'Clothing Exchange is a circular fashion marketplace where members trade unworn apparel directly with one another. Instead of buying or selling with money, you exchange clothing item-for-item, giving good clothes a second life.',
       },
       {
         id: 'money-transactions',
         question: 'Are money transactions supported?',
         answer:
-          'No. The platform strictly enforces direct item-for-item non-monetary exchanges. There is no payment gateway, fee collection, or wallet system. All exchanges are negotiated and agreed upon as 1-to-1 trades.',
+          'No. Clothing Exchange is strictly a non-monetary, direct item-for-item exchange. There are no fees, wallet balances, or payment processing. Every trade is a direct one-to-one exchange between two members.',
       },
       {
         id: 'how-swap-works',
         question: 'How does a clothing swap work?',
         answer:
-          'A member browses the marketplace, finds an available listing they want, and clicks "Request Swap". They select one of their own available listings to offer in return. The owner of the requested item receives an incoming request with estimated values compared side-by-side, and can either chat, accept, or reject the trade.',
+          'Browse available items listed by other members. When you find a piece you like, propose a swap by selecting one of your own available listings to offer in return. The other person reviews your offer, can message you to discuss details, and chooses to accept or decline.',
       },
       {
-        id: 'authentication-security',
-        question: 'How is authentication handled?',
+        id: 'account-requirement',
+        question: 'Do I need an account to swap items?',
         answer:
-          'User authentication uses secure bcrypt password hashing and HTTP-only JSON Web Tokens (JWT). Passwords and sensitive data are never returned in public profile responses, and protected routes enforce role authorization on both client and server.',
+          'You can browse the public marketplace freely without an account. To list your own clothes, send swap proposals, or message other members, you will need to sign up for a free account.',
       },
     ],
   },
   {
-    category: 'Listings & Valuation',
+    category: 'Listings',
     items: [
       {
         id: 'create-listing',
         question: 'How do I create a listing?',
         answer:
-          'Once logged in, click "+ Create Listing" in the navigation bar or dashboard. Fill in the item title, description, category, size, condition, and brand, and upload photos. An estimated reference swap value is automatically suggested to help guide fair trades.',
+          'After logging in, click "+ Create Listing" in the navigation bar or from your dashboard. Upload clear photos of your garment, fill in the title, description, category, size, brand, and condition, and save your listing.',
+      },
+      {
+        id: 'required-information',
+        question: 'What information do I need to provide?',
+        answer:
+          'Every listing needs at least one photo, a descriptive title, category (such as tops, bottoms, outerwear, footwear, or dresses), size, brand, condition (New with tags, Like new, Good, or Fair), and a brief description highlighting fit or styling notes.',
       },
       {
         id: 'edit-delete-listing',
         question: 'Can I edit or delete my listing?',
         answer:
-          'Yes. Through the "My Listings" page, owners can update listing details or delete items at any time, provided the item is not currently locked in an active swap request.',
+          'Yes. You can edit your listing details, photos, or descriptions anytime from your "My Listings" page, or delete the listing entirely—as long as the item is not currently locked in an active trade.',
       },
       {
-        id: 'value-estimation',
-        question: 'How does swap value estimation work?',
+        id: 'listing-in-swap',
+        question: 'What happens to my listing when it is involved in a swap?',
         answer:
-          'The platform uses a deterministic, rule-based valuation engine that computes an estimated reference value based on category, brand tier, and garment condition (new, like-new, good, fair). This value is not a retail cash price; it serves as an objective reference point to ensure fair, balanced exchanges.',
-      },
-      {
-        id: 'value-classifications',
-        question: 'What do "Close Match", "Moderate Difference", and "Large Difference" mean?',
-        answer:
-          'When two items are compared via the Phase 6 Value Comparator, the percentage difference is classified into three fairness tiers: "Close Match" (within 20% difference, indicating an even trade), "Moderate Difference" (21% to 50% difference, an acceptable gap subject to agreement), and "Large Difference" (greater than 50% difference, highlighting trade asymmetry).',
+          'When you propose or accept a swap, both items are temporarily marked as pending so they cannot be offered to anyone else at the same time. Once the trade is marked completed, both items are archived as swapped. If a swap is cancelled or declined, the items become available again immediately.',
       },
     ],
   },
   {
-    category: 'Swaps, Negotiation & Matching',
+    category: 'Swap Values',
     items: [
       {
-        id: 'nearby-matches',
-        question: 'How are nearby swap matches determined?',
+        id: 'value-estimation',
+        question: 'How is an item\'s estimated swap value determined?',
         answer:
-          'On every Item Details page, the Phase 7 Location-Based Matching engine automatically analyzes geographic proximity and value compatibility. Candidates are classified as "Exact City Match" (same city and state) or "State Match" (same state, different city), filtered to items with compatible values, while excluding the user\'s own items and non-available listings.',
+          'When you list a garment, the platform estimates its reference value based on its category, brand, and condition. This estimated value is not a cash price; it serves as a helpful reference point so both members can easily judge whether an exchange is fair and balanced.',
+      },
+      {
+        id: 'close-match',
+        question: 'What does "Close Match" mean?',
+        answer:
+          'A "Close Match" means the two items being compared have estimated swap values within 20% of each other. This indicates a very balanced, even exchange.',
+      },
+      {
+        id: 'moderate-large-diff',
+        question: 'What do "Moderate Difference" and "Large Difference" mean?',
+        answer:
+          'A "Moderate Difference" means the estimated values differ by 21% to 50%, which is often still an agreeable trade if both parties are happy with the exchange. A "Large Difference" means the values differ by more than 50%, highlighting a significant value gap so both members are aware before agreeing.',
+      },
+      {
+        id: 'cash-price-comparison',
+        question: 'Is the estimated value the same as a cash price?',
+        answer:
+          'No. There is no money used on Clothing Exchange. The estimated value is purely an informational benchmark to help you and your trade partner evaluate fairness.',
+      },
+    ],
+  },
+  {
+    category: 'Swaps & Negotiation',
+    items: [
+      {
+        id: 'send-swap-request',
+        question: 'How do I send a swap request?',
+        answer:
+          'Open any available item in the marketplace, click "Request Swap", and pick which of your own available items you would like to offer in exchange. The owner will be notified of your proposal.',
       },
       {
         id: 'negotiate-chat',
-        question: 'Can I negotiate before accepting a swap?',
+        question: 'Can I talk to someone before accepting a swap?',
         answer:
-          'Yes. Every swap request card has an "Open Negotiation" button that opens a linked private chat thread. Users can discuss item condition, measurements, and meetup details in real time before formalizing the trade.',
-      },
-      {
-        id: 'accept-complete-swap',
-        question: 'What happens when a swap is accepted or completed?',
-        answer:
-          'When the recipient accepts a swap request, both items are marked "pending" and any other competing swap requests referencing either item are automatically rejected. Once the users meet and exchange items, either party can mark the swap as "Completed", which updates both items to "swapped" and archives them from the active public marketplace.',
+          'Yes. Every swap request includes an "Open Negotiation" button that opens a private chat with the other member. You can ask about measurements, fabric feel, or meetup preferences before deciding.',
       },
       {
         id: 'cancel-reject-swap',
-        question: 'Can I cancel or reject a swap request?',
+        question: 'Can I reject or cancel a request?',
         answer:
-          'Yes. The requester can cancel a pending swap proposal at any time, and the recipient can reject an incoming offer. In both cases, both items immediately return to "available" status.',
+          'Yes. If you sent an offer, you can cancel it at any time before it is accepted. If you received an offer, you can decline it if the proposed item isn\'t a good match for you. In both cases, both items immediately return to available status.',
       },
       {
-        id: 'deleted-listing-swap',
-        question: 'What happens if a listing involved in a pending swap is deleted?',
+        id: 'accept-swap',
+        question: 'What happens when a swap is accepted?',
         answer:
-          'If a user or administrator deletes a listing that is part of an active swap request, the platform\'s backend automatically cascades the deletion by auto-rejecting all active swap requests referencing that item and releasing the partner\'s item back to "available" status.',
+          'When the recipient accepts an offer, both items are locked in for that swap, and any other pending proposals referencing either item are automatically declined so you can focus on meeting up.',
       },
       {
-        id: 'chat-messaging',
-        question: 'How does in-app chat work?',
+        id: 'complete-swap',
+        question: 'What happens when a swap is completed?',
         answer:
-          'Chat provides direct 1-on-1 messaging between trading partners. Threads sync via a reliable 4-second REST polling interval with read receipts, unread indicators, mobile view toggling, and an in-header swap action bar for one-click trade confirmation.',
+          'Once you and your trading partner have met and exchanged your clothes, either member can click "Mark Completed". Both items are then permanently marked as swapped and archived from the active marketplace.',
+      },
+      {
+        id: 'deleted-item-swap',
+        question: 'What happens if an item involved in an unfinished swap is removed?',
+        answer:
+          'If an item is removed while a swap is still in progress, the affected request is cancelled so the other person\'s item can safely become available again for new trades.',
       },
     ],
   },
   {
-    category: 'Administration & Architecture',
+    category: 'Nearby Matches',
     items: [
       {
-        id: 'admin-management',
-        question: 'What can administrators manage?',
+        id: 'nearby-matches',
+        question: 'How are nearby swap matches found?',
         answer:
-          'Authorized administrators have access to a dedicated Admin Panel (/admin). They can monitor platform-wide analytics, view and search all registered users, toggle user/admin roles (with protection against self-demotion), delete violating listings, and review all swap transactions across the platform.',
+          'When you view an item, the platform automatically looks for compatible items from people in your area. We match based on city and state location while checking estimated values so you can discover great trades close to home.',
       },
       {
-        id: 'deployment-architecture',
-        question: 'How is the platform deployed?',
+        id: 'state-matches',
+        question: 'Why might I see items from elsewhere in my state?',
         answer:
-          'The application uses a modern decoupled cloud architecture: the React/Vite single-page application is deployed on Vercel, the Node.js/Express REST API is deployed on Render, and data is persisted in a high-availability MongoDB Atlas cloud cluster with Cloudinary for image storage.',
+          'We first look for compatible items from people in your exact city. If suitable options aren\'t available locally, we also show compatible items from elsewhere in your state to give you more trade possibilities.',
+      },
+      {
+        id: 'filter-city-state',
+        question: 'Can I filter listings by city or state?',
+        answer:
+          'Yes. When browsing the marketplace, you can use the location filters to search specifically for items in your city or state, alongside filters for category, size, and condition.',
+      },
+    ],
+  },
+  {
+    category: 'Chat & Account Safety',
+    items: [
+      {
+        id: 'chat-messaging',
+        question: 'How does chat work?',
+        answer:
+          'Chat gives you a direct conversation channel with your trading partner. You can access all your active threads from the Chat page, see read receipts, and even confirm or complete your swap right from the chat header.',
+      },
+      {
+        id: 'chat-privacy',
+        question: 'Who can see my swap conversation?',
+        answer:
+          'Your messages are private between you and the person you are negotiating with.',
+      },
+      {
+        id: 'account-protection',
+        question: 'How is my account protected?',
+        answer:
+          'Your account is protected by your secure password and private login session. Private credentials are never shared with other users, and you can update your contact information or location anytime from your Profile page.',
+      },
+      {
+        id: 'public-profile-info',
+        question: 'What information can other users see?',
+        answer:
+          'Other members can only see your public profile information—such as your name, general location (city/state), bio, and the items you currently have listed for swap.',
+      },
+      {
+        id: 'admin-role',
+        question: 'What can administrators do?',
+        answer:
+          'Platform administrators help maintain a safe, respectful community by monitoring marketplace activity, removing inappropriate listings, and assisting with member account management.',
       },
     ],
   },
 ];
 
 function FaqPage() {
-  // Store open items as a Set of string IDs
   const [openIds, setOpenIds] = useState(
     new Set(['what-is-clothing-exchange', 'money-transactions', 'how-swap-works'])
   );
@@ -152,10 +221,10 @@ function FaqPage() {
   return (
     <div className="page-container faq-page">
       <div className="faq-header">
-        <span className="faq-header-badge">Knowledge Base</span>
+        <span className="faq-header-badge">Help & Support</span>
         <h1>Frequently Asked Questions</h1>
         <p className="faq-subtitle">
-          Everything you need to know about trading clothes, value estimation, and platform features.
+          Everything you need to know about swapping clothes, finding nearby matches, and using the marketplace.
         </p>
         <div className="faq-actions-row">
           <button type="button" className="btn btn-secondary btn-sm" onClick={handleExpandAll}>
@@ -225,4 +294,3 @@ function FaqPage() {
 }
 
 export default FaqPage;
-

@@ -29,15 +29,13 @@ function Footer() {
 
         <div className="footer-nav-section">
           <div className="footer-col">
-            <h4 className="footer-col-title">Project & Info</h4>
-            <ul className="footer-links">
+            <h4 className="footer-col-title">Explore & Help</h4>
               <li>
                 <Link to="/faq">Frequently Asked Questions</Link>
               </li>
               <li>
-                <Link to="/recent-changes">Recent Changes & Milestones</Link>
+                <Link to="/recent-changes">Recent Changes</Link>
               </li>
-              <li>
                 <Link to="/">Browse Marketplace</Link>
               </li>
             </ul>
@@ -65,14 +63,12 @@ function Footer() {
 
       <div className="footer-bottom">
         <p className="footer-copyright">
-          &copy; 2026 Clothing Exchange & Swap Marketplace. All 8 roadmap phases completed.
+          &copy; 2026 Clothing Exchange & Swap Marketplace. Direct item-for-item clothing exchange.
         </p>
         <p className="footer-meta">
-          <span>Non-monetary exchange</span> • <span>100% test pass rate</span> • <span>Cloud deployed</span>
         </p>
       </div>
     </footer>
-  );
 }
 
 export default Footer;

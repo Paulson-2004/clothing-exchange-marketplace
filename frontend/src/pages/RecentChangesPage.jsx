@@ -4,165 +4,158 @@ import Icon from '../components/common/Icon';
 const MILESTONES = [
   {
     id: 'visual-polish-sep-2026',
-    tag: 'Latest Milestone',
+    tag: 'Latest Update',
     date: 'September 2026',
-    title: 'Visual Polish, Accessibility & Portfolio Refinements',
+    title: 'September 2026 — Visual Polish, Accessibility & User Experience Improvements',
     highlight: true,
     summary:
-      'A comprehensive UI/UX refinement pass elevating visual consistency, mobile ergonomics, accessibility, and platform presentation.',
+      'A comprehensive design and user experience update focusing on visual clarity, mobile ergonomics, accessibility, and day-to-day usability across the marketplace.',
     bullets: [
-      'Marketplace Value-Proposition Hero: Introduced a clean, compact intro banner communicating the direct non-monetary exchange model.',
-      'Category Filter Pills: Added an interactive category pill bar for 1-click visual category discovery and filtering.',
-      'Swap Value Comparison Meter: Created a visual progress meter bar on swap cards with color-coded fairness thresholds (≤20% Close Match, 21–50% Moderate Diff, >50% Large Diff).',
-      'Specification Chips: Converted Category, Brand, Size, and Condition on the Item Details page into modern apparel specification tags.',
-      'Reusable SVG Icon Component: Replaced raw system emojis across admin stats, user dashboard, and match tags with unified vector icons.',
-      'Refined Card Border Contrast: Standardized 1px solid #eeece5 borders across all white card surfaces to prevent display blending.',
-      'Vector SVG Favicon: Added a crisp SVG favicon matching the brand exchange arrows icon in the Navbar.',
-      'Mobile Navigation & Chat Ergonomics: Implemented an accessible hamburger navigation drawer and narrow-screen chat view toggling with back navigation.',
-      'Contextual In-Thread Swap Actions: Enabled one-click Accept, Reject, Cancel, and Complete actions directly within the negotiation chat header.',
-      'Verification: 173/173 backend automated integration tests passing (100% test pass rate), 0 build errors, 0 build warnings, and zero new dependencies.',
+      'Marketplace Value-Proposition Banner: Introduced a clean introduction banner highlighting the direct, non-monetary clothing exchange model.',
+      'Quick Category Filters: Added interactive category filter pills for one-click discovery across popular clothing types.',
+      'Visual Value Comparison Meter: Added a clear progress meter bar on swap requests to make it easy to see how closely two items match in estimated value.',
+      'Garment Specification Chips: Reorganized clothing details (Category, Brand, Size, Condition) into modern visual specification tags on item pages.',
+      'Consistent Vector Icons: Replaced platform-dependent emojis with a unified SVG icon set across all dashboards and tags for a cleaner experience on any device.',
+      'Refined Surface Visuals: Improved border contrast and surface styling across all cards, filters, and dashboard containers.',
+      'Light & Dark Theme Support: Added an accessible theme toggle in the navigation bar with light mode as the default and automatic preference saving.',
+      'Mobile Navigation & Chat Ergonomics: Implemented an accessible hamburger navigation drawer and improved mobile chat navigation with smooth thread switching.',
+      'Contextual In-Chat Swap Actions: Enabled one-click action buttons inside chat headers so swappers can accept, decline, cancel, or complete trades while discussing details.',
+      'Strengthened Registration Validation: Added instant inline validation to clearly flag invalid emails or phone numbers before submission.',
+      'Quality Benchmark: Verified with 173/173 backend automated tests passing (100% test pass rate), frontend build completed with 0 errors and 0 warnings, and no new dependencies introduced.',
     ],
   },
   {
     id: 'production-deployment',
     tag: 'Infrastructure',
-    date: 'Production Readiness',
-    title: 'Production Deployment & Cloud Services',
+    date: 'September 2026',
+    title: 'September 2026 — Production Deployment & Service Reliability',
     summary:
-      'Complete production deployment and environment configuration across modern cloud platforms.',
+      'Deployed the application to cloud environments with automated builds, high-availability database storage, and secure photo hosting.',
     bullets: [
-      'Frontend Production: Deployed React + Vite single-page application to Vercel with automated build optimization.',
-      'Backend Production: Deployed Node.js / Express REST API to Render with environment variable isolation.',
-      'Cloud Database: Connected production runtime to high-availability MongoDB Atlas cluster.',
-      'Cloud Image Storage: Integrated Cloudinary for multi-image uploads with automatic UI fallback placeholders.',
-      'Security Remediation: Complete Git history sanitization ensuring no credentials or secrets exist in repository tracking.',
+      'Cloud Hosting: Deployed the interactive web client and application server to production cloud environments with automated build optimization.',
+      'Cloud Database: Connected to a reliable, high-availability cloud database cluster for real-time data persistence.',
+      'Photo Storage Integration: Added cloud storage for multi-image listing uploads with automatic placeholder fallbacks.',
+      'Security Sanitization: Audited and secured repository configuration, ensuring zero sensitive credentials or development secrets in tracked files.',
     ],
   },
   {
     id: 'profile-and-location',
-    tag: 'Feature Addition',
-    date: 'Post-Roadmap Polish',
-    title: 'Personal Profile & Marketplace Location Filtering',
+    tag: 'Feature Update',
+    date: 'September 2026',
+    title: 'September 2026 — Member Profiles & Location Filtering',
     summary:
-      'Implemented dedicated profile management and enhanced geographic filtering directly on the marketplace.',
+      'Added dedicated user profiles, activity metrics, and localized marketplace search capabilities.',
     bullets: [
-      'Personal Profile Dashboard: Added user profile management with editable name, contact phone, city/state location, and bio.',
-      'Activity Statistics: Real-time user metrics displaying total listings, available items, and completed trades.',
-      'Marketplace Location Filtering: Added direct city and state filter inputs on the marketplace with case-insensitive search intersection.',
-      'Test Suite Expansion: Added 17 automated integration tests specifically validating profile updates, protected fields, and location queries.',
+      'Personal Profile Management: Members can manage their display name, contact phone, city/state, and personal bio.',
+      'Member Activity Counters: Added real-time counters displaying total listings, available garments, and completed trades.',
+      'Location-Based Search: Added direct city and state filter inputs on the marketplace to help users find clothes available locally.',
+      'Automated Test Coverage: Added 17 integration tests verifying profile updates, field protections, and location search accuracy.',
     ],
   },
   {
     id: 'phase-8',
-    tag: 'Phase 8',
-    date: 'Milestone 8',
-    title: 'Role-Based Admin Panel & Moderation',
+    tag: 'Milestone',
+    date: 'Phase 8',
+    title: 'Phase 8 — Administration & Content Moderation',
     summary:
-      'Comprehensive administrative governance tools for platform moderation and activity monitoring.',
+      'Added administrative governance tools to oversee marketplace health and maintain community safety.',
     bullets: [
-      'Admin Authorization: Enforced role-based access control (RBAC) middleware restricting /api/admin/* to verified administrator accounts.',
-      'Platform Overview Dashboard: Real-time global metric counters for total users, admins, listings, swap requests, and messages.',
-      'User Management: Searchable user list with role filtering, role promotion/demotion, and protection against admin self-demotion.',
-      'Listing Moderation: Platform-wide listing overview with status/category filtering and cascading deletion that safely auto-rejects active swaps.',
-      'Swap Activity Monitoring: Full visibility into incoming, pending, accepted, completed, and rejected trades across the entire marketplace.',
+      'Administrator Dashboard: High-level platform statistics displaying total members, active listings, swap requests, and messages.',
+      'User Management: Searchable directory of registered accounts with role management and protections against accidental admin self-demotion.',
+      'Listing Moderation: Platform-wide oversight of apparel listings with category/status filtering and safe deletion that cancels linked active trades.',
+      'Swap Monitoring: Comprehensive view of incoming, pending, accepted, and completed swaps across the marketplace.',
     ],
   },
   {
     id: 'phase-7',
-    tag: 'Phase 7',
-    date: 'Milestone 7',
-    title: 'Location-Based Swap Matching Engine',
+    tag: 'Milestone',
+    date: 'Phase 7',
+    title: 'Phase 7 — Nearby Swap Matching',
     summary:
-      'Intelligent geographical and value-compatible item discovery engine on listing details.',
+      'Introduced localized trade recommendations on item detail pages to help members find compatible swaps nearby.',
     bullets: [
-      'Proximity Matching Algorithm: Hierarchical spatial evaluation matching candidate items in the exact same city+state or same state.',
-      'Value Compatibility Filter: Cross-referenced with Phase 6 valuation to recommend only items with compatible trade values (Close Match or Moderate Difference).',
-      'Exclusion Rules: Automatically filters out non-available listings and items owned by the requesting user.',
-      'Visual Match Tags: Renders clear location tier and value compatibility badges on recommendation cards.',
+      'Location Proximity Matching: Automatically finds and suggests compatible listings from people in the same city or state.',
+      'Value Compatibility Matching: Filters suggestions to items with reasonably close estimated values so trades remain fair.',
+      'Smart Filtering: Automatically excludes unavailable listings and the member\'s own items from recommendation lists.',
     ],
   },
   {
     id: 'phase-6',
-    tag: 'Phase 6',
-    date: 'Milestone 6',
-    title: 'Deterministic Swap Value Comparator',
+    tag: 'Milestone',
+    date: 'Phase 6',
+    title: 'Phase 6 — Swap Value Comparison',
     summary:
-      'Objective, rule-based valuation and trade fairness calculation engine.',
+      'Introduced objective value estimation and fairness comparison between garments proposed for exchange.',
     bullets: [
-      'Deterministic Valuation Engine: Calculates an estimated reference dollar value based on category, brand tier, and garment condition.',
-      'Comparison Endpoint: Computes absolute value difference, percentage gap, and trade fairness tier.',
-      'Three Fairness Classifications: Close Match (≤20%), Moderate Difference (21–50%), and Large Difference (>50%).',
-      'Transparent Comparison: Integrated into swap request proposals and item detail recommendation feeds.',
+      'Estimated Swap Values: Automatically calculates an estimated reference value based on category, brand tier, and garment condition.',
+      'Fairness Tiers: Categorizes trade balance into Close Match (≤20% difference), Moderate Difference (21–50%), and Large Difference (>50%).',
+      'Transparent Trade Insights: Displays value comparison directly on swap proposals to help members make informed trade decisions.',
     ],
   },
   {
     id: 'phase-5',
-    tag: 'Phase 5',
-    date: 'Milestone 5',
-    title: 'In-App Negotiation & Messaging',
+    tag: 'Milestone',
+    date: 'Phase 5',
+    title: 'Phase 5 — Chat & Negotiation',
     summary:
-      'Private 1-on-1 messaging threads allowing trading partners to negotiate before swap acceptance.',
+      'Integrated private messaging so trading partners can connect and discuss items before accepting a swap.',
     bullets: [
-      'Private Conversations: Dedicated 1-on-1 chat channels restricted to trading participants.',
-      'Swap Request Linking: Threads directly associate with the relevant swap request proposal.',
-      'Read Receipts & Unread Badges: Real-time tracking of unread message counts in the conversation list.',
-      'Lightweight Synchronization: Client polling sync every 4 seconds providing resilient communication.',
+      'Direct Messaging: 1-on-1 private conversations between trading partners to discuss sizing, condition, and meetups.',
+      'Swap Linking: Conversations automatically associate with the corresponding swap request for clear context.',
+      'Unread Message Badges: Real-time unread counts and read receipts across conversation lists.',
     ],
   },
   {
     id: 'phase-4',
-    tag: 'Phase 4',
-    date: 'Milestone 4',
-    title: 'Swap Request Lifecycle & State Machine',
+    tag: 'Milestone',
+    date: 'Phase 4',
+    title: 'Phase 4 — Swap Request Lifecycle',
     summary:
-      'Rigorous finite-state machine governing trade proposals, locking, acceptance, and completion.',
+      'Built the end-to-end swap request workflow from proposal to completion.',
     bullets: [
-      'State Transitions: Strictly enforced lifecycle from pending to accepted, completed, rejected, or cancelled.',
-      'Concurrency Protection: Automatically rejects conflicting pending proposals when an item is accepted into a trade.',
-      'Item Status Locking: Prevents items from being offered into multiple overlapping active swaps.',
-      'Inventory Archiving: Completed trades permanently update items to "swapped" and hide them from the public marketplace.',
+      'Swap Workflow: Structured trade states from proposal submission to acceptance, completion, decline, or cancellation.',
+      'Inventory Locking: Automatically marks items as pending during active proposals to prevent double-swapping.',
+      'Conflict Resolution: Automatically declines competing proposals once an item is accepted into an active trade.',
+      'Archiving: Automatically marks items as swapped upon completion and archives them from the active marketplace.',
     ],
   },
   {
     id: 'phase-3',
-    tag: 'Phase 3',
-    date: 'Milestone 3',
-    title: 'Clothing Listings & Marketplace Catalog',
+    tag: 'Milestone',
+    date: 'Phase 3',
+    title: 'Phase 3 — Clothing Listings & Marketplace',
     summary:
-      'Complete apparel listing inventory management with photo uploads and multi-parameter search.',
+      'Created the core marketplace catalog with multi-photo garment listings and search filters.',
     bullets: [
-      'Listing CRUD: Full creation, update, and deletion of clothing listings with categories, sizes, conditions, and descriptions.',
-      'Multi-Image Uploads: Image upload processing with thumbnail previews and primary cover selection.',
-      'Marketplace Filtering: Search by title/brand and filter by category, size, condition, and location.',
-      'Responsive Grid: Fluid responsive card layout with status pills and hover micro-interactions.',
+      'Item Creation & Management: Full support for creating, updating, and removing clothing listings with photos, size, condition, and brand.',
+      'Marketplace Browsing: Real-time search with multi-parameter filtering by category, size, condition, and keywords.',
+      'Responsive Item Cards: Clean visual grid displaying item photos, status badges, estimated values, and location tags.',
     ],
   },
   {
     id: 'phase-2',
-    tag: 'Phase 2',
-    date: 'Milestone 2',
-    title: 'User Authentication & Session Management',
+    tag: 'Milestone',
+    date: 'Phase 2',
+    title: 'Phase 2 — Account & Authentication',
     summary:
-      'Secure token-based authentication foundation for user identity and data protection.',
+      'Implemented secure user registration, login, and session handling.',
     bullets: [
-      'Registration & Login: Secure authentication endpoints using bcrypt password hashing.',
-      'JWT Authorization: Stateless authentication via JSON Web Tokens for API requests.',
-      'Client AuthContext: React context provider managing login status, user tokens, and automatic session restoration.',
-      'Protected Routes: Client-side route guards redirecting unauthorized visitors to login.',
+      'Member Registration & Login: Secure account creation with password encryption and authenticated sessions.',
+      'Session Persistence: Remembers logged-in members across browser refreshes and restores their active session.',
+      'Protected Member Areas: Restricts listing creation, swap requests, and chat to authenticated members.',
     ],
   },
   {
     id: 'phase-1',
-    tag: 'Phase 1',
-    date: 'Milestone 1',
-    title: 'Project Scaffolding & Architecture Setup',
+    tag: 'Milestone',
+    date: 'Phase 1',
+    title: 'Phase 1 — Project Foundation',
     summary:
-      'Foundational infrastructure, project directory structure, and database connectivity.',
+      'Established the foundation, data architecture, and visual design system for the Clothing Exchange marketplace.',
     bullets: [
-      'Monorepo Architecture: Decoupled Vite React frontend and Node.js Express backend.',
-      'Database Schema Design: Mongoose models for User, Listing, SwapRequest, Conversation, and Message.',
-      'Health Check & Environment: Configured environment isolation and system health monitoring endpoint.',
-      'Design System: Established the earthy green (#2f6f4f) and warm neutral (#faf9f6) design foundations.',
+      'System Architecture: Decoupled web client and application server architecture.',
+      'Data Models: Structured schemas for members, listings, swap requests, conversations, and messages.',
+      'Design System: Created the signature earthy green and warm neutral visual theme with accessible responsive components.',
     ],
   },
 ];
@@ -171,10 +164,10 @@ function RecentChangesPage() {
   return (
     <div className="page-container changelog-page">
       <div className="changelog-header">
-        <span className="changelog-header-badge">Project History</span>
-        <h1>Recent Changes & Milestones</h1>
+        <span className="changelog-header-badge">Product Updates</span>
+        <h1>Recent Changes</h1>
         <p className="changelog-subtitle">
-          A curated product changelog documenting the development phases, technical architecture, and final visual polish of the Clothing Exchange & Swap Marketplace.
+          A look at the latest improvements and milestones across the Clothing Exchange marketplace.
         </p>
       </div>
 
@@ -225,7 +218,7 @@ function RecentChangesPage() {
       </div>
 
       <div className="changelog-footer-cta">
-        <h3>Explore the Platform</h3>
+        <h3>Explore the Marketplace</h3>
         <p>Browse active clothing listings or learn more in our FAQ.</p>
         <div className="changelog-cta-buttons">
           <Link to="/" className="btn btn-primary">
@@ -241,4 +234,3 @@ function RecentChangesPage() {
 }
 
 export default RecentChangesPage;
-
