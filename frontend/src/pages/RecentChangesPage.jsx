@@ -102,7 +102,7 @@ const MILESTONES = [
     bullets: [
       'Direct Messaging: 1-on-1 private conversations between trading partners to discuss sizing, condition, and meetups.',
       'Swap Linking: Conversations automatically associate with the corresponding swap request for clear context.',
-      'Unread Message Badges: Real-time unread counts and read receipts across conversation lists.',
+      'Unread Message Badges: Real-time unread counts and conversation status tracking across active threads.',
     ],
   },
   {

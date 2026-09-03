@@ -9,6 +9,7 @@ import ErrorMessage from '../components/common/ErrorMessage';
 import Icon from '../components/common/Icon';
 import ListingCard from '../components/listing/ListingCard';
 import RequestSwapForm from '../components/swap/RequestSwapForm';
+import { formatCurrency } from '../utils/currency';
 
 function ItemDetailsPage() {
   const { id } = useParams();
@@ -77,7 +78,7 @@ function ItemDetailsPage() {
 
   const isOwner = user && listing.owner?._id === user.id;
 
-  const handleMessageSeller = async () => {
+  const handleMessageOwner = async () => {
     try {
       const data = await createOrFindConversation({ otherUserId: listing.owner._id });
       navigate(`/chat?conversation=${data.conversation._id}`);
@@ -99,43 +100,50 @@ function ItemDetailsPage() {
               }}
             />
           ) : (
-            <div className="listing-card-image-placeholder">No Image</div>
+            <div className="item-details-image-placeholder">No image available</div>
           )}
         </div>
+
         {listing.images && listing.images.length > 1 && (
           <div className="item-details-thumbnails">
-            {listing.images.map((url, index) => (
-              <img
-                key={url}
-                src={url}
-                alt={`${listing.title} thumbnail ${index + 1}`}
-                className={index === activeImage ? 'active' : ''}
-                onClick={() => setActiveImage(index)}
-                onError={(e) => {
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
-                }}
-              />
+            {listing.images.map((img, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`thumbnail-btn ${activeImage === idx ? 'active' : ''}`}
+                onClick={() => setActiveImage(idx)}
+              >
+                <img
+                  src={img}
+                  alt={`${listing.title} view ${idx + 1}`}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+                  }}
+                />
+              </button>
             ))}
           </div>
         )}
       </div>
 
       <div className="item-details-info">
-        <h1>{listing.title}</h1>
-        <p className={`listing-status listing-status-${listing.status}`}>
-          {listing.status === 'available' ? 'Available' : listing.status === 'pending' ? 'Pending Swap' : 'Swapped'}
-        </p>
+        <div className="item-details-header">
+          <h1>{listing.title}</h1>
+          <span className={`listing-status listing-status-${listing.status}`}>
+            {STATUS_LABELS[listing.status] || listing.status}
+          </span>
+        </div>
 
-        <div className="item-specs-chips" aria-label="Item specifications">
-          <span className="spec-chip">
+        <div className="item-specs-grid" aria-label="Item specifications">
+          <span className="spec-chip spec-chip-category">
             <span className="spec-chip-label">Category:</span>
             <span className="spec-chip-value">{listing.category}</span>
           </span>
-          <span className="spec-chip">
+          <span className="spec-chip spec-chip-brand">
             <span className="spec-chip-label">Brand:</span>
             <span className="spec-chip-value">{listing.brand}</span>
           </span>
-          <span className="spec-chip">
+          <span className="spec-chip spec-chip-size">
             <span className="spec-chip-label">Size:</span>
             <span className="spec-chip-value">{listing.size}</span>
           </span>
@@ -148,8 +156,8 @@ function ItemDetailsPage() {
         <dl className="item-details-list">
           <dt>Estimated swap value</dt>
           <dd>
-            <strong>${listing.estimatedValue}</strong>{' '}
-            <span className="field-hint">(estimate only, not a market price)</span>
+            <strong>{formatCurrency(listing.estimatedValue)}</strong>{' '}
+            <span className="field-hint">(estimate only — for barter comparison, not a cash price)</span>
           </dd>
           <dt>Location</dt>
           <dd>
@@ -179,8 +187,8 @@ function ItemDetailsPage() {
             <button className="btn btn-primary" disabled title="This item is not currently available">
               Not Available
             </button>
-            <button className="btn btn-secondary" onClick={handleMessageSeller}>
-              Message Seller
+            <button className="btn btn-secondary" onClick={handleMessageOwner}>
+              Message Owner
             </button>
           </div>
         ) : (
@@ -188,8 +196,8 @@ function ItemDetailsPage() {
             <button className="btn btn-primary" onClick={() => setShowSwapForm(true)}>
               Request Swap
             </button>
-            <button className="btn btn-secondary" onClick={handleMessageSeller}>
-              Message Seller
+            <button className="btn btn-secondary" onClick={handleMessageOwner}>
+              Message Owner
             </button>
           </div>
         )}
@@ -243,7 +251,7 @@ function ItemDetailsPage() {
                     <span className={`match-tag match-tag-value-${matchDetails.valueComparison.classification === 'Close Match' ? 'close' : 'moderate'}`}>
                       <Icon name="value" size={13} /> {matchDetails.valueComparison.classification}
                       {matchDetails.valueComparison.absoluteDifference > 0
-                        ? ` ($${matchDetails.valueComparison.absoluteDifference} · ${matchDetails.valueComparison.percentageDifference}%)`
+                        ? ` (${formatCurrency(matchDetails.valueComparison.absoluteDifference)} · ${matchDetails.valueComparison.percentageDifference}%)`
                         : ' (even value)'}
                     </span>
                   </div>

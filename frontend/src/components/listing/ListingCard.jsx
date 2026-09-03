@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '../../utils/currency';
 
 const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
 
@@ -38,7 +39,7 @@ function ListingCard({ listing }) {
           <span className="listing-card-condition">{condition}</span>
         </div>
         <h3 title={title}>{title}</h3>
-        <p className="listing-card-value">Est. value: ${estimatedValue}</p>
+        <p className="listing-card-value">Est. value: {formatCurrency(estimatedValue)}</p>
         <div className="listing-card-footer">
           <span className="listing-card-location">
             {location?.city && location?.state ? `${location.city}, ${location.state}` : 'Location not specified'}

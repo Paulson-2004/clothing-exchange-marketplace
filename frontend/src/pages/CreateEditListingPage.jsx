@@ -229,7 +229,7 @@ function CreateEditListingPage() {
         />
 
         <label htmlFor="estimatedValue">
-          Estimated swap value ($) <span className="field-hint">— an estimate, not a market price</span>
+          Estimated swap value (₹) <span className="field-hint">— reference estimate for barter comparison only, not a cash price</span>
         </label>
         <div className="value-input-row">
           <input
@@ -237,6 +237,7 @@ function CreateEditListingPage() {
             name="estimatedValue"
             type="number"
             min="0"
+            placeholder="e.g. 1500"
             value={formData.estimatedValue}
             onChange={handleChange}
             required

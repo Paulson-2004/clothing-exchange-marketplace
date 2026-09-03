@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { createOrFindConversation } from '../../api/chatApi';
 import { compareValues } from '../../utils/valueComparator';
+import { formatCurrency } from '../../utils/currency';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -35,7 +36,7 @@ function MiniListing({ listing, label }) {
         />
         <div>
           <p className="swap-mini-title">{listing.title}</p>
-          <p className="swap-mini-value">Est. ${listing.estimatedValue}</p>
+          <p className="swap-mini-value">Est. {formatCurrency(listing.estimatedValue)}</p>
         </div>
       </Link>
     </div>
@@ -95,7 +96,7 @@ function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, o
         <div className="swap-comparison-meter-box">
           <div className="swap-comparison-meter-header">
             <span className="swap-meter-stat">
-              Est. ${comparison.valueA} (requested) vs Est. ${comparison.valueB} (offered)
+              Est. {formatCurrency(comparison.valueA)} (requested) vs Est. {formatCurrency(comparison.valueB)} (offered)
             </span>
             <span
               className={`swap-meter-badge swap-meter-${
@@ -134,7 +135,7 @@ function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, o
             <span>
               {comparison.absoluteDifference === 0
                 ? 'Even value exchange'
-                : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
+                : `Difference: ${formatCurrency(comparison.absoluteDifference)} (${comparison.percentageDifference}%)`}
             </span>
             <span className="swap-meter-thresholds">
               {comparison.classification === 'Close Match'

@@ -86,7 +86,13 @@ const FAQ_SECTIONS = [
         id: 'cash-price-comparison',
         question: 'Is the estimated value the same as a cash price?',
         answer:
-          'No. There is no money used on Clothing Exchange. The estimated value is purely an informational benchmark to help you and your trade partner evaluate fairness.',
+          'No. There is no money or cash payment used on Clothing Exchange. Estimated values are presented in Indian Rupees (₹) purely as an informational reference benchmark to help you and your trade partner evaluate the relative balance of an exchange.',
+      },
+      {
+        id: 'unequal-value-swaps',
+        question: 'Can I swap items with different estimated values or pay the difference?',
+        answer:
+          'Clothing Exchange is strictly an item-for-item barter marketplace — cash payments, cash top-ups, and buying the difference are not supported. Unequal-value swaps are completely valid as long as both users mutually agree to the trade. The estimated swap value is only an informational guide to help you compare items, not an enforced price or payment requirement.',
       },
     ],
   },
