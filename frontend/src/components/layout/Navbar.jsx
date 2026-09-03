@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import Icon from '../common/Icon';
 
 function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -33,18 +36,6 @@ function Navbar() {
         </svg>
         <span>Clothing Exchange</span>
       </Link>
-
-      <button
-        type="button"
-        className="navbar-toggle"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label="Toggle navigation menu"
-        aria-expanded={isOpen}
-      >
-        <span className="navbar-toggle-bar" />
-        <span className="navbar-toggle-bar" />
-        <span className="navbar-toggle-bar" />
-      </button>
 
       <div className={`navbar-links ${isOpen ? 'open' : ''}`}>
         {isAuthenticated ? (
@@ -84,6 +75,31 @@ function Navbar() {
             </Link>
           </>
         )}
+      </div>
+
+      <div className="navbar-controls">
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={theme === 'dark'}
+        >
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
+        </button>
+
+        <button
+          type="button"
+          className="navbar-toggle"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label="Toggle navigation menu"
+          aria-expanded={isOpen}
+        >
+          <span className="navbar-toggle-bar" />
+          <span className="navbar-toggle-bar" />
+          <span className="navbar-toggle-bar" />
+        </button>
       </div>
     </nav>
   );

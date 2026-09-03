@@ -36,7 +36,7 @@ const toSafeUser = (user) => ({
 // POST /api/auth/register
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, location } = req.body;
+    const { name, email, password, phone, location } = req.body;
 
     // --- Backend validation (do not trust the frontend) ---
     if (!name || !email || !password) {
@@ -51,6 +51,19 @@ const register = async (req, res, next) => {
     if (!emailRegex.test(email)) {
       res.status(400);
       throw new Error('Please provide a valid email address');
+    }
+
+    let trimmedPhone = '';
+    if (phone !== undefined && phone !== null) {
+      trimmedPhone = typeof phone === 'string' ? phone.trim() : '';
+      if (trimmedPhone) {
+        const validCharsRegex = /^[+\d\s\-()]+$/;
+        const digitsOnly = trimmedPhone.replace(/\D/g, '');
+        if (!validCharsRegex.test(trimmedPhone) || digitsOnly.length < 7 || digitsOnly.length > 15) {
+          res.status(400);
+          throw new Error('Please provide a valid phone number (7 to 15 digits)');
+        }
+      }
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -70,6 +83,7 @@ const register = async (req, res, next) => {
       name: name.trim(),
       email: normalizedEmail,
       passwordHash,
+      phone: trimmedPhone,
       location: {
         city: location?.city?.trim() || '',
         state: location?.state?.trim() || '',

@@ -32,13 +32,14 @@ export function AuthProvider({ children }) {
     restoreSession();
   }, []);
 
-  const register = async ({ name, email, password, location }) => {
+  const register = async ({ name, email, phone, password, location }) => {
     setLoading(true);
     setError(null);
     try {
       const response = await axiosClient.post('/auth/register', {
         name,
         email,
+        phone,
         password,
         location,
       });
