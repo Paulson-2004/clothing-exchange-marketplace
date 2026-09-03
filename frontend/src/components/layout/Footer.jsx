@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import Icon from '../common/Icon';
 
 function Footer() {
   return (
@@ -30,12 +29,14 @@ function Footer() {
         <div className="footer-nav-section">
           <div className="footer-col">
             <h4 className="footer-col-title">Explore & Help</h4>
+            <ul className="footer-links">
               <li>
                 <Link to="/faq">Frequently Asked Questions</Link>
               </li>
               <li>
                 <Link to="/recent-changes">Recent Changes</Link>
               </li>
+              <li>
                 <Link to="/">Browse Marketplace</Link>
               </li>
             </ul>
@@ -66,10 +67,11 @@ function Footer() {
           &copy; 2026 Clothing Exchange & Swap Marketplace. Direct item-for-item clothing exchange.
         </p>
         <p className="footer-meta">
+          <span>Non-monetary exchange</span> • <span>Sustainable fashion</span> • <span>Community powered</span>
         </p>
       </div>
     </footer>
+  );
 }
 
 export default Footer;
-
