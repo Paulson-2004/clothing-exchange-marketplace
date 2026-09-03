@@ -180,7 +180,7 @@ function RegisterPage() {
 
   return (
     <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form className="auth-form register-form" onSubmit={handleSubmit} noValidate>
         <h1>Create an Account</h1>
 
         {formError && (
@@ -296,6 +296,8 @@ function RegisterPage() {
             </span>
           )}
         </div>
+
+        <div className="form-section-title">Location</div>
 
         <div className="form-row">
           <div className="form-group">
