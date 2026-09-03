@@ -140,56 +140,67 @@ The matching algorithm works hierarchically without relying on external geocodin
 
 ## Local Development
 
+### Quick Start (Recommended)
+
 1. **Clone repository:**
    ```bash
    git clone https://github.com/Paulson-2004/clothing-exchange-marketplace.git
    cd clothing-exchange-marketplace
    ```
 
-2. **Install backend dependencies:**
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. **Install frontend dependencies:**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-
-4. **Configure environment variables:**
+2. **Configure environment variables:**
    - In `backend/`, copy `.env.example` to `.env` and fill in your local values.
    - In `frontend/`, copy `.env.example` to `.env` (usually `VITE_API_BASE_URL=http://localhost:5000/api`).
 
-5. **Start backend:**
+3. **Install dependencies:**
    ```bash
-   cd backend
+   # Install root development dependencies
+   npm install
+
+   # Install backend and frontend dependencies
+   cd backend && npm install && cd ../frontend && npm install && cd ..
+   ```
+
+4. **Start both backend & frontend with a single command:**
+   ```bash
    npm run dev
    ```
+   This starts both the backend API server and frontend Vite development server concurrently with labeled output (`[backend]` and `[frontend]`).
 
-6. **Start frontend:**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+### Running Services Independently
 
-7. **Run tests (from the backend directory while the server is running):**
-   ```bash
-   cd backend
-   npm run test:phase4
-   npm run test:phase5
-   npm run test:phase6
-   npm run test:phase7
-   npm run test:phase8
-   npm run test:profile-location
-   ```
+You can also run services individually from the repository root:
 
-8. **Build frontend:**
-   ```bash
-   cd frontend
-   npm run build
-   ```
+- **Start backend only:**
+  ```bash
+  npm run dev:backend
+  ```
+  *(or `cd backend && npm run dev`)*
+
+- **Start frontend only:**
+  ```bash
+  npm run dev:frontend
+  ```
+  *(or `cd frontend && npm run dev`)*
+
+- **Build frontend:**
+  ```bash
+  npm run build
+  ```
+  *(or `cd frontend && npm run build`)*
+
+### Running Integration Tests
+
+From the `backend/` directory while the backend server is running:
+```bash
+cd backend
+npm run test:phase4
+npm run test:phase5
+npm run test:phase6
+npm run test:phase7
+npm run test:phase8
+npm run test:profile-location
+```
 
 ## Environment Variables
 The application relies on the following environment variable names (do not commit real values):
