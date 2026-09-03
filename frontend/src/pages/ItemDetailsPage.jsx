@@ -11,6 +11,12 @@ import ListingCard from '../components/listing/ListingCard';
 import RequestSwapForm from '../components/swap/RequestSwapForm';
 import { formatCurrency } from '../utils/currency';
 
+const STATUS_LABELS = {
+  available: 'Available',
+  pending: 'Pending Swap',
+  swapped: 'Swapped',
+};
+
 function ItemDetailsPage() {
   const { id } = useParams();
   const { user, isAuthenticated } = useAuth();
