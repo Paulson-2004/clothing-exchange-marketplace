@@ -15,9 +15,14 @@ function ListingFilters({ filters, onChange, onReset }) {
         value={filters.search}
         onChange={handleFieldChange('search')}
         className="filter-search"
+        aria-label="Search listings by title or brand"
       />
 
-      <select value={filters.category} onChange={handleFieldChange('category')}>
+      <select
+        value={filters.category}
+        onChange={handleFieldChange('category')}
+        aria-label="Filter by category"
+      >
         <option value="">All Categories</option>
         {CATEGORIES.map((c) => (
           <option key={c} value={c}>
@@ -26,7 +31,11 @@ function ListingFilters({ filters, onChange, onReset }) {
         ))}
       </select>
 
-      <select value={filters.size} onChange={handleFieldChange('size')}>
+      <select
+        value={filters.size}
+        onChange={handleFieldChange('size')}
+        aria-label="Filter by size"
+      >
         <option value="">All Sizes</option>
         {SIZES.map((s) => (
           <option key={s} value={s}>
@@ -35,7 +44,11 @@ function ListingFilters({ filters, onChange, onReset }) {
         ))}
       </select>
 
-      <select value={filters.condition} onChange={handleFieldChange('condition')}>
+      <select
+        value={filters.condition}
+        onChange={handleFieldChange('condition')}
+        aria-label="Filter by condition"
+      >
         <option value="">All Conditions</option>
         {CONDITIONS.map((c) => (
           <option key={c} value={c}>
@@ -50,6 +63,7 @@ function ListingFilters({ filters, onChange, onReset }) {
         value={filters.city}
         onChange={handleFieldChange('city')}
         className="filter-location"
+        aria-label="Filter by city"
       />
 
       <input
@@ -58,6 +72,7 @@ function ListingFilters({ filters, onChange, onReset }) {
         value={filters.state}
         onChange={handleFieldChange('state')}
         className="filter-location"
+        aria-label="Filter by state"
       />
 
       <button type="button" className="btn btn-secondary" onClick={onReset}>

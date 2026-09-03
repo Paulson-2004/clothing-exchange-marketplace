@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getListings } from '../api/listingApi';
 import ListingCard from '../components/listing/ListingCard';
 import ListingFilters from '../components/listing/ListingFilters';
@@ -19,6 +19,7 @@ const initialFilters = {
 
 function HomePage() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -70,7 +71,7 @@ function HomePage() {
           title="No listings match your filters"
           message="Try broadening your search, or check back later for new items."
           actionLabel={isAuthenticated ? 'Create the first listing' : undefined}
-          onAction={isAuthenticated ? () => (window.location.href = '/listings/new') : undefined}
+          onAction={isAuthenticated ? () => navigate('/listings/new') : undefined}
         />
       )}
 

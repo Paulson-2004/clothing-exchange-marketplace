@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getMessages, sendMessage, markConversationRead } from '../../api/chatApi';
+import {
+  acceptSwapRequest,
+  rejectSwapRequest,
+  cancelSwapRequest,
+  completeSwapRequest,
+} from '../../api/swapApi';
 import Loader from '../common/Loader';
 import ErrorMessage from '../common/ErrorMessage';
 import MessageInput from './MessageInput';
@@ -20,9 +26,12 @@ function formatTimestamp(dateString) {
 // (otherParticipant, relatedSwapRequest, etc). `onRead` lets the parent
 // page refresh the conversation list's unread counts after this thread
 // marks messages as read.
-function MessageThread({ conversation, currentUserId, onRead }) {
+function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [swapActionBusy, setSwapActionBusy] = useState(false);
+  const [swapActionError, setSwapActionError] = useState('');
+  const [currentSwapStatus, setCurrentSwapStatus] = useState(conversation?.relatedSwapRequest?.status);
 
   // Guards against overlapping poll requests if one is slow to resolve,
   // and lets the interval be cleared cleanly on conversation change or
@@ -93,9 +102,28 @@ function MessageThread({ conversation, currentUserId, onRead }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    setCurrentSwapStatus(conversation?.relatedSwapRequest?.status);
+    setSwapActionError('');
+  }, [conversation?._id, conversation?.relatedSwapRequest?.status]);
+
   const handleSend = async (text) => {
     const data = await sendMessage(conversation._id, text);
     setMessages((prev) => [...prev, data.message]);
+  };
+
+  const handleSwapAction = async (actionFn, confirmMsg, nextStatus) => {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    setSwapActionError('');
+    setSwapActionBusy(true);
+    try {
+      await actionFn(conversation.relatedSwapRequest._id);
+      setCurrentSwapStatus(nextStatus);
+    } catch (err) {
+      setSwapActionError(err.response?.data?.message || 'Could not update swap. Please try again.');
+    } finally {
+      setSwapActionBusy(false);
+    }
   };
 
   if (!conversation) {
@@ -107,27 +135,102 @@ function MessageThread({ conversation, currentUserId, onRead }) {
   }
 
   const swap = conversation.relatedSwapRequest;
+  const requesterId = swap?.requester?._id ? swap.requester._id.toString() : swap?.requester?.toString();
+  const isRequester = requesterId && currentUserId && requesterId === currentUserId.toString();
+  const displayStatus = currentSwapStatus || swap?.status;
 
   return (
     <div className="message-thread">
       <div className="message-thread-header">
-        <h3>{conversation.otherParticipant?.name || 'Unknown user'}</h3>
+        <div className="message-thread-header-title">
+          {onBack && (
+            <button
+              type="button"
+              className="chat-mobile-back-btn"
+              onClick={onBack}
+              aria-label="Back to conversations list"
+            >
+              ← Back
+            </button>
+          )}
+          <h3>{conversation.otherParticipant?.name || 'Unknown user'}</h3>
+        </div>
         {swap && (
-          <div className="message-thread-swap-info">
-            <span className={`swap-status swap-status-${swap.status}`}>{swap.status}</span>
-            {swap.requestedListing && (
-              <Link to={`/listings/${swap.requestedListing._id}`} className="message-thread-swap-link">
-                {swap.requestedListing.title}
-              </Link>
-            )}
-            <span className="swap-arrow">⇄</span>
-            {swap.offeredListing && (
-              <Link to={`/listings/${swap.offeredListing._id}`} className="message-thread-swap-link">
-                {swap.offeredListing.title}
-              </Link>
-            )}
+          <div className="message-thread-swap-bar">
+            <div className="message-thread-swap-info">
+              <span className={`swap-status swap-status-${displayStatus}`}>{displayStatus}</span>
+              {swap.requestedListing && (
+                <Link to={`/listings/${swap.requestedListing._id}`} className="message-thread-swap-link">
+                  {swap.requestedListing.title}
+                </Link>
+              )}
+              <span className="swap-arrow">⇄</span>
+              {swap.offeredListing && (
+                <Link to={`/listings/${swap.offeredListing._id}`} className="message-thread-swap-link">
+                  {swap.offeredListing.title}
+                </Link>
+              )}
+            </div>
+
+            <div className="message-thread-swap-actions">
+              {displayStatus === 'pending' && !isRequester && (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={() =>
+                      handleSwapAction(
+                        acceptSwapRequest,
+                        'Accept this swap request? This will mark both items as pending.',
+                        'accepted'
+                      )
+                    }
+                    disabled={swapActionBusy}
+                  >
+                    Accept Swap
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary btn-danger"
+                    onClick={() => handleSwapAction(rejectSwapRequest, 'Reject this swap request?', 'rejected')}
+                    disabled={swapActionBusy}
+                  >
+                    Reject
+                  </button>
+                </>
+              )}
+
+              {displayStatus === 'pending' && isRequester && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary btn-danger"
+                  onClick={() => handleSwapAction(cancelSwapRequest, 'Cancel this swap request?', 'cancelled')}
+                  disabled={swapActionBusy}
+                >
+                  Cancel Request
+                </button>
+              )}
+
+              {displayStatus === 'accepted' && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary"
+                  onClick={() =>
+                    handleSwapAction(
+                      completeSwapRequest,
+                      'Mark this swap as completed? Both items will be marked as swapped.',
+                      'completed'
+                    )
+                  }
+                  disabled={swapActionBusy}
+                >
+                  Mark Complete
+                </button>
+              )}
+            </div>
           </div>
         )}
+        {swapActionError && <p className="form-error swap-action-error">{swapActionError}</p>}
       </div>
 
       <div className="message-thread-body">

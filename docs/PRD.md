@@ -214,16 +214,14 @@ Major functional pages include:
 - Real-time messaging uses polling; WebSocket support is excluded.
 
 ### 21. Known Limitations
-- Swap agreement actions ("Accept", "Complete") are executed via the dedicated Swap Requests dashboard, rather than being inline controls directly embedded in the chat interface.
-- Mobile navigation relies on responsive grid adjustments but lacks a dedicated hamburger-style mobile navigation paradigm.
+- The application is a responsive web application; there is no native mobile app wrapper.
 - A formal WCAG accessibility audit has not been conducted.
+- Real-time messaging uses polling rather than WebSockets.
 
 ### 22. Future Enhancements
-- Richer mobile navigation elements.
-- Inline swap action controls integrated directly into the chat stream.
 - WebSocket-based real-time messaging to replace REST polling.
 - Courier/postal shipping integration for non-local swaps.
-- Comprehensive WCAG accessibility audit and remediation.
+- Comprehensive WCAG accessibility compliance certification.
 
 ### 23. Acceptance Criteria
 - [x] Application successfully deployed to production URLs.

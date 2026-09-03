@@ -257,17 +257,14 @@ Additional detailed documentation can be found in the `docs/` directory:
 ## Limitations
 - **Messaging:** Relies on a REST polling interval rather than true WebSocket connections.
 - **Monetary Transactions:** The platform strictly enforces direct item-for-item trades; there is no monetary/payment system.
-- **Mobile Experience:** The application is a responsive web application without a native mobile app wrapper or dedicated hamburger-style mobile navigation.
-- **Swap Actions:** Confirming or rejecting swaps is handled centrally through the Swap Requests dashboard rather than via inline controls within the chat interface.
+- **Mobile Experience:** The application is a responsive web application without a native mobile app wrapper.
 - **Accessibility:** A formal WCAG accessibility audit has not been conducted.
 
 ## Future Enhancements
-- Richer mobile navigation.
-- Inline swap action controls integrated directly into the chat stream.
 - WebSocket-based realtime messaging.
 - Courier/shipping integration to support non-local exchanges.
 - Expanded platform analytics.
-- Stronger accessibility auditing.
+- Formal WCAG accessibility compliance certification.
 
 ## Roadmap
 1. Project Scaffolding — **COMPLETE**
