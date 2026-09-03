@@ -1,0 +1,79 @@
+import { Link } from 'react-router-dom';
+import Icon from '../common/Icon';
+
+function Footer() {
+  return (
+    <footer className="site-footer" role="contentinfo">
+      <div className="footer-container">
+        <div className="footer-brand-section">
+          <Link to="/" className="footer-brand">
+            <svg
+              className="footer-brand-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 10h14l-4-4" />
+              <path d="M17 14H3l4 4" />
+            </svg>
+            <span>Clothing Exchange</span>
+          </Link>
+          <p className="footer-tagline">
+            A direct item-for-item clothing swap marketplace. Trade pre-loved apparel locally and sustainably—with zero monetary transactions.
+          </p>
+        </div>
+
+        <div className="footer-nav-section">
+          <div className="footer-col">
+            <h4 className="footer-col-title">Project & Info</h4>
+            <ul className="footer-links">
+              <li>
+                <Link to="/faq">Frequently Asked Questions</Link>
+              </li>
+              <li>
+                <Link to="/recent-changes">Recent Changes & Milestones</Link>
+              </li>
+              <li>
+                <Link to="/">Browse Marketplace</Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4 className="footer-col-title">Member Tools</h4>
+            <ul className="footer-links">
+              <li>
+                <Link to="/dashboard">Dashboard</Link>
+              </li>
+              <li>
+                <Link to="/my-listings">My Listings</Link>
+              </li>
+              <li>
+                <Link to="/swap-requests">Swap Requests</Link>
+              </li>
+              <li>
+                <Link to="/chat">Negotiations & Chat</Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="footer-bottom">
+        <p className="footer-copyright">
+          &copy; 2026 Clothing Exchange & Swap Marketplace. All 8 roadmap phases completed.
+        </p>
+        <p className="footer-meta">
+          <span>Non-monetary exchange</span> • <span>100% test pass rate</span> • <span>Cloud deployed</span>
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;
+

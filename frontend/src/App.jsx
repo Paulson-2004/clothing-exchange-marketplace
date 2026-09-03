@@ -17,114 +17,124 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminUserDetailPage from './pages/AdminUserDetailPage';
 import AdminListingsPage from './pages/AdminListingsPage';
 import AdminSwapsPage from './pages/AdminSwapsPage';
+import Footer from './components/layout/Footer';
+import FaqPage from './pages/FaqPage';
+import RecentChangesPage from './pages/RecentChangesPage';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/listings/:id" element={<ItemDetailsPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/listings/new"
-            element={
-              <ProtectedRoute>
-                <CreateEditListingPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/listings/:id/edit"
-            element={
-              <ProtectedRoute>
-                <CreateEditListingPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-listings"
-            element={
-              <ProtectedRoute>
-                <MyListingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/swap-requests"
-            element={
-              <ProtectedRoute>
-                <SwapRequestsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <ChatPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminUsersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users/:id"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminUserDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/listings"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminListingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/swaps"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminSwapsPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <div className="site-wrapper">
+          <Navbar />
+          <main className="site-content">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/faq" element={<FaqPage />} />
+              <Route path="/recent-changes" element={<RecentChangesPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/listings/:id" element={<ItemDetailsPage />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/listings/new"
+                element={
+                  <ProtectedRoute>
+                    <CreateEditListingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/listings/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <CreateEditListingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-listings"
+                element={
+                  <ProtectedRoute>
+                    <MyListingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/swap-requests"
+                element={
+                  <ProtectedRoute>
+                    <SwapRequestsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <ChatPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AdminUsersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users/:id"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AdminUserDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/listings"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AdminListingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/swaps"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AdminSwapsPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
       </BrowserRouter>
     </AuthProvider>
   );

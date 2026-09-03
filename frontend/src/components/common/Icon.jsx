@@ -136,6 +136,13 @@ function Icon({ name, size = 18, className = '', style = {} }) {
         </svg>
       );
 
+    case 'chevron-down':
+      return (
+        <svg {...props}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      );
+
     default:
       return null;
   }
