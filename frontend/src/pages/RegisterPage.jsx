@@ -13,10 +13,58 @@ const initialFormState = {
   country: '',
 };
 
-// Sensible email validation: requires local part, @, domain with a dot and at least 2 char TLD
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-// Allowed phone characters for international formats (+, digits, spaces, hyphens, parentheses)
-const PHONE_CHARS_REGEX = /^[+\d\s\-()]+$/;
+// Robust email validation checking standard structure:
+// Requires non-whitespace local part, exactly one @, non-whitespace domain with at least one dot,
+// no consecutive dots, and a top-level domain of at least 2 characters.
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const trimmed = email.trim();
+  if (!trimmed || /\s/.test(trimmed)) return false;
+
+  const parts = trimmed.split('@');
+  if (parts.length !== 2) return false;
+
+  const [local, domain] = parts;
+  if (!local || !domain) return false;
+
+  // Domain structure checks
+  if (
+    !domain.includes('.') ||
+    domain.startsWith('.') ||
+    domain.endsWith('.') ||
+    domain.startsWith('-') ||
+    domain.endsWith('-')
+  ) {
+    return false;
+  }
+
+  const domainParts = domain.split('.');
+  if (domainParts.some((p) => !p || p.length === 0)) return false;
+
+  const tld = domainParts[domainParts.length - 1];
+  if (tld.length < 2) return false;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  return emailRegex.test(trimmed);
+}
+
+// International phone validation:
+// Rejects alphabetic or inappropriate characters.
+// Allows digits, +, spaces, hyphens, and parentheses.
+// Requires 7 to 15 digits (E.164 international standard) if provided.
+function isValidPhone(phone) {
+  if (!phone || typeof phone !== 'string') return true; // Optional field
+  const trimmed = phone.trim();
+  if (!trimmed) return true; // Optional field
+
+  const validCharsRegex = /^[+\d\s\-()]+$/;
+  if (!validCharsRegex.test(trimmed)) return false;
+
+  const digitsOnly = trimmed.replace(/\D/g, '');
+  if (digitsOnly.length < 7 || digitsOnly.length > 15) return false;
+
+  return true;
+}
 
 function validateField(fieldName, value, formData) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
@@ -24,46 +72,43 @@ function validateField(fieldName, value, formData) {
   switch (fieldName) {
     case 'name':
       if (!trimmed) {
-        return 'Name is required';
+        return 'Name is required.';
       }
       if (trimmed.length > 80) {
-        return 'Name cannot exceed 80 characters';
+        return 'Name cannot exceed 80 characters.';
       }
       return '';
 
     case 'email':
       if (!trimmed) {
-        return 'Email address is required';
+        return 'Please enter a valid email address.';
       }
-      if (!EMAIL_REGEX.test(trimmed)) {
-        return 'Please enter a valid email address (e.g. user@example.com)';
+      if (!isValidEmail(trimmed)) {
+        return 'Please enter a valid email address.';
       }
       return '';
 
     case 'phone':
-      if (trimmed) {
-        const digitsOnly = trimmed.replace(/\D/g, '');
-        if (!PHONE_CHARS_REGEX.test(trimmed) || digitsOnly.length < 7 || digitsOnly.length > 15) {
-          return 'Please enter a valid phone number (7 to 15 digits)';
-        }
+      if (trimmed && !isValidPhone(trimmed)) {
+        return 'Please enter a valid phone number.';
       }
       return '';
 
     case 'password':
       if (!value) {
-        return 'Password is required';
+        return 'Password is required.';
       }
       if (value.length < 6) {
-        return 'Password must be at least 6 characters';
+        return 'Password must be at least 6 characters.';
       }
       return '';
 
     case 'confirmPassword':
       if (!value) {
-        return 'Please confirm your password';
+        return 'Please confirm your password.';
       }
       if (value !== formData.password) {
-        return 'Passwords do not match';
+        return 'Passwords do not match.';
       }
       return '';
 
@@ -138,7 +183,11 @@ function RegisterPage() {
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <h1>Create an Account</h1>
 
-        {formError && <p className="form-error" role="alert">{formError}</p>}
+        {formError && (
+          <p className="form-error" role="alert">
+            {formError}
+          </p>
+        )}
 
         <div className="form-group">
           <label htmlFor="name">Name *</label>
