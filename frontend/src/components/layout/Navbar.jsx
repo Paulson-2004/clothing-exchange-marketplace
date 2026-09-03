@@ -18,7 +18,20 @@ function Navbar() {
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-brand" onClick={closeMenu}>
-        Clothing Exchange
+        <svg
+          className="navbar-brand-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M7 10h14l-4-4" />
+          <path d="M17 14H3l4 4" />
+        </svg>
+        <span>Clothing Exchange</span>
       </Link>
 
       <button

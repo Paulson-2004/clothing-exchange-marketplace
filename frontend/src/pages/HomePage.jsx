@@ -46,14 +46,21 @@ function HomePage() {
 
   return (
     <div className="page-container marketplace-page">
-      <div className="marketplace-header">
-        <div>
-          <h1>Browse Listings</h1>
-          <p className="marketplace-subtitle">Swap clothes sustainably — no money involved.</p>
+      <div className="marketplace-hero">
+        <div className="marketplace-hero-content">
+          <span className="marketplace-hero-badge">Direct Item-for-Item Exchange</span>
+          <h1 className="marketplace-hero-title">Exchange Clothes. Not Money.</h1>
+          <p className="marketplace-hero-desc">
+            Give unworn clothing a second life. List your items, discover compatible pieces locally, and swap directly with zero monetary transactions.
+          </p>
         </div>
-        {isAuthenticated && (
-          <Link to="/listings/new" className="btn btn-primary">
+        {isAuthenticated ? (
+          <Link to="/listings/new" className="btn btn-primary marketplace-hero-cta">
             + Create Listing
+          </Link>
+        ) : (
+          <Link to="/register" className="btn btn-primary marketplace-hero-cta">
+            Start Swapping
           </Link>
         )}
       </div>

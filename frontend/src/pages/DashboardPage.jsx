@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../api/authApi';
 import Loader from '../components/common/Loader';
+import Icon from '../components/common/Icon';
 
 function DashboardPage() {
   const { user: authUser } = useAuth();
@@ -92,7 +93,9 @@ function DashboardPage() {
           <h2>Quick Actions</h2>
           <div className="quick-actions-list">
             <Link to="/listings/new" className="quick-action-item">
-              <span className="quick-action-icon">👗</span>
+              <span className="quick-action-icon">
+                <Icon name="hanger" size={24} />
+              </span>
               <div>
                 <strong>List an Item</strong>
                 <p>Upload a clothing item and get estimated swap value</p>
@@ -100,7 +103,9 @@ function DashboardPage() {
             </Link>
 
             <Link to="/" className="quick-action-item">
-              <span className="quick-action-icon">🔍</span>
+              <span className="quick-action-icon">
+                <Icon name="search" size={24} />
+              </span>
               <div>
                 <strong>Explore Marketplace</strong>
                 <p>Discover nearby clothing items to trade</p>
@@ -108,7 +113,9 @@ function DashboardPage() {
             </Link>
 
             <Link to="/swap-requests" className="quick-action-item">
-              <span className="quick-action-icon">🔄</span>
+              <span className="quick-action-icon">
+                <Icon name="swap" size={24} />
+              </span>
               <div>
                 <strong>Manage Swap Requests</strong>
                 <p>Review incoming offers and track sent proposals</p>
@@ -116,7 +123,9 @@ function DashboardPage() {
             </Link>
 
             <Link to="/chat" className="quick-action-item">
-              <span className="quick-action-icon">💬</span>
+              <span className="quick-action-icon">
+                <Icon name="chat" size={24} />
+              </span>
               <div>
                 <strong>Negotiations & Messages</strong>
                 <p>Chat directly with swap partners in real time</p>

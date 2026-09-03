@@ -92,15 +92,59 @@ function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, o
       </div>
 
       {comparison !== null && (
-        <p className="swap-value-diff">
-          Est. ${comparison.valueA} (requested) • Est. ${comparison.valueB} (offered)
-          {' • '}
-          {comparison.absoluteDifference === 0
-            ? 'Even value'
-            : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
-          {' • '}
-          <strong>{comparison.classification}</strong>
-        </p>
+        <div className="swap-comparison-meter-box">
+          <div className="swap-comparison-meter-header">
+            <span className="swap-meter-stat">
+              Est. ${comparison.valueA} (requested) vs Est. ${comparison.valueB} (offered)
+            </span>
+            <span
+              className={`swap-meter-badge swap-meter-${
+                comparison.classification === 'Close Match'
+                  ? 'close'
+                  : comparison.classification === 'Moderate Difference'
+                  ? 'moderate'
+                  : 'large'
+              }`}
+            >
+              {comparison.classification}
+            </span>
+          </div>
+
+          <div
+            className="swap-meter-track"
+            role="progressbar"
+            aria-valuenow={comparison.percentageDifference}
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-label={`Value difference: ${comparison.percentageDifference}% (${comparison.classification})`}
+          >
+            <div
+              className={`swap-meter-fill swap-meter-fill-${
+                comparison.classification === 'Close Match'
+                  ? 'close'
+                  : comparison.classification === 'Moderate Difference'
+                  ? 'moderate'
+                  : 'large'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(8, comparison.percentageDifference))}%` }}
+            />
+          </div>
+
+          <div className="swap-meter-footer">
+            <span>
+              {comparison.absoluteDifference === 0
+                ? 'Even value exchange'
+                : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
+            </span>
+            <span className="swap-meter-thresholds">
+              {comparison.classification === 'Close Match'
+                ? '≤20% (Close Match)'
+                : comparison.classification === 'Moderate Difference'
+                ? '21–50% (Moderate Diff)'
+                : '>50% (Large Diff)'}
+            </span>
+          </div>
+        </div>
       )}
 
       <div className="swap-request-actions">

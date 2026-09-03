@@ -8,28 +8,39 @@ function ListingFilters({ filters, onChange, onReset }) {
   };
 
   return (
-    <div className="listing-filters">
-      <input
-        type="text"
-        placeholder="Search by title or brand…"
-        value={filters.search}
-        onChange={handleFieldChange('search')}
-        className="filter-search"
-        aria-label="Search listings by title or brand"
-      />
+    <div className="listing-filters-container">
+      <div className="category-pills-bar" role="group" aria-label="Filter listings by category">
+        <button
+          type="button"
+          className={`category-pill ${!filters.category ? 'active' : ''}`}
+          onClick={() => onChange({ ...filters, category: '' })}
+        >
+          All Items
+        </button>
+        {CATEGORIES.map((c) => {
+          const isActive = filters.category === c;
+          return (
+            <button
+              key={c}
+              type="button"
+              className={`category-pill ${isActive ? 'active' : ''}`}
+              onClick={() => onChange({ ...filters, category: isActive ? '' : c })}
+            >
+              {c.charAt(0).toUpperCase() + c.slice(1)}
+            </button>
+          );
+        })}
+      </div>
 
-      <select
-        value={filters.category}
-        onChange={handleFieldChange('category')}
-        aria-label="Filter by category"
-      >
-        <option value="">All Categories</option>
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {c.charAt(0).toUpperCase() + c.slice(1)}
-          </option>
-        ))}
-      </select>
+      <div className="listing-filters">
+        <input
+          type="text"
+          placeholder="Search by title or brand…"
+          value={filters.search}
+          onChange={handleFieldChange('search')}
+          className="filter-search"
+          aria-label="Search listings by title or brand"
+        />
 
       <select
         value={filters.size}
@@ -78,6 +89,7 @@ function ListingFilters({ filters, onChange, onReset }) {
       <button type="button" className="btn btn-secondary" onClick={onReset}>
         Reset Filters
       </button>
+      </div>
     </div>
   );
 }
