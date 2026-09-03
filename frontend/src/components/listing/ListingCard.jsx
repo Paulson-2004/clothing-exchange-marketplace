@@ -30,15 +30,21 @@ function ListingCard({ listing }) {
       </div>
 
       <div className="listing-card-body">
-        <h3>{title}</h3>
-        <p className="listing-card-meta">
-          {brand} • Size {size} • {condition}
-        </p>
+        <div className="listing-card-meta">
+          <span className="listing-card-brand">{brand}</span>
+          <span className="listing-card-dot">•</span>
+          <span className="listing-card-size">Size {size}</span>
+          <span className="listing-card-dot">•</span>
+          <span className="listing-card-condition">{condition}</span>
+        </div>
+        <h3 title={title}>{title}</h3>
         <p className="listing-card-value">Est. value: ${estimatedValue}</p>
-        <p className="listing-card-location">
-          {location?.city && location?.state ? `${location.city}, ${location.state}` : 'Location not specified'}
-        </p>
-        {owner?.name && <p className="listing-card-owner">Listed by {owner.name}</p>}
+        <div className="listing-card-footer">
+          <span className="listing-card-location">
+            {location?.city && location?.state ? `${location.city}, ${location.state}` : 'Location not specified'}
+          </span>
+          {owner?.name && <span className="listing-card-owner">by {owner.name}</span>}
+        </div>
       </div>
     </Link>
   );
