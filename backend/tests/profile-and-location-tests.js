@@ -92,7 +92,7 @@ async function seedListing(ownerId, title, overrides = {}) {
     brand: overrides.brand || 'TestBrand',
     size: overrides.size || 'M',
     condition: overrides.condition || 'good',
-    description: 'Test listing description.',
+    description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
     images: [PLACEHOLDER_IMG],
     estimatedValue: overrides.estimatedValue !== undefined ? overrides.estimatedValue : 1000,
     location: overrides.location || { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
@@ -361,4 +361,5 @@ async function main() {
 }
 
 main();
+
 

@@ -100,7 +100,7 @@ async function seedListing(ownerId, suffix, overrides = {}) {
     brand: overrides.brand || 'TestBrand',
     size: overrides.size || 'M',
     condition: overrides.condition || 'good',
-    description: 'Phase 7 automated test listing.',
+    description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
     images: [PLACEHOLDER_IMG],
     estimatedValue: overrides.estimatedValue !== undefined ? overrides.estimatedValue : 50,
     location: overrides.location || { city: 'Seattle', state: 'WA', country: 'USA' },
@@ -726,3 +726,4 @@ async function main() {
 }
 
 main();
+

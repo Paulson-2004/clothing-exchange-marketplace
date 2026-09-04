@@ -128,7 +128,7 @@ async function seedListing(ownerId, titleSuffix, overrides = {}) {
     brand: 'TestBrand',
     size: 'M',
     condition: 'good',
-    description: 'Automated Phase 4 test fixture listing.',
+    description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
     images: ['https://example.com/placeholder-test-image.jpg'],
     estimatedValue: 20,
     location: { city: 'Test City', state: 'TS', country: 'Testland' },
@@ -573,3 +573,4 @@ function printSummary() {
     process.exit(results.some((r) => !r.pass) ? 1 : 0);
   }
 })();
+

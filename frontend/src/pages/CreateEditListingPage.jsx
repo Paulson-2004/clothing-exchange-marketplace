@@ -100,12 +100,22 @@ function CreateEditListingPage() {
     }
   };
 
+  const countWords = (text) => text.trim().split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w)).length;
+
   const validate = () => {
     if (!formData.title || !formData.category || !formData.brand || !formData.size || !formData.condition || !formData.description) {
       return 'Please fill in all required fields';
     }
+    if (formData.title.trim().length < 10) return 'Title must be at least 10 characters long';
+    if (formData.brand.trim().length < 2) return 'Brand must be at least 2 characters long';
     if (formData.description.length > 1000) {
       return 'Description cannot exceed 1000 characters';
+    }
+    if (countWords(formData.description) < 30) {
+      return 'Description must contain at least 30 words';
+    }
+    if (!formData.city.trim() || !formData.state.trim() || !formData.country.trim()) {
+      return 'City, state, and country are required';
     }
     const value = Number(formData.estimatedValue);
     if (formData.estimatedValue === '' || Number.isNaN(value) || value < 0) {
@@ -159,6 +169,8 @@ function CreateEditListingPage() {
     );
   }
 
+  const wordCount = countWords(formData.description);
+
   return (
     <div className="page-container">
       <form className="listing-form" onSubmit={handleSubmit}>
@@ -172,7 +184,7 @@ function CreateEditListingPage() {
         )}
 
         <label htmlFor="title">Title</label>
-        <input id="title" name="title" type="text" value={formData.title} onChange={handleChange} required />
+        <input id="title" name="title" type="text" value={formData.title} onChange={handleChange} required minLength={10} maxLength={100} />
 
         <div className="form-row">
           <div>
@@ -188,7 +200,7 @@ function CreateEditListingPage() {
           </div>
           <div>
             <label htmlFor="brand">Brand</label>
-            <input id="brand" name="brand" type="text" value={formData.brand} onChange={handleChange} required />
+            <input id="brand" name="brand" type="text" value={formData.brand} onChange={handleChange} required minLength={2} maxLength={50} />
           </div>
         </div>
 
@@ -217,16 +229,24 @@ function CreateEditListingPage() {
           </div>
         </div>
 
-        <label htmlFor="description">Description</label>
+        <label htmlFor="description">
+          Description
+          <span className="field-hint" style={{ display: 'block', marginTop: '4px' }}>
+            Describe the item&apos;s fit, material, color, condition, and any noticeable wear or defects.
+          </span>
+        </label>
         <textarea
           id="description"
           name="description"
-          rows={4}
+          rows={5}
           value={formData.description}
           onChange={handleChange}
           maxLength={1000}
           required
         />
+        <div style={{ fontSize: '0.85rem', color: wordCount >= 30 ? 'var(--color-primary)' : 'var(--color-danger)', marginTop: '-8px', marginBottom: '16px' }}>
+          {wordCount} / 30 words minimum {wordCount >= 30 && '✓'}
+        </div>
 
         <label htmlFor="estimatedValue">
           Estimated swap value (₹) <span className="field-hint">— reference estimate for barter comparison only, not a cash price</span>
@@ -250,16 +270,16 @@ function CreateEditListingPage() {
         <div className="form-row">
           <div>
             <label htmlFor="city">City</label>
-            <input id="city" name="city" type="text" value={formData.city} onChange={handleChange} />
+            <input id="city" name="city" type="text" value={formData.city} onChange={handleChange} required minLength={2} maxLength={100} />
           </div>
           <div>
             <label htmlFor="state">State</label>
-            <input id="state" name="state" type="text" value={formData.state} onChange={handleChange} />
+            <input id="state" name="state" type="text" value={formData.state} onChange={handleChange} required minLength={2} maxLength={100} />
           </div>
         </div>
 
         <label htmlFor="country">Country</label>
-        <input id="country" name="country" type="text" value={formData.country} onChange={handleChange} />
+        <input id="country" name="country" type="text" value={formData.country} onChange={handleChange} required minLength={2} maxLength={100} />
 
         <label>Images {isEditMode && '(optional — adds to existing photos)'}</label>
         <ImageUploadPreview existingImages={existingImages} onChange={setImageFiles} />
