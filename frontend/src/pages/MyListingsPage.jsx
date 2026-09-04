@@ -5,6 +5,12 @@ import Loader from '../components/common/Loader';
 import EmptyState from '../components/common/EmptyState';
 import ErrorMessage from '../components/common/ErrorMessage';
 
+const STATUS_LABELS = {
+  available: 'Available',
+  pending: 'Pending Swap',
+  swapped: 'Swapped',
+};
+
 function MyListingsPage() {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
@@ -74,10 +80,12 @@ function MyListingsPage() {
                 }}
               />
               <div className="my-listing-info">
-                <Link to={`/listings/${listing._id}`}>
-                  <strong>{listing.title}</strong>
+                <Link to={`/listings/${listing._id}`} className="my-listing-title">
+                  {listing.title}
                 </Link>
-                <p className={`listing-status listing-status-${listing.status}`}>{listing.status}</p>
+                <span className={`listing-status listing-status-${listing.status}`}>
+                  {STATUS_LABELS[listing.status] || listing.status}
+                </span>
               </div>
               <div className="my-listing-actions">
                 <Link to={`/listings/${listing._id}/edit`} className="btn btn-secondary">
