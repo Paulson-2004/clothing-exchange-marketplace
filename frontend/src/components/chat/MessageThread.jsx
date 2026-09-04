@@ -40,7 +40,8 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   // this is ever swapped for Socket.io, only this effect needs to change.
   const isFetchingRef = useRef(false);
   const intervalRef = useRef(null);
-  const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const prevMessagesLengthRef = useRef(0);
 
   const fetchMessages = async (conversationId) => {
     if (isFetchingRef.current) return; // skip if a fetch is already in flight
@@ -49,9 +50,6 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
       const data = await getMessages(conversationId);
       setMessages(data.messages);
     } catch (err) {
-      // Only surface a hard error state on the very first load; a
-      // transient failure during background polling shouldn't blank
-      // out an already-working conversation view.
       setStatus((prev) => (prev === 'loading' ? 'error' : prev));
     } finally {
       isFetchingRef.current = false;
@@ -63,6 +61,7 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
 
     setStatus('loading');
     setMessages([]);
+    prevMessagesLengthRef.current = 0;
 
     let cancelled = false;
 
@@ -72,16 +71,10 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
     };
     load();
 
-    // Mark this conversation's incoming messages as read as soon as it's opened.
     markConversationRead(conversation._id)
       .then(() => onRead?.(conversation._id))
-      .catch(() => {
-        /* non-critical - unread badge just won't clear this time */
-      });
+      .catch(() => {});
 
-    // Start polling. Cleared below whenever the conversation changes or
-    // this component unmounts, so there is never more than one active
-    // interval at a time.
     intervalRef.current = setInterval(() => {
       fetchMessages(conversation._id).then(() => {
         setStatus((prev) => (prev === 'loading' ? 'success' : prev));
@@ -99,7 +92,24 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   }, [conversation?._id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!scrollContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    
+    // If this is the initial load of messages for a conversation
+    const isInitialLoad = prevMessagesLengthRef.current === 0 && messages.length > 0;
+    
+    // If the user is near the bottom (within 150px)
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+
+    if (isInitialLoad || isNearBottom) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: isInitialLoad ? 'auto' : 'smooth'
+      });
+    }
+    
+    prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   useEffect(() => {
@@ -110,6 +120,15 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   const handleSend = async (text) => {
     const data = await sendMessage(conversation._id, text);
     setMessages((prev) => [...prev, data.message]);
+    
+    setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 50);
   };
 
   const handleSwapAction = async (actionFn, confirmMsg, nextStatus) => {
@@ -150,7 +169,7 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
               onClick={onBack}
               aria-label="Back to conversations list"
             >
-              ← Back
+              &larr; Back
             </button>
           )}
           <h3>{conversation.otherParticipant?.name || 'Unknown user'}</h3>
@@ -233,8 +252,8 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
         {swapActionError && <p className="form-error swap-action-error">{swapActionError}</p>}
       </div>
 
-      <div className="message-thread-body">
-        {status === 'loading' && <Loader message="Loading messages…" />}
+      <div className="message-thread-body" ref={scrollContainerRef}>
+        {status === 'loading' && <Loader message="Loading messages&hellip;" />}
         {status === 'error' && <ErrorMessage message="Could not load messages." />}
 
         {status === 'success' && messages.length === 0 && (
@@ -255,7 +274,6 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
               </div>
             );
           })}
-        <div ref={messagesEndRef} />
       </div>
 
       <MessageInput onSend={handleSend} disabled={status === 'loading'} />

@@ -2,7 +2,7 @@
 
 A sustainable web platform that facilitates direct, item-for-item clothing exchanges without monetary transactions.
 
-**Live Demo:** [https://clothing-exchange-marketplace.vercel.app/](https://clothing-exchange-marketplace.vercel.app/)  
+**Live Demo:** [https://rewear-swap.vercel.app/](https://rewear-swap.vercel.app/)  
 **GitHub Repository:** [https://github.com/Paulson-2004/clothing-exchange-marketplace](https://github.com/Paulson-2004/clothing-exchange-marketplace)  
 **Major Technical Value:** A fully verified 8-phase production application featuring deterministic swap valuation, algorithmic location-based matching, and a highly resilient state machine for conflict-free direct exchanges.
 

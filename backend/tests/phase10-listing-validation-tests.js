@@ -58,7 +58,7 @@ async function uploadRequest(method, path, { formData, cookie }) {
 
 async function main() {
   console.log('--- Starting Listing Validation Tests ---');
-  await mongoose.connect(process.env.MONGO_URI);
+  if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
 
   const email = `valtest_${RUN_ID}@test.invalid`;
   const reg = await apiRequest('POST', '/auth/register', {
@@ -170,3 +170,4 @@ async function main() {
   if (failed > 0) process.exit(1);
 }
 main();
+

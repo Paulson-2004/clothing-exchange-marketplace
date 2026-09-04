@@ -1080,7 +1080,7 @@ a.btn-primary:disabled {
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 2rem;
-  max-width: 560px;
+  max-width: 760px;
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
@@ -1179,6 +1179,12 @@ a.btn-primary:disabled {
 
 .my-listing-info {
   flex: 1;
+}
+
+.my-listing-info .listing-status {
+  position: static;
+  display: inline-block;
+  margin-top: 0.35rem;
 }
 
 .my-listing-actions {
@@ -2178,6 +2184,8 @@ a.btn-primary:disabled {
 
 /* Reusable Admin Wide Page & Management Table Layout */
 .admin-page-wide,
+.admin-dashboard-page,
+.admin-swaps-page,
 .admin-listings-page,
 .admin-users-page {
   max-width: 1400px;
@@ -2186,7 +2194,8 @@ a.btn-primary:disabled {
 
 .admin-page-wide .admin-search-form,
 .admin-listings-page .admin-search-form,
-.admin-users-page .admin-search-form {
+.admin-users-page .admin-search-form,
+.admin-swaps-page .admin-search-form {
   max-width: 440px;
 }
 
@@ -4450,3 +4459,55 @@ a.btn-primary:disabled {
 
 
 
+
+.listing-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.listing-form .form-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 600px) {
+  .listing-form .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.admin-dashboard-page .dashboard-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.dashboard-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.admin-section-header h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .admin-dashboard-page .dashboard-sections {
+    grid-template-columns: 1fr;
+  }
+}

@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import ImageUploadPreview from '../components/listing/ImageUploadPreview';
 import Loader from '../components/common/Loader';
 
-const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'footwear', 'accessories', 'activewear', 'other'];
+const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'formalwear', 'footwear', 'accessories', 'activewear', 'other'];
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'];
 const CONDITIONS = ['new', 'like-new', 'good', 'fair'];
 

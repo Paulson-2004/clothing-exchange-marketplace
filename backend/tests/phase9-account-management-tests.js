@@ -58,7 +58,7 @@ async function runTests() {
 
   try {
     if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGO_URI);
+      if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
     }
 
     // 1. Setup Data
@@ -216,4 +216,5 @@ async function runTests() {
 }
 
 runTests();
+
 

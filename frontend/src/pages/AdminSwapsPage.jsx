@@ -40,7 +40,7 @@ function AdminSwapsPage() {
   }, [statusFilter]);
 
   return (
-    <div className="page-container">
+    <div className="page-container admin-page-wide admin-swaps-page">
       <div className="admin-header">
         <h1>Swap Activity Monitor</h1>
         <Link to="/admin" className="btn btn-secondary btn-sm">← Back to Dashboard</Link>

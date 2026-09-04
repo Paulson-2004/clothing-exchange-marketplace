@@ -108,7 +108,7 @@ async function main() {
   console.log('====================================================');
 
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
     console.log('MongoDB connected for test fixtures.');
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err.message);
@@ -361,5 +361,6 @@ async function main() {
 }
 
 main();
+
 
 
