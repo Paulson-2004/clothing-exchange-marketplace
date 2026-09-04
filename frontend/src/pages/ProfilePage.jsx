@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getProfile, updateProfile } from '../api/authApi';
+import { getProfile, updateProfile, changePassword, deleteAccount } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -14,6 +14,16 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  
+  // Account settings state
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteDeleting, setDeleteDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -83,6 +93,57 @@ function ProfilePage() {
       setSaveError(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
+
+    setPasswordSaving(true);
+    setPasswordError(null);
+    setPasswordSuccess(false);
+
+    try {
+      await changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setPasswordSuccess(true);
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      // The API logged us out by clearing the cookie. Wait 2 seconds so they read the success message, then clear local state.
+      setTimeout(() => {
+        updateUser(null);
+      }, 2000);
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Failed to update password');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      // Server cleared the cookie. Clear local state to redirect to home.
+      updateUser(null);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || 'Failed to delete account');
+      setDeleteDeleting(false);
     }
   };
 
@@ -387,6 +448,106 @@ function ProfilePage() {
                 </table>
               </div>
             )}
+          </div>
+
+          <div className="profile-card" style={{ marginTop: '1.5rem', borderColor: 'var(--color-border)' }}>
+            <h2>Account Settings</h2>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Change Password</h3>
+              {passwordSuccess && (
+                <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
+                  Password updated successfully! You will be logged out momentarily.
+                </div>
+              )}
+              {passwordError && <ErrorMessage message={passwordError} />}
+              <form onSubmit={handlePasswordSubmit} className="profile-form" style={{ maxWidth: '400px' }}>
+                <div className="form-group">
+                  <label htmlFor="currentPassword">Current Password</label>
+                  <input
+                    id="currentPassword"
+                    name="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="newPassword">New Password</label>
+                  <input
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="confirmPassword">Confirm New Password</label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="profile-form-actions">
+                  <button type="submit" className="btn btn-secondary" disabled={passwordSaving}>
+                    {passwordSaving ? 'Updating…' : 'Update Password'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--color-danger)', marginBottom: '0.5rem' }}>Danger Zone</h3>
+              <p style={{ color: 'var(--color-text-light)', marginBottom: '1rem', fontSize: '0.95rem' }}>
+                Deleting your account is permanent. Your active listings and pending swap requests will be cancelled. Your completed swaps and chat history will be anonymized to preserve marketplace records.
+              </p>
+              {deleteError && <ErrorMessage message={deleteError} />}
+              
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Delete Account
+                </button>
+              ) : (
+                <div className="alert alert-warning" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-danger)', marginTop: '0.5rem' }}>
+                  <p style={{ color: 'var(--color-danger)', fontWeight: 'bold', marginBottom: '1rem' }}>
+                    Are you absolutely sure you want to delete your account? This action cannot be undone.
+                  </p>
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
+                      onClick={handleDeleteAccount}
+                      disabled={deleteDeleting}
+                    >
+                      {deleteDeleting ? 'Deleting…' : 'Yes, Delete My Account'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleteDeleting}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}

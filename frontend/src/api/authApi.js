@@ -10,3 +10,12 @@ export const updateProfile = async (profileData) => {
   return response.data;
 };
 
+export const changePassword = async (data) => {
+  const response = await axiosClient.put('/auth/password', data);
+  return response.data;
+};
+
+export const deleteAccount = async () => {
+  const response = await axiosClient.delete('/auth/account');
+  return response.data;
+};
