@@ -2156,6 +2156,7 @@ a.btn-primary:disabled {
   font-weight: 600;
   color: var(--color-primary-dark);
   text-decoration: none;
+  line-height: 1.35;
 }
 
 .admin-listing-info a:hover {
@@ -2168,10 +2169,80 @@ a.btn-primary:disabled {
   object-fit: cover;
   border-radius: 6px;
   background: #f0efe9;
+  flex-shrink: 0;
 }
 
 .admin-cell-actions {
   white-space: nowrap;
+}
+
+/* Reusable Admin Wide Page & Management Table Layout */
+.admin-page-wide,
+.admin-listings-page,
+.admin-users-page {
+  max-width: 1400px;
+  width: 100%;
+}
+
+.admin-page-wide .admin-search-form,
+.admin-listings-page .admin-search-form,
+.admin-users-page .admin-search-form {
+  max-width: 440px;
+}
+
+.admin-listings-table {
+  min-width: 980px;
+}
+
+.admin-users-table {
+  min-width: 720px;
+}
+
+.admin-cell-name {
+  min-width: 160px;
+}
+
+.admin-cell-email {
+  min-width: 220px;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.admin-cell-role {
+  white-space: nowrap;
+}
+
+.admin-cell-listing {
+  min-width: 240px;
+}
+
+.admin-cell-category {
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.admin-cell-brand {
+  white-space: nowrap;
+}
+
+.admin-cell-status {
+  white-space: nowrap;
+}
+
+.admin-cell-value {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.admin-cell-owner {
+  min-width: 220px;
+  white-space: nowrap;
+}
+
+.admin-cell-date {
+  white-space: nowrap;
+  color: var(--color-muted);
 }
 
 .admin-self-badge {
@@ -2226,7 +2297,8 @@ a.btn-primary:disabled {
 }
 
 .admin-badge-rejected,
-.admin-badge-cancelled {
+.admin-badge-cancelled,
+.admin-badge-deleted {
   background: #ffebee;
   color: var(--color-danger);
 }
@@ -4126,6 +4198,11 @@ a.btn-primary:disabled {
   background-color: var(--color-surface-subtle);
 }
 
+[data-theme="dark"] .admin-cell-name a,
+[data-theme="dark"] .admin-listing-info a {
+  color: var(--color-primary);
+}
+
 [data-theme="dark"] .admin-filters {
   background-color: var(--color-surface);
   border-color: var(--color-border);
@@ -4316,7 +4393,8 @@ a.btn-primary:disabled {
 [data-theme="dark"] .swap-status-rejected,
 [data-theme="dark"] .swap-status-cancelled,
 [data-theme="dark"] .admin-badge-rejected,
-[data-theme="dark"] .admin-badge-cancelled {
+[data-theme="dark"] .admin-badge-cancelled,
+[data-theme="dark"] .admin-badge-deleted {
   background-color: rgba(226, 97, 88, 0.18);
   border: 1px solid rgba(226, 97, 88, 0.35);
   color: #f08a82;

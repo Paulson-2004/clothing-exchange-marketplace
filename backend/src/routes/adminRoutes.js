@@ -13,6 +13,7 @@ const {
   getUsers,
   getUserById,
   toggleUserRole,
+  adminDeleteUser,
   getAdminListings,
   adminDeleteListing,
   getAdminSwaps,
@@ -28,6 +29,7 @@ router.get('/stats', getStats);
 router.get('/users', getUsers);
 router.get('/users/:id', getUserById);
 router.patch('/users/:id/role', toggleUserRole);
+router.delete('/users/:id', adminDeleteUser);
 
 // Listing moderation
 router.get('/listings', getAdminListings);

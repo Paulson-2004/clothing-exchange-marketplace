@@ -37,6 +37,15 @@ function Footer() {
                 <Link to="/recent-changes">Recent Changes</Link>
               </li>
               <li>
+                <a
+                  href="https://github.com/Paulson-2004/clothing-exchange-marketplace"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Source Code
+                </a>
+              </li>
+              <li>
                 <Link to="/">Browse Marketplace</Link>
               </li>
             </ul>

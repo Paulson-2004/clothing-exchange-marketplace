@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAdminUsers, toggleUserRole } from '../api/adminApi';
+import { getAdminUsers, toggleUserRole, adminDeleteUser } from '../api/adminApi';
 import AdminUserRow from '../components/admin/AdminUserRow';
 import Pagination from '../components/common/Pagination';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -20,6 +20,7 @@ function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [confirmUser, setConfirmUser] = useState(null);
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
 
   const fetchUsers = async (p = page) => {
     try {
@@ -62,8 +63,20 @@ function AdminUsersPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteConfirmUser) return;
+    try {
+      await adminDeleteUser(deleteConfirmUser._id);
+      setDeleteConfirmUser(null);
+      fetchUsers(page);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete user');
+      setDeleteConfirmUser(null);
+    }
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container admin-page-wide admin-users-page">
       <div className="admin-header">
         <h1>User Management</h1>
         <Link to="/admin" className="btn btn-secondary btn-sm">← Back to Dashboard</Link>
@@ -104,14 +117,14 @@ function AdminUsersPage() {
       {!loading && !error && users.length > 0 && (
         <>
           <div className="admin-table-wrapper">
-            <table className="admin-table">
+            <table className="admin-table admin-users-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
+                  <th className="admin-th-name">Name</th>
+                  <th className="admin-th-email">Email</th>
+                  <th className="admin-th-role">Role</th>
+                  <th className="admin-th-date">Joined</th>
+                  <th className="admin-th-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -121,6 +134,7 @@ function AdminUsersPage() {
                     user={u}
                     isSelf={currentUser?.id === u._id}
                     onToggleRole={(usr) => setConfirmUser(usr)}
+                    onDeleteUser={(usr) => setDeleteConfirmUser(usr)}
                   />
                 ))}
               </tbody>
@@ -138,6 +152,17 @@ function AdminUsersPage() {
           danger={confirmUser.role === 'admin'}
           onConfirm={handleToggleRole}
           onCancel={() => setConfirmUser(null)}
+        />
+      )}
+
+      {deleteConfirmUser && (
+        <ConfirmModal
+          title="Delete User"
+          message={`Are you sure you want to delete the user "${deleteConfirmUser.name}"? This will cancel their active swap requests and remove their available listings.`}
+          confirmLabel="Delete User"
+          danger={true}
+          onConfirm={handleDeleteUser}
+          onCancel={() => setDeleteConfirmUser(null)}
         />
       )}
     </div>

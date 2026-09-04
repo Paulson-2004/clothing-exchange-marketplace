@@ -63,7 +63,7 @@ function AdminListingsPage() {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container admin-page-wide admin-listings-page">
       <div className="admin-header">
         <h1>Listing Moderation</h1>
         <Link to="/admin" className="btn btn-secondary btn-sm">← Back to Dashboard</Link>
@@ -120,17 +120,17 @@ function AdminListingsPage() {
       {!loading && !error && listings.length > 0 && (
         <>
           <div className="admin-table-wrapper">
-            <table className="admin-table">
+            <table className="admin-table admin-listings-table">
               <thead>
                 <tr>
-                  <th>Listing</th>
-                  <th>Category</th>
-                  <th>Brand</th>
-                  <th>Status</th>
-                  <th>Value</th>
-                  <th>Owner</th>
-                  <th>Created</th>
-                  <th>Actions</th>
+                  <th className="admin-th-listing">Listing</th>
+                  <th className="admin-th-category">Category</th>
+                  <th className="admin-th-brand">Brand</th>
+                  <th className="admin-th-status">Status</th>
+                  <th className="admin-th-value">Value</th>
+                  <th className="admin-th-owner">Owner</th>
+                  <th className="admin-th-date">Created</th>
+                  <th className="admin-th-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>

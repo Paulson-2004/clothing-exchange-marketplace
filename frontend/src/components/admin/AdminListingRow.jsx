@@ -24,16 +24,16 @@ function AdminListingRow({ listing, onDelete }) {
           <Link to={`/listings/${listing._id}`}>{listing.title}</Link>
         </div>
       </td>
-      <td>{listing.category}</td>
-      <td>{listing.brand}</td>
-      <td>
+      <td className="admin-cell-category">{listing.category}</td>
+      <td className="admin-cell-brand">{listing.brand}</td>
+      <td className="admin-cell-status">
         <span className={`admin-badge admin-badge-${listing.status}`}>
           {listing.status}
         </span>
       </td>
-      <td>{formatCurrency(listing.estimatedValue)}</td>
-      <td>{ownerName}{ownerEmail ? ` (${ownerEmail})` : ''}</td>
-      <td>{new Date(listing.createdAt).toLocaleDateString()}</td>
+      <td className="admin-cell-value">{formatCurrency(listing.estimatedValue)}</td>
+      <td className="admin-cell-owner">{ownerName}{ownerEmail ? ` (${ownerEmail})` : ''}</td>
+      <td className="admin-cell-date">{new Date(listing.createdAt).toLocaleDateString()}</td>
       <td className="admin-cell-actions">
         <button
           className="btn btn-danger btn-sm"

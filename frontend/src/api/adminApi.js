@@ -31,6 +31,11 @@ export const toggleUserRole = async (id) => {
   return data;
 };
 
+export const adminDeleteUser = async (id) => {
+  const { data } = await axiosClient.delete(`/admin/users/${id}`);
+  return data;
+};
+
 // ─── Listings ──────────────────────────────────────────────────────
 
 export const getAdminListings = async (params = {}) => {

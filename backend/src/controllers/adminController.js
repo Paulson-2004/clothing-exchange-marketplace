@@ -19,6 +19,7 @@ const Listing = require('../models/Listing');
 const SwapRequest = require('../models/SwapRequest');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
+const { anonymizeAccount, isDeletedUser } = require('../utils/accountUtils');
 
 // ─── Pagination helper ─────────────────────────────────────────────
 // Shared across all list endpoints. Defaults to page 1, 20 per page,
@@ -180,6 +181,12 @@ const toggleUserRole = asyncHandler(async (req, res) => {
     throw new Error('User not found');
   }
 
+  // Prevent modifying an anonymized/deleted user
+  if (isDeletedUser(user)) {
+    res.status(400);
+    throw new Error('Cannot change role of a deleted user');
+  }
+
   // Toggle
   user.role = user.role === 'admin' ? 'user' : 'admin';
   await user.save();
@@ -338,11 +345,57 @@ const getAdminSwaps = asyncHandler(async (req, res) => {
   });
 });
 
+// ─── DELETE /api/admin/users/:id ──────────────────────────────────────
+// Admin-delete a user.
+const adminDeleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error('Invalid user ID format');
+  }
+
+  // Prevent self-deletion
+  if (req.user._id.toString() === id) {
+    res.status(400);
+    throw new Error('Cannot delete your own account');
+  }
+
+  const user = await User.findById(id).select('+passwordHash');
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Prevent deleting an already-deleted/anonymized user
+  if (isDeletedUser(user)) {
+    res.status(400);
+    throw new Error('User account is already deleted');
+  }
+
+  // Prevent deleting the last admin
+  if (user.role === 'admin') {
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (adminCount <= 1) {
+      res.status(400);
+      throw new Error('Cannot delete the last remaining administrator');
+    }
+  }
+
+  await anonymizeAccount(user);
+
+  res.status(200).json({
+    success: true,
+    message: 'User account deleted by admin',
+  });
+});
+
 module.exports = {
   getStats,
   getUsers,
   getUserById,
   toggleUserRole,
+  adminDeleteUser,
   getAdminListings,
   adminDeleteListing,
   getAdminSwaps,
