@@ -156,8 +156,17 @@ async function runTests() {
     const msg = await Message.create({ conversation: conv._id, sender: userA.id, text: 'Hello' });
 
     // 4. Delete Account
-    const delAcc = await api('DELETE', '/auth/account', null, newTokenA);
-    record('Delete account successful', 200, delAcc.status, delAcc.status === 200);
+    const delNoPass = await api('DELETE', '/auth/account', null, newTokenA);
+    record('Delete account without password fails', 400, delNoPass.status, delNoPass.status === 400);
+
+    const delBadPass = await api('DELETE', '/auth/account', { password: 'wrongpassword' }, newTokenA);
+    record('Delete account with wrong password fails', 401, delBadPass.status, delBadPass.status === 401);
+
+    const uA_before = await User.findById(userA.id);
+    record('UserA not anonymized after failed deletion', userA.name, uA_before.name, uA_before.name === userA.name);
+
+    const delAcc = await api('DELETE', '/auth/account', { password: 'newpassword123' }, newTokenA);
+    record('Delete account successful with correct password', 200, delAcc.status, delAcc.status === 200);
 
     const hasClearedCookieDel = delAcc.setCookie && delAcc.setCookie.includes('token=;');
     record('Delete account clears cookie', true, !!hasClearedCookieDel, !!hasClearedCookieDel);

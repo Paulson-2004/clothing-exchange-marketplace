@@ -15,7 +15,7 @@ export const changePassword = async (data) => {
   return response.data;
 };
 
-export const deleteAccount = async () => {
-  const response = await axiosClient.delete('/auth/account');
+export const deleteAccount = async (password) => {
+  const response = await axiosClient.delete('/auth/account', { data: { password } });
   return response.data;
 };

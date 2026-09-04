@@ -134,11 +134,17 @@ function ProfilePage() {
     }
   };
 
+  const [deletePassword, setDeletePassword] = useState('');
+
   const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setDeleteError('Current password is required to delete your account.');
+      return;
+    }
     setDeleteDeleting(true);
     setDeleteError(null);
     try {
-      await deleteAccount();
+      await deleteAccount(deletePassword);
       // Server cleared the cookie. Clear local state to redirect to home.
       updateUser(null);
     } catch (err) {
@@ -526,20 +532,36 @@ function ProfilePage() {
                   <p style={{ color: 'var(--color-danger)', fontWeight: 'bold', marginBottom: '1rem' }}>
                     Are you absolutely sure you want to delete your account? This action cannot be undone.
                   </p>
+                  <div className="form-group" style={{ maxWidth: '300px', marginBottom: '1rem' }}>
+                    <label htmlFor="deletePassword">Confirm your current password</label>
+                    <input
+                      id="deletePassword"
+                      type="password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      placeholder="Enter current password"
+                      required
+                      style={{ marginTop: '0.5rem' }}
+                    />
+                  </div>
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
                       type="button"
                       className="btn btn-danger"
                       style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
                       onClick={handleDeleteAccount}
-                      disabled={deleteDeleting}
+                      disabled={deleteDeleting || !deletePassword}
                     >
                       {deleteDeleting ? 'Deleting…' : 'Yes, Delete My Account'}
                     </button>
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => setShowDeleteConfirm(false)}
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeletePassword('');
+                        setDeleteError(null);
+                      }}
                       disabled={deleteDeleting}
                     >
                       Cancel

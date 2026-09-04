@@ -314,7 +314,24 @@ const changePassword = async (req, res, next) => {
 // DELETE /api/auth/account
 const deleteAccount = async (req, res, next) => {
   try {
-    const user = req.user;
+    const { password } = req.body;
+    
+    if (!password) {
+      res.status(400);
+      throw new Error('Current password is required to delete account');
+    }
+
+    const user = await User.findById(req.user._id).select('+passwordHash');
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      res.status(401);
+      throw new Error('Incorrect password');
+    }
 
     // 1. Delete all available/pending listings owned by the user.
     const listings = await Listing.find({ owner: user._id, status: { $in: ['available', 'pending'] } });
