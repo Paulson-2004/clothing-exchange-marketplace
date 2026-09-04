@@ -6,156 +6,149 @@ const MILESTONES = [
     id: 'visual-polish-sep-2026',
     tag: 'Latest Update',
     date: 'September 2026',
-    title: 'September 2026 — Visual Polish, Accessibility & User Experience Improvements',
+    title: 'Visual Polish, Dark Mode & Navigation',
     highlight: true,
     summary:
-      'A comprehensive design and user experience update focusing on visual clarity, mobile ergonomics, accessibility, and day-to-day usability across the marketplace.',
+      'Improved the marketplace design with dark mode, interactive value meters, mobile navigation, and faster browsing.',
     bullets: [
-      'Marketplace Value-Proposition Banner: Introduced a clean introduction banner highlighting the direct, non-monetary clothing exchange model.',
-      'Quick Category Filters: Added interactive category filter pills for one-click discovery across popular clothing types.',
-      'Visual Value Comparison Meter: Added a clear progress meter bar on swap requests to make it easy to see how closely two items match in estimated value.',
-      'Garment Specification Chips: Reorganized clothing details (Category, Brand, Size, Condition) into modern visual specification tags on item pages.',
-      'Consistent Vector Icons: Replaced platform-dependent emojis with a unified SVG icon set across all dashboards and tags for a cleaner experience on any device.',
-      'Refined Surface Visuals: Improved border contrast and surface styling across all cards, filters, and dashboard containers.',
-      'Light & Dark Theme System: Added an accessible theme toggle in the navigation bar with light mode as default, a warm earthy dark palette, and persistent preference saving.',
-      'Mobile Navigation & Chat Ergonomics: Implemented an accessible hamburger navigation drawer and improved mobile chat navigation with smooth thread switching.',
-      'Contextual In-Chat Swap Actions: Enabled one-click action buttons inside chat headers so swappers can accept, decline, cancel, or complete trades while discussing details.',
-      'Strengthened Registration Validation: Added instant inline validation to clearly flag invalid emails, malformed phone numbers, short passwords, and mismatched confirmations before submission.',
-      'Quality Benchmark: Verified with 173/173 backend automated tests passing (100% test pass rate), frontend build completed with 0 errors and 0 warnings, and no new dependencies introduced.',
+      'Switch between light mode and a warm, earthy dark theme with a single click.',
+      'View a visual comparison meter on swap requests to see how closely item values align.',
+      'Browse popular clothing categories quickly using interactive filter pills.',
+      'See garment size, condition, brand, and category formatted as clear visual chips.',
+      'Accept, decline, or complete swaps directly from the conversation header while chatting.',
+      'Navigate smoothly on mobile devices with an accessible menu drawer and touch-friendly chat.',
+      'Receive instant guidance on the registration form to catch typos and short passwords.',
     ],
   },
   {
     id: 'production-deployment',
-    tag: 'Infrastructure',
+    tag: 'Release',
     date: 'September 2026',
-    title: 'September 2026 — Production Deployment & Service Reliability',
+    title: 'Cloud Release & Multi-Photo Uploads',
     summary:
-      'Deployed the application to cloud environments with automated builds, high-availability database storage, and secure photo hosting.',
+      'Launched ReWear online with reliable cloud hosting and photo management.',
     bullets: [
-      'Cloud Hosting: Deployed the interactive web client and application server to production cloud environments with automated build optimization.',
-      'Cloud Database: Connected to a reliable, high-availability cloud database cluster for real-time data persistence.',
-      'Photo Storage Integration: Added cloud storage for multi-image listing uploads with automatic placeholder fallbacks.',
-      'Security Sanitization: Audited and secured repository configuration, ensuring zero sensitive credentials or development secrets in tracked files.',
+      'Access the marketplace live on the web with fast, continuous cloud hosting.',
+      'Upload multiple photos per clothing listing with automatic placeholder fallbacks.',
+      'Keep your wardrobe and messages safely synchronized across devices.',
     ],
   },
   {
     id: 'profile-and-location',
-    tag: 'Feature Update',
+    tag: 'Profiles',
     date: 'September 2026',
-    title: 'September 2026 — Member Profiles & Location Filtering',
+    title: 'Member Profiles & Local Search',
     summary:
-      'Added dedicated user profiles, activity metrics, and localized marketplace search capabilities.',
+      'Personal profile pages and location filters to help you discover clothing available nearby.',
     bullets: [
-      'Personal Profile Management: Members can manage their display name, contact phone, city/state, and personal bio.',
-      'Member Activity Counters: Added real-time counters displaying total listings, available garments, and completed trades.',
-      'Location-Based Search: Added direct city and state filter inputs on the marketplace to help users find clothes available locally.',
-      'Automated Test Coverage: Added 17 integration tests verifying profile updates, field protections, and location search accuracy.',
+      'Manage your personal profile with a custom bio, contact phone, and location.',
+      'Track your wardrobe activity with counters for active items and completed swaps.',
+      'Filter marketplace listings by city or state to find wearable clothes locally.',
     ],
   },
   {
     id: 'phase-8',
-    tag: 'Milestone',
+    tag: 'Safety',
     date: 'Phase 8',
-    title: 'Phase 8 — Administration & Content Moderation',
+    title: 'Community Moderation & Safety',
     summary:
-      'Added administrative governance tools to oversee marketplace health and maintain community safety.',
+      'Tools to oversee marketplace health, resolve conflicts, and maintain community trust.',
     bullets: [
-      'Administrator Dashboard: High-level platform statistics displaying total members, active listings, swap requests, and messages.',
-      'User Management: Searchable directory of registered accounts with role management and protections against accidental admin self-demotion.',
-      'Listing Moderation: Platform-wide oversight of apparel listings with category/status filtering and safe deletion that cancels linked active trades.',
-      'Swap Monitoring: Comprehensive view of incoming, pending, accepted, and completed swaps across the marketplace.',
+      'Monitor marketplace activity including active listings, swap proposals, and conversations.',
+      'Search and manage community members with protected administrative roles.',
+      'Review and moderate clothing listings to keep marketplace items accurate and safe.',
+      'Supervise ongoing trades to ensure a smooth, reliable exchange process.',
     ],
   },
   {
     id: 'phase-7',
-    tag: 'Milestone',
+    tag: 'Recommendations',
     date: 'Phase 7',
-    title: 'Phase 7 — Nearby Swap Matching',
+    title: 'Nearby Swap Matches',
     summary:
-      'Introduced localized trade recommendations on item detail pages to help members find compatible swaps nearby.',
+      'Smart recommendations on item pages showing compatible items available from nearby swappers.',
     bullets: [
-      'Location Proximity Matching: Automatically finds and suggests compatible listings from people in the same city or state.',
-      'Value Compatibility Matching: Filters suggestions to items with reasonably close estimated values so trades remain fair.',
-      'Smart Filtering: Automatically excludes unavailable listings and the member\'s own items from recommendation lists.',
+      'Find nearby items available for swapping in your city or state.',
+      'Discover clothing recommendations with similar estimated swap values.',
+      'View only available items, with your own clothing automatically filtered out.',
     ],
   },
   {
     id: 'phase-6',
-    tag: 'Milestone',
+    tag: 'Fairness',
     date: 'Phase 6',
-    title: 'Phase 6 — Swap Value Comparison',
+    title: 'Swap Value Comparison',
     summary:
-      'Introduced objective value estimation and fairness comparison between garments proposed for exchange.',
+      'Objective value estimates to help members compare items and make balanced trades.',
     bullets: [
-      'Estimated Swap Values: Automatically calculates an estimated reference value based on category, brand tier, and garment condition.',
-      'Fairness Tiers: Categorizes trade balance into Close Match (≤20% difference), Moderate Difference (21–50%), and Large Difference (>50%).',
-      'Transparent Trade Insights: Displays value comparison directly on swap proposals to help members make informed trade decisions.',
+      'Compare the estimated value of two items before agreeing to a trade.',
+      'Receive instant value estimates based on garment category, brand, and condition.',
+      'See clear match ratings for close, moderate, or large value differences.',
     ],
   },
   {
     id: 'phase-5',
-    tag: 'Milestone',
+    tag: 'Messaging',
     date: 'Phase 5',
-    title: 'Phase 5 — Chat & Negotiation',
+    title: 'Direct Chat & Negotiation',
     summary:
-      'Integrated private messaging so trading partners can connect and discuss items before accepting a swap.',
+      'Private 1-on-1 chat to ask questions, verify condition, and arrange local meetups.',
     bullets: [
-      'Direct Messaging: 1-on-1 private conversations between trading partners to discuss sizing, condition, and meetups.',
-      'Swap Linking: Conversations automatically associate with the corresponding swap request for clear context.',
-      'Unread Message Badges: Real-time unread counts and conversation status tracking across active threads.',
+      'Chat with other users about a swap to discuss sizing, fit, and pickup details.',
+      'View the related swap request directly at the top of your conversation.',
+      'Track unread messages with clear visual notification dots.',
     ],
   },
   {
     id: 'phase-4',
-    tag: 'Milestone',
+    tag: 'Swaps',
     date: 'Phase 4',
-    title: 'Phase 4 — Swap Request Lifecycle',
+    title: 'Swap Proposals & Lifecycle',
     summary:
-      'Built the end-to-end swap request workflow from proposal to completion.',
+      'A simple, step-by-step process to propose, manage, and complete clothing trades.',
     bullets: [
-      'Swap Workflow: Structured trade states from proposal submission to acceptance, completion, decline, or cancellation.',
-      'Inventory Locking: Automatically marks items as pending during active proposals to prevent double-swapping.',
-      'Conflict Resolution: Automatically declines competing proposals once an item is accepted into an active trade.',
-      'Archiving: Automatically marks items as swapped upon completion and archives them from the active marketplace.',
+      'Send, accept, decline, or cancel swap proposals with a single click.',
+      'Items are held as pending during active proposals so they cannot be double-traded.',
+      'Completed trades automatically update items to swapped and archive them from search.',
     ],
   },
   {
     id: 'phase-3',
-    tag: 'Milestone',
+    tag: 'Marketplace',
     date: 'Phase 3',
-    title: 'Phase 3 — Clothing Listings & Marketplace',
+    title: 'Clothing Catalog & Search',
     summary:
-      'Created the core marketplace catalog with multi-photo garment listings and search filters.',
+      'Upload pre-loved clothing and search the marketplace by size, category, and condition.',
     bullets: [
-      'Item Creation & Management: Full support for creating, updating, and removing clothing listings with photos, size, condition, and brand.',
-      'Marketplace Browsing: Real-time search with multi-parameter filtering by category, size, condition, and keywords.',
-      'Responsive Item Cards: Clean visual grid displaying item photos, status badges, estimated values, and location tags.',
+      'List clothing items with photos, brand, size, condition, and location details.',
+      'Filter the marketplace catalog by clothing type, size, condition, or keyword.',
+      'Browse clear item cards showing garment photos, availability, and reference values.',
     ],
   },
   {
     id: 'phase-2',
-    tag: 'Milestone',
+    tag: 'Accounts',
     date: 'Phase 2',
-    title: 'Phase 2 — Account & Authentication',
+    title: 'User Accounts & Secure Sign-In',
     summary:
-      'Implemented secure user registration, login, and session handling.',
+      'Fast, secure account creation to start listing clothes and requesting swaps.',
     bullets: [
-      'Member Registration & Login: Secure account creation with password encryption and authenticated sessions.',
-      'Session Persistence: Remembers logged-in members across browser refreshes and restores their active session.',
-      'Protected Member Areas: Restricts listing creation, swap requests, and chat to authenticated members.',
+      'Create a secure account with your email and password in seconds.',
+      'Stay safely signed in across browser visits on your favorite device.',
+      'Keep personal swap requests and private messages protected within your account.',
     ],
   },
   {
     id: 'phase-1',
-    tag: 'Milestone',
+    tag: 'Foundation',
     date: 'Phase 1',
-    title: 'Phase 1 — Project Foundation',
+    title: 'Marketplace Launch & Sustainable Barter Model',
     summary:
-      'Established the foundation, data architecture, and visual design system for the ReWear clothing exchange marketplace.',
+      'Built the foundation for a sustainable, 100% money-free clothing exchange.',
     bullets: [
-      'System Architecture: Decoupled web client and application server architecture.',
-      'Data Models: Structured schemas for members, listings, swap requests, conversations, and messages.',
-      'Design System: Created the signature earthy green and warm neutral visual theme with accessible responsive components.',
+      'Designed exclusively for direct item-for-item clothing swaps without money.',
+      'Responsive interface tailored for comfortable use on desktop, tablet, and mobile.',
+      'Warm, sustainable earthy green visual identity supporting circular fashion.',
     ],
   },
 ];
@@ -197,20 +190,9 @@ function RecentChangesPage() {
               </div>
 
               <ul className="changelog-bullets">
-                {item.bullets.map((bullet, idx) => {
-                  const [title, ...rest] = bullet.split(': ');
-                  return (
-                    <li key={idx}>
-                      {rest.length > 0 ? (
-                        <>
-                          <strong>{title}:</strong> {rest.join(': ')}
-                        </>
-                      ) : (
-                        bullet
-                      )}
-                    </li>
-                  );
-                })}
+                {item.bullets.map((bullet, idx) => (
+                  <li key={idx}>{bullet}</li>
+                ))}
               </ul>
             </div>
           </div>
