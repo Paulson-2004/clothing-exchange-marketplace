@@ -23,8 +23,9 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
   - Supports `city`, `state`, and `location` query parameters on `GET /api/listings`.
   - Case-insensitive, regex-escaped location matching in backend controller.
   - Interactive City and State inputs in `ListingFilters.jsx` on `HomePage.jsx` with debounced search.
-- Realistic Demo Data Seeder (`npm run seed:demo`):
-  - Idempotent script (`backend/src/scripts/seedDemoData.js`) that seeds 5 realistic Indian users, 15 realistic clothing listings (Nike, Levi's, Zara, H&M, Adidas, Uniqlo, Puma, FabIndia, Wildcraft, etc.), sample completed swap, and chat thread.
+- Safe Development Data Seeder (`npm run seed:dev`):
+  - Deterministic script (`backend/src/scripts/seedDev.js`) that seeds 6 clearly marked Indian development users, 18 realistic clothing listings, two coherent swap states, and a small chat thread.
+  - Connects only through `MONGO_URI`, verifies the actual connected database name is exactly `rewear-dev`, and never deletes records. The historical `seed:demo` command remains a safe alias.
 - Six automated backend test suites (Phase 4: 15/15 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, Phase 8: 46/46 passing, Profile & Location: 17/17 passing — 100% test pass rate).
 
 ## 2. What Doesn't Work / Isn't Built
@@ -86,7 +87,8 @@ Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middlew
 npm install
 npm run dev              # nodemon, http://localhost:5000
 npm run seed:admin       # one-off, requires ADMIN_EMAIL/ADMIN_PASSWORD in .env
-npm run seed:demo        # seeds realistic demo users and clothing listings
+npm run seed:dev         # seeds only the rewear-dev database
+npm run seed:demo        # backward-compatible alias for seed:dev
 npm run test:phase4      # requires backend already running
 npm run test:phase5      # requires backend already running
 npm run test:phase6      # requires backend already running

@@ -7,6 +7,7 @@
     "dev": "concurrently -n \"backend,frontend\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
+    "seed:dev": "npm --prefix backend run seed:dev",
     "build": "npm --prefix frontend run build"
   },
   "devDependencies": {

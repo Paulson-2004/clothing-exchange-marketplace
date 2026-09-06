@@ -106,7 +106,8 @@ clothing-exchange/
 │   │   │   └── valueComparator.js  deterministic value comparison & classification formula (Phase 6)
 │   │   └── scripts/
 │   │       ├── seedAdmin.js        manual, one-off admin-account creation (npm run seed:admin)
-│   │       └── seedDemoData.js     realistic demo clothing data seeder (npm run seed:demo)
+│   │       ├── seedDev.js          fail-closed, deterministic local data seeder (npm run seed:dev)
+│   │       └── seedDemoData.js     safe backward-compatible alias for seedDev.js
 │   └── tests/
 │       ├── phase4-swap-tests.js    standalone integration test script (real HTTP calls)
 │       ├── phase5-chat-tests.js    standalone integration test script (real HTTP calls)
@@ -409,8 +410,8 @@ cd frontend && npm install && npm run dev     # vite, port 5173
 # One-off admin creation (manual, not automatic)
 cd backend && npm run seed:admin
 
-# Demo realistic clothing data seeder
-cd backend && npm run seed:demo
+# Local development data seeder (only permits the actual rewear-dev database)
+cd backend && npm run seed:dev
 
 # Automated test suites (require the backend already running)
 cd backend && npm run test:phase4

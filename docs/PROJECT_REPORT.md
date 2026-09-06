@@ -445,11 +445,10 @@ To address all remaining requirements compliance and presentation gaps:
    - Frontend `ListingFilters.jsx` provides interactive, styled City and State inputs with debounced live search.
    - Phase 7 location-based swap matching remains completely intact and verified.
 
-3. **Realistic Demo Data Seeder**:
-   - Dedicated seed script: `backend/src/scripts/seedDemoData.js` (`npm run seed:demo`).
-   - Idempotent script that seeds 5 realistic Indian users (Aarav Sharma, Priya Patel, Rohan Verma, Ananya Iyer, Vikram Malhotra) and 15 realistic clothing items across brands like Nike, Levi's, Zara, H&M, Adidas, Uniqlo, Puma, FabIndia, Wildcraft with authentic descriptions, sizes, categories, and estimated values.
-   - Seeds sample completed swap and negotiation thread.
-   - Completely isolated from automated test suites.
+3. **Safe Development Data Seeder**:
+   - Dedicated fail-closed seed script: `backend/src/scripts/seedDev.js` (`npm run seed:dev`).
+   - Deterministically manages 6 clearly marked development users, 18 realistic clothing items across all supported categories, two coherent swap states, and a small conversation thread.
+   - Verifies the actual connected database name is exactly `rewear-dev`, uses no test or production URI, and never deletes records outside its deterministic seed boundary. The historical `seed:demo` command is a safe alias.
 
 ### Automated Integration Test Results
 
