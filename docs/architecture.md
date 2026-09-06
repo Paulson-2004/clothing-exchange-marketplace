@@ -199,6 +199,8 @@ MongoDB via Mongoose. Five collections exist. All schemas use `{ timestamps: tru
 | bio | String | optional, trimmed bio/preferences, max 300, default `''` |
 | location | `{city, state, country}` | all optional strings, default `''` |
 
+Indexes on `{createdAt}` and `{role, createdAt}` support newest-first admin user lists with or without a role filter.
+
 ### Listing
 | Field | Type | Notes |
 |---|---|---|
@@ -214,7 +216,7 @@ MongoDB via Mongoose. Five collections exist. All schemas use `{ timestamps: tru
 | location | `{city, state, country}` | |
 | status | String | enum: available, pending, swapped — default `available` |
 
-Text index on `{title, brand}` supports marketplace search. Statics `CATEGORIES`, `SIZES`, `CONDITIONS`, `STATUSES` expose the enums for reuse in controllers.
+Indexes: text `{title, brand}` supports marketplace search; `{status, createdAt}` supports newest-first marketplace/admin reads; `{owner, createdAt}` supports My Listings. Statics `CATEGORIES`, `SIZES`, `CONDITIONS`, `STATUSES` expose the enums for reuse in controllers.
 
 ### SwapRequest
 | Field | Type | Notes |
@@ -233,7 +235,7 @@ Indexes on `{requester,status}`, `{requestedListing,status}`, `{offeredListing,s
 | relatedSwapRequest | ObjectId ref SwapRequest | optional, default `null` |
 | lastMessageAt | Date | default `Date.now`, used to sort the conversation list |
 
-Indexes on `{participants}` and `{participants, relatedSwapRequest}`. The sorted-participants convention is a deliberate design decision (see §9) that lets an exact-array MongoDB query reliably detect an existing conversation between the same two people regardless of who initiates.
+Indexes on `{participants}`, `{participants, relatedSwapRequest}`, and `{participants, lastMessageAt}`. The sorted-participants convention is a deliberate design decision (see §9) that lets an exact-array MongoDB query reliably detect an existing conversation between the same two people regardless of who initiates.
 
 ### Message
 | Field | Type | Notes |
@@ -254,7 +256,7 @@ Index on `{conversation, createdAt}` for chronological retrieval.
 - **Mechanism**: JWT signed with `JWT_SECRET`, containing only `{ id, role }`, 7-day expiry (`generateToken.js`).
 - **Transport**: httpOnly cookie named `token`. Never stored in `localStorage`/`sessionStorage`. `secure` flag is `true` only when `NODE_ENV === 'production'`; `sameSite: 'lax'`.
 - **Middleware** (`authMiddleware.js`):
-  - `protect` — reads `req.cookies.token`, verifies JWT, loads the full `User` document into `req.user`. 401 on missing/invalid/expired token or deleted user.
+  - `protect` — reads `req.cookies.token`, verifies JWT, and loads only the safe identity/authorization projection into `req.user`. 401 on missing/invalid/expired token or deleted user.
   - `requireAdmin` — runs after `protect`; checks `req.user.role === 'admin'`, 403 otherwise. Actively guards all `/api/admin/*` routes.
 - **CORS**: locked to `process.env.CLIENT_URL`, `credentials: true` (required for the cookie to be sent cross-port in dev).
 - **Frontend session restore**: `AuthContext.jsx` calls `GET /api/auth/me` once on mount; this is the only mechanism for restoring login state after a page refresh (no client-side token storage to read from).
@@ -291,7 +293,7 @@ All routes are mounted under `/api` in `backend/src/app.js`, in this exact order
 ### Listings (`/api/listings`)
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | / | public | query params: search, category, size, condition, city, state, status (default `available`) |
+| GET | / | public | query params: search, category, size, condition, city, state, location, status (default `available`), page, limit; paginated (24 default, 50 max) and returns card fields with the first image only |
 | GET | /mine/all | protected | must be defined before `/:id` in Express |
 | GET | /estimate-value | public | `?category=&brand=&condition=` → `{estimatedValue}` |
 | GET | /compare | public | `?listingA=&listingB=` → `{listingA, listingB, comparison}` (Phase 6) |
@@ -317,9 +319,9 @@ All routes are mounted under `/api` in `backend/src/app.js`, in this exact order
 ### Chat (`/api/chat`)
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | /conversations | protected | caller's conversations, with otherParticipant/latestMessage/unreadCount |
+| GET | /conversations | protected | newest 50 caller conversations, with otherParticipant/latestMessage/unreadCount |
 | POST | /conversations | protected | create-or-find; optional `swapRequestId` |
-| GET | /conversations/:id/messages | protected, participant-only | up to 200 messages, chronological, no real pagination |
+| GET | /conversations/:id/messages | protected, participant-only | newest up to 200 messages returned chronologically; no cursor pagination |
 | POST | /conversations/:id/messages | protected, participant-only | |
 | PATCH | /conversations/:id/read | protected, participant-only | marks other party's messages read for caller |
 
@@ -354,8 +356,8 @@ All JSON responses use `{ success: boolean, ...payload }`. Errors: `{ success: f
 ## 8. Communication Pattern
 
 - Frontend → Backend: REST over HTTP, JSON bodies (or `multipart/form-data` for listing create/edit), cookie-based auth automatically attached by the browser (`withCredentials: true`).
-- **No WebSockets, no Socket.io, no SSE.** Real-time-feeling chat is achieved purely via **REST polling**: `MessageThread.jsx` runs a `setInterval` (4000ms) calling `GET /conversations/:id/messages` while a conversation is open, guarded by an `isFetchingRef` to prevent overlapping requests, and cleared on conversation switch / component unmount via the effect's cleanup function.
-- Backend → MongoDB: Mongoose ODM, no raw driver usage, no aggregation pipelines currently in use (all queries are `find`/`findOne`/`findById`/`updateMany`/`countDocuments` with plain filters).
+- **No WebSockets, no Socket.io, no SSE.** Real-time-feeling chat is achieved purely via **REST polling**: `MessageThread.jsx` schedules a 4-second timeout only while the document is visible, skips overlapping requests and unchanged message windows, refreshes when the tab becomes visible, and cleans up the timer/listener on conversation switch or unmount.
+- Backend → MongoDB: Mongoose ODM, with normal queries plus small aggregation pipelines for chat summaries and admin status statistics.
 - Backend → Cloudinary: `cloudinary.uploader.upload_stream`, given an in-memory `Buffer` from multer (no temp files written to backend disk at any point).
 
 ---
@@ -371,7 +373,7 @@ These were explicit, reasoned choices during development — a future agent shou
 5. **Chat integrates with swaps via read-only population, not by modifying `SwapRequest`/`swapController`/`swapRoutes`.** `chatController.js` populates `relatedSwapRequest` (and its nested listings) when returning conversation data. This was explicitly done to guarantee zero risk to the already-tested Phase 4 swap logic.
 6. **No `GET /api/swaps/:id` endpoint was added** — deliberately avoided so Phase 4's swap files could remain completely untouched during Phase 5.
 7. **Swap `complete` action is single-sided** (either party can mark it complete without the other's confirmation) — intentional for the current phase; a mutual-confirmation flow was noted as a natural fit for chat but not built.
-8. **No pagination on `GET /api/listings` or message retrieval** — a fixed message cap (200) and an unbounded listings query are used instead. Server-side pagination is used for admin endpoints (`/api/admin/users`, `/api/admin/listings`, `/api/admin/swaps`).
+8. **Bounded public reads** — `GET /api/listings` is server-side paginated (24 default, 50 max) and card responses project only required fields/one image; message retrieval returns the newest 200 chronologically without cursor pagination. Server-side pagination is also used for admin endpoints.
 9. **REST polling instead of Socket.io for chat** — explicit phase requirement, not a technical limitation. Code is structured (isolated `useEffect` in `MessageThread.jsx`) so a future swap to Socket.io would only require changing that one function.
 10. **Admin Panel is secured at the backend boundary via `protect` + `requireAdmin`** — Phase 8 created full admin controllers and routes under `/api/admin`, server-side pagination, and frontend views gated by `ProtectedRoute` with `adminOnly`.
 11. **Location-based matching is deterministic and hierarchical (Phase 7)** — compares `city`/`state` directly without external geocoding/maps dependencies; reuses Phase 6's `compareValues()` for value compatibility.
@@ -442,7 +444,7 @@ cd backend && npm run test:profile-location
 
 ## 11. Known Architectural Limitations / Technical Debt
 
-- **No real pagination on public listings** — marketplace search and messages return all results / capped at 200 (admin endpoints have server-side pagination). Acceptable at current scale, will need addressing before production scale.
+- **Message history has no cursor pagination** — chat intentionally returns only the newest 200 messages; a cursor can be added if conversations grow beyond that practical window.
 - **No transactions** around multi-document writes that should be atomic (e.g. `swapController.acceptSwapRequest` updates a SwapRequest + two Listings + potentially many conflicting SwapRequests across four separate `save()`/`updateMany()` calls with no Mongo session/transaction wrapping). Acceptable at single-instance dev scale; a documented risk at higher concurrency.
 - **Cloudinary images are never deleted** when a listing is deleted (`deleteListing` only removes the MongoDB document) — orphaned images accumulate in the Cloudinary account over time. Known, documented, not fixed.
 - **`DashboardPage.jsx` is still the Phase 2 placeholder** — shows only name/email/role, never built into a real dashboard despite being one of the 8 originally-specified pages.

@@ -7,6 +7,12 @@ const { uploadBufferToCloudinary } = require('../middleware/upload');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+const parsePagination = (query) => {
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(query.limit, 10) || 24));
+  return { page, limit, skip: (page - 1) * limit };
+};
+
 // Fields the client is allowed to set directly. Anything else in
 // req.body (e.g. owner, status) is ignored here and handled explicitly
 // where appropriate, so a request can't smuggle in an owner override.
@@ -109,7 +115,7 @@ const createListing = asyncHandler(async (req, res) => {
     location: fields.location,
   });
 
-  const populated = await listing.populate('owner', 'name email location');
+  const populated = await listing.populate('owner', 'name');
 
   res.status(201).json({ success: true, listing: populated });
 });
@@ -120,6 +126,7 @@ const createListing = asyncHandler(async (req, res) => {
 // Defaults to only 'available' listings unless a status is explicitly requested.
 const getListings = asyncHandler(async (req, res) => {
   const { search, category, size, condition, city, state, location, status } = req.query;
+  const { page, limit, skip } = parsePagination(req.query);
 
   const query = {};
 
@@ -150,11 +157,28 @@ const getListings = asyncHandler(async (req, res) => {
 
   query.status = status || 'available';
 
-  const listings = await Listing.find(query)
-    .populate('owner', 'name email location')
-    .sort({ createdAt: -1 });
+  const [totalCount, listings] = await Promise.all([
+    Listing.countDocuments(query),
+    Listing.find(query)
+      // Cards only need the first image and public owner name. Full
+      // descriptions and galleries remain available from /:id.
+      .select('title category brand size condition estimatedValue location status owner createdAt images')
+      .slice('images', 1)
+      .populate('owner', 'name')
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+  ]);
 
-  res.status(200).json({ success: true, count: listings.length, listings });
+  res.status(200).json({
+    success: true,
+    count: totalCount,
+    page,
+    limit,
+    totalPages: Math.ceil(totalCount / limit) || 1,
+    listings,
+  });
 });
 
 // GET /api/listings/:id
@@ -167,7 +191,7 @@ const getListingById = asyncHandler(async (req, res) => {
     throw new Error('Invalid listing ID');
   }
 
-  const listing = await Listing.findById(id).populate('owner', 'name email location');
+  const listing = await Listing.findById(id).populate('owner', 'name');
 
   if (!listing) {
     res.status(404);
@@ -310,7 +334,7 @@ const updateListing = asyncHandler(async (req, res) => {
   }
 
   const updated = await listing.save();
-  const populated = await updated.populate('owner', 'name email location');
+  const populated = await updated.populate('owner', 'name');
 
   res.status(200).json({ success: true, listing: populated });
 });
@@ -346,7 +370,11 @@ const deleteListing = asyncHandler(async (req, res) => {
 // Protected. Returns all listings owned by the logged-in user
 // regardless of status (used by the "My Listings" page).
 const getMyListings = asyncHandler(async (req, res) => {
-  const listings = await Listing.find({ owner: req.user._id }).sort({ createdAt: -1 });
+  const listings = await Listing.find({ owner: req.user._id })
+    .select('title status images createdAt')
+    .slice('images', 1)
+    .sort({ createdAt: -1 })
+    .lean();
   res.status(200).json({ success: true, count: listings.length, listings });
 });
 
@@ -468,15 +496,27 @@ const getListingMatches = asyncHandler(async (req, res) => {
 
   const sourceCity = (sourceListing.location?.city || '').trim().toLowerCase();
 
+  // The matcher rejects values above a 50% difference. Apply the equivalent
+  // broad range in MongoDB first, then keep the canonical comparator below as
+  // the final authority (including its rounding behavior). This prevents
+  // loading every same-state listing into Render memory.
+  const sourceValue = sourceListing.estimatedValue;
+  const valueRange = sourceValue > 0
+    ? { $gte: sourceValue * 0.4995, $lte: sourceValue * 2.002 }
+    : 0;
+
   // Find all available listings in the same state (case-insensitive),
   // excluding the source listing itself and the source listing's owner.
   const candidates = await Listing.find({
     _id: { $ne: sourceListing._id },
     owner: { $ne: sourceListing.owner._id || sourceListing.owner },
     status: 'available',
+    estimatedValue: valueRange,
     'location.state': new RegExp(`^${sourceState.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
   })
-    .populate('owner', 'name email location')
+    .select('title category brand size condition estimatedValue location status owner createdAt images')
+    .slice('images', 1)
+    .populate('owner', 'name')
     .lean();
 
   // Score, filter, and rank candidates.
@@ -565,4 +605,3 @@ module.exports = {
   compareListings,
   getListingMatches,
 };
-

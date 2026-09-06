@@ -33,60 +33,123 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   const [swapActionError, setSwapActionError] = useState('');
   const [currentSwapStatus, setCurrentSwapStatus] = useState(conversation?.relatedSwapRequest?.status);
 
-  // Guards against overlapping poll requests if one is slow to resolve,
-  // and lets the interval be cleared cleanly on conversation change or
-  // unmount. Using refs here (rather than state) avoids re-triggering
-  // the effect and keeps the polling logic isolated in one place - if
-  // this is ever swapped for Socket.io, only this effect needs to change.
-  const isFetchingRef = useRef(false);
-  const intervalRef = useRef(null);
+  // Each conversation gets its own generation. Async work may finish after
+  // a conversation switch, so every response and timer must prove that it
+  // still belongs to the active generation before touching component state.
+  const conversationGenerationRef = useRef(0);
+  const activeFetchRef = useRef(null);
+  const pollTimeoutRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const prevMessagesLengthRef = useRef(0);
 
-  const fetchMessages = async (conversationId) => {
-    if (isFetchingRef.current) return; // skip if a fetch is already in flight
-    isFetchingRef.current = true;
+  const fetchMessages = async (conversationId, generation) => {
+    // Prevent overlapping polls for the same conversation, but never let an
+    // old conversation's request block the newly active conversation.
+    if (activeFetchRef.current?.generation === generation) return;
+
+    activeFetchRef.current = { generation };
     try {
       const data = await getMessages(conversationId);
-      setMessages(data.messages);
+      if (conversationGenerationRef.current !== generation) return;
+
+      const nextMessages = data.messages || [];
+      setMessages((previousMessages) => {
+        if (conversationGenerationRef.current !== generation) return previousMessages;
+
+        const previousLast = previousMessages[previousMessages.length - 1];
+        const nextLast = nextMessages[nextMessages.length - 1];
+        const unchanged =
+          previousMessages.length === nextMessages.length &&
+          previousMessages[0]?._id === nextMessages[0]?._id &&
+          previousLast?._id === nextLast?._id;
+
+        // Polling should not cause a message-thread render when the server
+        // returned the same bounded window as the previous request.
+        return unchanged ? previousMessages : nextMessages;
+      });
     } catch (err) {
-      setStatus((prev) => (prev === 'loading' ? 'error' : prev));
+      if (conversationGenerationRef.current === generation) {
+        setStatus((prev) => (
+          conversationGenerationRef.current === generation && prev === 'loading' ? 'error' : prev
+        ));
+      }
     } finally {
-      isFetchingRef.current = false;
+      // A newer conversation may already own the active fetch slot.
+      if (activeFetchRef.current?.generation === generation) {
+        activeFetchRef.current = null;
+      }
     }
   };
 
   useEffect(() => {
     if (!conversation?._id) return;
 
+    const generation = ++conversationGenerationRef.current;
+    const isCurrent = () => conversationGenerationRef.current === generation;
+
     setStatus('loading');
     setMessages([]);
+    setSwapActionBusy(false);
     prevMessagesLengthRef.current = 0;
 
     let cancelled = false;
 
-    const load = async () => {
-      await fetchMessages(conversation._id);
-      if (!cancelled) setStatus((prev) => (prev === 'loading' ? 'success' : prev));
+    const clearPoll = () => {
+      if (pollTimeoutRef.current?.generation === generation) {
+        clearTimeout(pollTimeoutRef.current.timeoutId);
+        pollTimeoutRef.current = null;
+      }
     };
-    load();
+
+    const refresh = async () => {
+      await fetchMessages(conversation._id, generation);
+      if (!cancelled && isCurrent()) {
+        setStatus((prev) => (
+          !cancelled && isCurrent() && prev === 'loading' ? 'success' : prev
+        ));
+      }
+    };
+
+    const schedulePoll = () => {
+      clearPoll();
+      if (!cancelled && isCurrent() && !document.hidden) {
+        const timeoutId = setTimeout(async () => {
+          if (!isCurrent()) return;
+          await refresh();
+          if (isCurrent()) schedulePoll();
+        }, POLL_INTERVAL_MS);
+        pollTimeoutRef.current = { generation, timeoutId };
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearPoll();
+        return;
+      }
+
+      refresh().finally(() => {
+        if (isCurrent()) schedulePoll();
+      });
+    };
+
+    refresh().finally(() => {
+      if (isCurrent()) schedulePoll();
+    });
 
     markConversationRead(conversation._id)
-      .then(() => onRead?.(conversation._id))
+      .then(() => {
+        if (!cancelled && isCurrent()) onRead?.(conversation._id);
+      })
       .catch(() => {});
 
-    intervalRef.current = setInterval(() => {
-      fetchMessages(conversation._id).then(() => {
-        setStatus((prev) => (prev === 'loading' ? 'success' : prev));
-      });
-    }, POLL_INTERVAL_MS);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       cancelled = true;
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      conversationGenerationRef.current += 1;
+      clearPoll();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation?._id]);
@@ -118,10 +181,16 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   }, [conversation?._id, conversation?.relatedSwapRequest?.status]);
 
   const handleSend = async (text) => {
+    const generation = conversationGenerationRef.current;
     const data = await sendMessage(conversation._id, text);
-    setMessages((prev) => [...prev, data.message]);
+    if (conversationGenerationRef.current !== generation) return;
+
+    setMessages((prev) => (
+      conversationGenerationRef.current === generation ? [...prev, data.message] : prev
+    ));
     
     setTimeout(() => {
+      if (conversationGenerationRef.current !== generation) return;
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({
           top: scrollContainerRef.current.scrollHeight,
@@ -133,15 +202,29 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
 
   const handleSwapAction = async (actionFn, confirmMsg, nextStatus) => {
     if (confirmMsg && !window.confirm(confirmMsg)) return;
+    const generation = conversationGenerationRef.current;
+    const swapRequestId = conversation.relatedSwapRequest._id;
     setSwapActionError('');
     setSwapActionBusy(true);
     try {
-      await actionFn(conversation.relatedSwapRequest._id);
-      setCurrentSwapStatus(nextStatus);
+      await actionFn(swapRequestId);
+      if (conversationGenerationRef.current !== generation) return;
+      setCurrentSwapStatus((prev) => (
+        conversationGenerationRef.current === generation ? nextStatus : prev
+      ));
     } catch (err) {
-      setSwapActionError(err.response?.data?.message || 'Could not update swap. Please try again.');
+      if (conversationGenerationRef.current === generation) {
+        const message = err.response?.data?.message || 'Could not update swap. Please try again.';
+        setSwapActionError((prev) => (
+          conversationGenerationRef.current === generation ? message : prev
+        ));
+      }
     } finally {
-      setSwapActionBusy(false);
+      if (conversationGenerationRef.current === generation) {
+        setSwapActionBusy((prev) => (
+          conversationGenerationRef.current === generation ? false : prev
+        ));
+      }
     }
   };
 

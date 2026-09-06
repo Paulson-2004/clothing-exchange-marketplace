@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getListings } from '../api/listingApi';
 import ListingCard from '../components/listing/ListingCard';
@@ -6,6 +6,7 @@ import ListingFilters from '../components/listing/ListingFilters';
 import Loader from '../components/common/Loader';
 import EmptyState from '../components/common/EmptyState';
 import ErrorMessage from '../components/common/ErrorMessage';
+import Pagination from '../components/common/Pagination';
 import { useAuth } from '../context/AuthContext';
 
 const initialFilters = {
@@ -22,27 +23,55 @@ function HomePage() {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  const requestIdRef = useRef(0);
+  const mountedRef = useRef(true);
 
-  const fetchListings = useCallback(async (activeFilters) => {
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      requestIdRef.current += 1;
+    };
+  }, []);
+
+  const fetchListings = useCallback(async (activeFilters, requestedPage = 1, requestId) => {
+    if (!mountedRef.current || requestId !== requestIdRef.current) return;
+
     setStatus('loading');
     try {
-      const data = await getListings(activeFilters);
+      const data = await getListings({ ...activeFilters, page: requestedPage, limit: 24 });
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       setListings(data.listings);
+      setPage(data.page || requestedPage);
+      setTotalPages(data.totalPages || 1);
       setStatus('success');
     } catch (err) {
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       setStatus('error');
     }
   }, []);
 
-  // Refetch whenever filters change, with a short debounce so typing in
-  // the search box doesn't fire a request on every keystroke.
+  // Refetch whenever filters/page change, with a short debounce so typing
+  // in the search box doesn't fire a request on every keystroke.
   useEffect(() => {
+    const requestId = ++requestIdRef.current;
     const timeout = setTimeout(() => {
-      fetchListings(filters);
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [filters, fetchListings]);
+      fetchListings(filters, page, requestId);
+    }, 350);
+    return () => {
+      clearTimeout(timeout);
+      // Invalidate any in-flight request from this effect, including on unmount.
+      if (requestId === requestIdRef.current) requestIdRef.current += 1;
+    };
+  }, [filters, page, fetchListings]);
+
+  const handleFiltersChange = (nextFilters) => {
+    setPage(1);
+    setFilters(nextFilters);
+  };
 
   return (
     <div className="page-container marketplace-page">
@@ -65,12 +94,22 @@ function HomePage() {
         )}
       </div>
 
-      <ListingFilters filters={filters} onChange={setFilters} onReset={() => setFilters(initialFilters)} />
+      <ListingFilters
+        filters={filters}
+        onChange={handleFiltersChange}
+        onReset={() => handleFiltersChange(initialFilters)}
+      />
 
       {status === 'loading' && <Loader message="Loading listings…" />}
 
       {status === 'error' && (
-        <ErrorMessage message="Could not load listings. Please try again." onRetry={() => fetchListings(filters)} />
+        <ErrorMessage
+          message="Could not load listings. Please try again."
+          onRetry={() => {
+            const requestId = ++requestIdRef.current;
+            fetchListings(filters, page, requestId);
+          }}
+        />
       )}
 
       {status === 'success' && listings.length === 0 && (
@@ -83,11 +122,14 @@ function HomePage() {
       )}
 
       {status === 'success' && listings.length > 0 && (
-        <div className="listing-grid">
-          {listings.map((listing) => (
-            <ListingCard key={listing._id} listing={listing} />
-          ))}
-        </div>
+        <>
+          <div className="listing-grid">
+            {listings.map((listing) => (
+              <ListingCard key={listing._id} listing={listing} />
+            ))}
+          </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </div>
   );

@@ -10,6 +10,7 @@ import Icon from '../components/common/Icon';
 import ListingCard from '../components/listing/ListingCard';
 import RequestSwapForm from '../components/swap/RequestSwapForm';
 import { formatCurrency } from '../utils/currency';
+import { getOptimizedImageUrl } from '../utils/imageUrl';
 
 const STATUS_LABELS = {
   available: 'Available',
@@ -99,7 +100,7 @@ function ItemDetailsPage() {
         <div className="item-details-main-image">
           {listing.images && listing.images.length > 0 ? (
             <img
-              src={listing.images[activeImage]}
+              src={getOptimizedImageUrl(listing.images[activeImage], { width: 1200, height: 1200, crop: 'limit' })}
               alt={listing.title}
               onError={(e) => {
                 e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
@@ -120,8 +121,9 @@ function ItemDetailsPage() {
                 onClick={() => setActiveImage(idx)}
               >
                 <img
-                  src={img}
+                  src={getOptimizedImageUrl(img, { width: 180, height: 180 })}
                   alt={`${listing.title} view ${idx + 1}`}
+                  loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
                   }}

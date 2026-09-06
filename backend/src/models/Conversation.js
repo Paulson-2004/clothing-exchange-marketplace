@@ -32,5 +32,6 @@ const conversationSchema = new mongoose.Schema(
 // the duplicate-conversation lookup in createOrFindConversation.
 conversationSchema.index({ participants: 1 });
 conversationSchema.index({ participants: 1, relatedSwapRequest: 1 });
+conversationSchema.index({ participants: 1, lastMessageAt: -1 });
 
 module.exports = mongoose.model('Conversation', conversationSchema);

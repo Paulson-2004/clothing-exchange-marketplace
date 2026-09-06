@@ -4,6 +4,7 @@ import { createSwapRequest } from '../../api/swapApi';
 import { compareValues } from '../../utils/valueComparator';
 import { formatCurrency } from '../../utils/currency';
 import Loader from '../common/Loader';
+import { getOptimizedImageUrl } from '../../utils/imageUrl';
 
 function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
   const [myListings, setMyListings] = useState([]);
@@ -84,8 +85,9 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
                   onChange={() => setSelectedId(listing._id)}
                 />
                 <img
-                  src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
+                  src={getOptimizedImageUrl(listing.images?.[0], { width: 180, height: 180 }) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
                   alt={listing.title}
+                  loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
                   }}

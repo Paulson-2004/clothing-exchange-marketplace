@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/currency';
+import { getOptimizedImageUrl } from '../../utils/imageUrl';
 
 const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
 
@@ -12,10 +13,12 @@ const STATUS_LABELS = {
 
 function ListingCard({ listing }) {
   const { _id, title, brand, size, condition, estimatedValue, location, status, images, owner } = listing;
-  const [currentSrc, setCurrentSrc] = useState(images?.[0] || DEFAULT_FALLBACK_IMAGE);
+  const [currentSrc, setCurrentSrc] = useState(
+    getOptimizedImageUrl(images?.[0]) || DEFAULT_FALLBACK_IMAGE
+  );
 
   useEffect(() => {
-    setCurrentSrc(images?.[0] || DEFAULT_FALLBACK_IMAGE);
+    setCurrentSrc(getOptimizedImageUrl(images?.[0]) || DEFAULT_FALLBACK_IMAGE);
   }, [images]);
 
   return (

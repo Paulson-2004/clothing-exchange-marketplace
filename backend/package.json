@@ -15,7 +15,8 @@
     "test:phase6": "node tests/phase6-value-comparator-tests.js",
     "test:phase7": "node tests/phase7-location-matching-tests.js",
     "test:phase8": "node tests/phase8-admin-panel-tests.js",
-    "test:profile-location": "node tests/profile-and-location-tests.js"
+    "test:profile-location": "node tests/profile-and-location-tests.js",
+    "test:marketplace-pagination": "node tests/marketplace-pagination-tests.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

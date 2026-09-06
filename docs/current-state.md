@@ -9,7 +9,7 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 - Full authentication flow: register, login, logout, session-restore-on-refresh, protected routes.
 - Full listing lifecycle: create (with real Cloudinary image upload), browse/search/filter, view details, edit (own only), delete (own only).
 - Full swap request lifecycle: create → accept → complete, plus reject and cancel branches, with conflict auto-rejection when one request is accepted while others are still pending on the same listings.
-- Full chat: start/reuse a conversation (optionally linked to a swap request), send/receive messages via 4-second REST polling, read/unread tracking, chat header shows linked swap status.
+- Full chat: start/reuse a conversation (optionally linked to a swap request), send/receive messages via visibility-aware 4-second REST polling, read/unread tracking, chat header shows linked swap status.
 - Deterministic value estimator with a live "Suggest Value" button on the listing form; user can override the suggestion.
 - Deterministic swap value comparator (`valueComparator.js`) with `GET /api/listings/compare`, calculating absolute difference, percentage difference, and fairness classification (`Close Match`, `Moderate Difference`, `Large Difference`), integrated into swap request preview and swap request cards.
 - Location-based swap matching (`GET /api/listings/:id/matches`) with hierarchical location proximity (exact same city vs. same state), Phase 6 value compatibility reuse (`compareValues`), deterministic ranking, and "Nearby Swap Matches" section on `ItemDetailsPage.jsx`.
@@ -26,7 +26,7 @@ A snapshot of the project **right now**. If anything here conflicts with `archit
 - Safe Development Data Seeder (`npm run seed:dev`):
   - Deterministic script (`backend/src/scripts/seedDev.js`) that seeds 6 clearly marked Indian development users, 18 realistic clothing listings, two coherent swap states, and a small chat thread.
   - Connects only through `MONGO_URI`, verifies the actual connected database name is exactly `rewear-dev`, and never deletes records. The historical `seed:demo` command remains a safe alias.
-- Six automated backend test suites (Phase 4: 15/15 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, Phase 8: 46/46 passing, Profile & Location: 17/17 passing — 100% test pass rate).
+- Eight automated backend test suites exercised in this audit (Phase 4: 15/15 passing, Phase 5: 20/20 passing, Phase 6: 43/43 passing, Phase 7: 32/32 passing, Phase 8: 57/57 passing, Profile & Location: 17/17 passing, Phase 9: 19/19 passing, Phase 10: 21/21 passing — 100% test pass rate).
 
 ## 2. What Doesn't Work / Isn't Built
 
@@ -46,7 +46,7 @@ None currently tracked/reported as open bugs. (This does not mean none exist —
 ## 5. Current TODOs (explicit, in-code or in-doc)
 
 - Cloudinary images are never deleted when a listing is deleted — documented limitation, not fixed, not currently scheduled.
-- No pagination on public marketplace listings or messages — documented limitation, acceptable at current scale only (admin endpoints use server-side pagination).
+- Message history remains bounded to the newest 200 messages rather than using cursor pagination; the public marketplace now uses server-side pagination (24 items by default, max 50).
 - No MongoDB transactions around multi-document swap-accept writes — documented limitation, acceptable at current scale only.
 
 ## 6. Current Database State/Schema
@@ -75,8 +75,10 @@ Fully working: JWT in httpOnly cookie (`token`), 7-day expiry, `protect` middlew
 | Phase 5 manual frontend verification | 11 specific behaviors confirmed | Actual reported results, recorded in `PROJECT_REPORT.md` — explicitly not a claim of exhaustive frontend testing |
 | Phase 6 automated (`npm run test:phase6`) | 43/43 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
 | Phase 7 automated (`npm run test:phase7`) | 32/32 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
-| Phase 8 automated (`npm run test:phase8`) | 46/46 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
+| Phase 8 automated (`npm run test:phase8`) | 57/57 passed, 0 failed | Actual run during the performance audit |
 | Profile & Location automated (`npm run test:profile-location`) | 17/17 passed, 0 failed | Actual reported run, recorded in `PROJECT_REPORT.md` |
+| Phase 9 account-management automated (`node tests/phase9-account-management-tests.js`) | 19/19 passed, 0 failed | Actual run during the performance audit |
+| Phase 10 listing-validation automated (`node tests/phase10-listing-validation-tests.js`) | 21/21 passed, 0 failed | Actual run during the performance audit |
 
 **No test has ever been marked "Passed" in this project without an actual reported result.** Continue that discipline — do not infer test outcomes from reading code.
 
@@ -95,6 +97,8 @@ npm run test:phase6      # requires backend already running
 npm run test:phase7      # requires backend already running
 npm run test:phase8      # requires backend already running
 npm run test:profile-location # requires backend already running
+node tests/phase9-account-management-tests.js # requires backend already running
+node tests/phase10-listing-validation-tests.js # requires backend already running
 
 # Frontend (from frontend/)
 npm install
@@ -121,7 +125,7 @@ Both `.env.example` files in the repo document the shape/format without real val
 
 ## 13. Last Completed Feature/Phase
 
-**Phase 8 — Admin Panel.** Confirmed complete and tested: 46/46 automated backend integration tests passed. Built `adminController.js`, `adminRoutes.js` mounted at `/api/admin`, admin API client, dashboard stats, user management with role toggling and user detail activity summary, listing moderation with active swap auto-rejection, read-only swap monitoring, admin navigation and route gating via `<ProtectedRoute adminOnly>`, and full test suite. Recorded in `docs/PROJECT_REPORT.md`.
+**Phase 8 — Admin Panel.** Confirmed complete and tested: 57/57 automated backend integration tests passed. Built `adminController.js`, `adminRoutes.js` mounted at `/api/admin`, admin API client, dashboard stats, user management with role toggling and user detail activity summary, listing moderation with active swap auto-rejection, read-only swap monitoring, admin navigation and route gating via `<ProtectedRoute adminOnly>`, and full test suite.
 
 ## 14. Exact Recommended Next Task
 

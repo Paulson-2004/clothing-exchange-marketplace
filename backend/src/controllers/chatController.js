@@ -7,7 +7,8 @@ const asyncHandler = require('../utils/asyncHandler');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-const DEFAULT_MESSAGE_LIMIT = 200; // generous cap, not real pagination - see route docs
+const DEFAULT_MESSAGE_LIMIT = 200; // bounded history window; full cursor pagination is not needed yet
+const MAX_CONVERSATIONS = 50;
 
 // Shared populate shape for returning a conversation with enough info
 // for the frontend to render a list item or a chat header, without
@@ -17,8 +18,8 @@ const populateConversation = (query) =>
     path: 'relatedSwapRequest',
     select: 'status requester requestedListing offeredListing',
     populate: [
-      { path: 'requestedListing', select: 'title images estimatedValue owner' },
-      { path: 'offeredListing', select: 'title images estimatedValue owner' },
+      { path: 'requestedListing', select: 'title' },
+      { path: 'offeredListing', select: 'title' },
     ],
   });
 
@@ -41,29 +42,56 @@ const shapeConversation = (conversation, currentUserId) => {
 // an unread count.
 const getConversations = asyncHandler(async (req, res) => {
   const conversations = await populateConversation(
-    Conversation.find({ participants: req.user._id }).sort({ lastMessageAt: -1 })
+    Conversation.find({ participants: req.user._id })
+      .select('participants relatedSwapRequest lastMessageAt createdAt')
+      .sort({ lastMessageAt: -1 })
+      .limit(MAX_CONVERSATIONS)
+      .lean()
   );
 
-  const withExtras = await Promise.all(
-    conversations.map(async (conversation) => {
-      const [latestMessage, unreadCount] = await Promise.all([
-        Message.findOne({ conversation: conversation._id }).sort({ createdAt: -1 }).select('text sender createdAt'),
-        Message.countDocuments({
-          conversation: conversation._id,
-          sender: { $ne: req.user._id },
-          readBy: { $ne: req.user._id },
-        }),
-      ]);
+  // Fetch all sidebar summaries in one indexed aggregation instead of two
+  // message queries per conversation (the previous N+1 pattern).
+  const messageSummaries = conversations.length
+    ? await Message.aggregate([
+        { $match: { conversation: { $in: conversations.map((conversation) => conversation._id) } } },
+        { $sort: { createdAt: -1 } },
+        {
+          $group: {
+            _id: '$conversation',
+            latestMessage: {
+              $first: { text: '$text', sender: '$sender', createdAt: '$createdAt' },
+            },
+            unreadCount: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $ne: ['$sender', req.user._id] },
+                      { $not: [{ $in: [req.user._id, '$readBy'] }] },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ])
+    : [];
 
-      return {
-        ...shapeConversation(conversation, req.user._id),
-        latestMessage: latestMessage
-          ? { text: latestMessage.text, sender: latestMessage.sender, createdAt: latestMessage.createdAt }
-          : null,
-        unreadCount,
-      };
-    })
+  const summaryByConversation = new Map(
+    messageSummaries.map((summary) => [summary._id.toString(), summary])
   );
+
+  const withExtras = conversations.map((conversation) => {
+    const summary = summaryByConversation.get(conversation._id.toString());
+    return {
+      ...shapeConversation(conversation, req.user._id),
+      latestMessage: summary?.latestMessage || null,
+      unreadCount: summary?.unreadCount || 0,
+    };
+  });
 
   res.status(200).json({ success: true, count: withExtras.length, conversations: withExtras });
 });
@@ -172,9 +200,15 @@ const getMessages = asyncHandler(async (req, res) => {
   const conversation = await loadConversationForParticipant(req.params.id, req.user._id, res);
 
   const messages = await Message.find({ conversation: conversation._id })
-    .sort({ createdAt: 1 })
+    .select('sender text createdAt')
+    // Read the newest bounded window, then restore chronological order for
+    // the UI. This avoids scanning/returning the oldest 200 forever.
+    .sort({ createdAt: -1 })
     .limit(DEFAULT_MESSAGE_LIMIT)
-    .populate('sender', 'name');
+    .populate('sender', 'name')
+    .lean();
+
+  messages.reverse();
 
   res.status(200).json({ success: true, count: messages.length, messages });
 });

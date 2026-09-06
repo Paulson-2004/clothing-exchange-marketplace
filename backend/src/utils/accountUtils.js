@@ -10,59 +10,56 @@ const isDeletedUser = (user) => {
 };
 
 const anonymizeAccount = async (user) => {
-  // 1. Delete all available/pending listings owned by the user.
-  const listings = await Listing.find({ owner: user._id, status: { $in: ['available', 'pending'] } });
+  // 1. Identify the user's active listings once, then cancel all related
+  // swaps in bulk. This replaces one read/update/delete loop per listing and
+  // avoids looking at historical cancelled swaps.
+  const ownedListingIds = await Listing.find({
+    owner: user._id,
+    status: { $in: ['available', 'pending'] },
+  }).distinct('_id');
 
-  for (const listing of listings) {
-    // Cancel active swap requests involving this listing
+  const activeSwaps = await SwapRequest.find({
+    $or: [
+      { requester: user._id },
+      { requestedListing: { $in: ownedListingIds } },
+      { offeredListing: { $in: ownedListingIds } },
+    ],
+    status: { $in: ['pending', 'accepted'] },
+  })
+    .select('requestedListing offeredListing')
+    .lean();
+
+  if (activeSwaps.length > 0) {
     await SwapRequest.updateMany(
       {
-        $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
-        status: { $in: ['pending', 'accepted'] },
+        _id: { $in: activeSwaps.map((swap) => swap._id) },
       },
       { $set: { status: 'cancelled' } }
     );
 
-    // Restore counterparty listings to 'available' if they were pending
-    const affectedSwaps = await SwapRequest.find({
-      $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
-      status: 'cancelled',
-    });
+    const ownedIdSet = new Set(ownedListingIds.map((id) => id.toString()));
+    const partnerListingIds = [
+      ...new Set(
+        activeSwaps
+          .flatMap((swap) => [swap.requestedListing, swap.offeredListing])
+          .filter((id) => id && !ownedIdSet.has(id.toString()))
+          .map((id) => id.toString())
+      ),
+    ];
 
-    for (const swap of affectedSwaps) {
-      const otherListingId = swap.requestedListing.toString() === listing._id.toString()
-        ? swap.offeredListing
-        : swap.requestedListing;
-      
-      if (otherListingId && otherListingId.toString() !== listing._id.toString()) {
-        await Listing.updateOne(
-          { _id: otherListingId, status: 'pending' },
-          { $set: { status: 'available' } }
-        );
-      }
+    if (partnerListingIds.length > 0) {
+      await Listing.updateMany(
+        { _id: { $in: partnerListingIds }, status: 'pending' },
+        { $set: { status: 'available' } }
+      );
     }
-
-    await listing.deleteOne();
   }
 
-  // 2. Cancel any pending/accepted swaps where the user is the requester
-  const activeSwapsAsRequester = await SwapRequest.find({
-    requester: user._id,
-    status: { $in: ['pending', 'accepted'] }
-  });
-
-  for (const swap of activeSwapsAsRequester) {
-    swap.status = 'cancelled';
-    await swap.save();
-
-    // Restore counterparty's requested listing if it was pending
-    await Listing.updateOne(
-      { _id: swap.requestedListing, status: 'pending' },
-      { $set: { status: 'available' } }
-    );
+  if (ownedListingIds.length > 0) {
+    await Listing.deleteMany({ _id: { $in: ownedListingIds } });
   }
 
-  // 3. Anonymize the user record to preserve chat and completed swap history
+  // 2. Anonymize the user record to preserve chat and completed swap history
   // We cannot hard-delete the user because other users' chat threads would
   // crash when trying to read properties of a null participant.
   user.name = 'Deleted User';
@@ -76,4 +73,3 @@ const anonymizeAccount = async (user) => {
 };
 
 module.exports = { anonymizeAccount, isDeletedUser };
-

@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createOrFindConversation } from '../../api/chatApi';
 import { compareValues } from '../../utils/valueComparator';
 import { formatCurrency } from '../../utils/currency';
+import { getOptimizedImageUrl } from '../../utils/imageUrl';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -27,9 +28,10 @@ function MiniListing({ listing, label }) {
       <p className="swap-mini-label">{label}</p>
       <Link to={`/listings/${listing._id}`} className="swap-mini-link">
         <img
-          src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
+          src={getOptimizedImageUrl(listing.images?.[0], { width: 180, height: 180 }) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
           alt={listing.title}
           className="swap-mini-image"
+          loading="lazy"
           onError={(e) => {
             e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
           }}

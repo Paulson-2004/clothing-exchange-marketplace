@@ -21,7 +21,11 @@ const protect = async (req, res, next) => {
       throw new Error('Not authenticated - invalid or expired token');
     }
 
-    const user = await User.findById(decoded.id);
+    // Authentication only needs the safe identity/authorization fields.
+    // Avoid hydrating the full Mongoose document on every protected request.
+    const user = await User.findById(decoded.id)
+      .select('_id name email role phone bio location createdAt')
+      .lean();
     if (!user) {
       res.status(401);
       throw new Error('Not authenticated - user no longer exists');

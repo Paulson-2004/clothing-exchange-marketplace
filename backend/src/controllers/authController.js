@@ -21,6 +21,12 @@ const cookieOptions = () => {
   };
 };
 
+const clearCookieOptions = () => {
+  const options = cookieOptions();
+  delete options.maxAge;
+  return options;
+};
+
 // Strips sensitive/internal fields before sending a user back to the client.
 const toSafeUser = (user) => ({
   id: user._id,
@@ -140,7 +146,7 @@ const login = async (req, res, next) => {
 
 // POST /api/auth/logout
 const logout = async (req, res) => {
-  res.clearCookie(COOKIE_NAME, cookieOptions());
+  res.clearCookie(COOKIE_NAME, clearCookieOptions());
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 };
 
@@ -157,7 +163,9 @@ const getProfile = async (req, res, next) => {
     const user = req.user;
 
     // Fetch user's listings to check for swaps requested on their items
-    const userListings = await Listing.find({ owner: user._id }).select('_id status');
+    const userListings = await Listing.find({ owner: user._id })
+      .select('_id status')
+      .lean();
     const userListingIds = userListings.map((l) => l._id);
 
     const [
@@ -195,7 +203,8 @@ const getProfile = async (req, res, next) => {
         populate: { path: 'owner', select: 'name email location' },
       })
       .sort({ updatedAt: -1 })
-      .limit(10);
+      .limit(10)
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -303,7 +312,7 @@ const changePassword = async (req, res, next) => {
     await user.save();
 
     // Log the user out so they must re-authenticate with the new password
-    res.clearCookie(COOKIE_NAME, cookieOptions());
+    res.clearCookie(COOKIE_NAME, clearCookieOptions());
 
     res.status(200).json({ success: true, message: 'Password updated successfully. Please log in again.' });
   } catch (error) {
@@ -337,7 +346,7 @@ const deleteAccount = async (req, res, next) => {
     await anonymizeAccount(user);
 
     // 4. Log out
-    res.clearCookie(COOKIE_NAME, cookieOptions());
+    res.clearCookie(COOKIE_NAME, clearCookieOptions());
 
     res.status(200).json({ success: true, message: 'Account deleted successfully' });
   } catch (error) {

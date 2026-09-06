@@ -4,6 +4,7 @@ import { getMyListings, deleteListing } from '../api/listingApi';
 import Loader from '../components/common/Loader';
 import EmptyState from '../components/common/EmptyState';
 import ErrorMessage from '../components/common/ErrorMessage';
+import { getOptimizedImageUrl } from '../utils/imageUrl';
 
 const STATUS_LABELS = {
   available: 'Available',
@@ -72,9 +73,10 @@ function MyListingsPage() {
           {listings.map((listing) => (
             <div key={listing._id} className="my-listing-row">
               <img
-                src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
+                src={getOptimizedImageUrl(listing.images?.[0], { width: 220, height: 220 }) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
                 alt={listing.title}
                 className="my-listing-thumb"
+                loading="lazy"
                 onError={(e) => {
                   e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
                 }}

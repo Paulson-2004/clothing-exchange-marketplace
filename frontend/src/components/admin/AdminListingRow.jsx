@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/currency';
+import { getOptimizedImageUrl } from '../../utils/imageUrl';
 
 // Table row for the admin listing list.
 
@@ -13,9 +14,10 @@ function AdminListingRow({ listing, onDelete }) {
         <div className="admin-listing-info">
           {listing.images?.[0] && (
             <img
-              src={listing.images[0]}
+              src={getOptimizedImageUrl(listing.images[0], { width: 160, height: 160 })}
               alt={listing.title}
               className="admin-listing-thumb"
+              loading="lazy"
               onError={(e) => {
                 e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
               }}
