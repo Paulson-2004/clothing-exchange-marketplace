@@ -1,4 +1,4 @@
-# Clothing Exchange & Swap Marketplace
+# ReWear — Clothing Exchange & Swap Marketplace
 
 A sustainable web platform that facilitates direct, item-for-item clothing exchanges without monetary transactions.
 
@@ -7,7 +7,7 @@ A sustainable web platform that facilitates direct, item-for-item clothing excha
 **Major Technical Value:** A fully verified 8-phase production application featuring deterministic swap valuation, algorithmic location-based matching, and a highly resilient state machine for conflict-free direct exchanges.
 
 ## Overview
-The Clothing Exchange & Swap Marketplace is a platform designed to promote sustainable fashion by enabling users to trade clothing they no longer wear. Rather than relying on traditional e-commerce models where items are bought and sold with money, this application strictly focuses on direct item-for-item swaps, powered by algorithmic location matching and deterministic value estimation.
+ReWear is a sustainable peer-to-peer clothing exchange marketplace designed to promote circular fashion by enabling users to trade clothing they no longer wear. Rather than relying on traditional e-commerce models where items are bought and sold with money, this application strictly focuses on direct item-for-item swaps, powered by algorithmic location matching and deterministic value estimation.
 
 ## Problem
 The fashion industry generates significant waste, and individuals often have wearable clothing sitting unused in their wardrobes. While conventional marketplaces allow selling, they often require managing monetary transactions, payments, and shipping. Finding suitable exchange partners for direct swaps is challenging due to geographic barriers, uncertainty regarding the fairness of trades, and the lack of a structured platform specifically dedicated to item-for-item exchanges.
@@ -140,56 +140,67 @@ The matching algorithm works hierarchically without relying on external geocodin
 
 ## Local Development
 
+### Quick Start (Recommended)
+
 1. **Clone repository:**
    ```bash
    git clone https://github.com/Paulson-2004/clothing-exchange-marketplace.git
    cd clothing-exchange-marketplace
    ```
 
-2. **Install backend dependencies:**
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. **Install frontend dependencies:**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-
-4. **Configure environment variables:**
+2. **Configure environment variables:**
    - In `backend/`, copy `.env.example` to `.env` and fill in your local values.
    - In `frontend/`, copy `.env.example` to `.env` (usually `VITE_API_BASE_URL=http://localhost:5000/api`).
 
-5. **Start backend:**
+3. **Install dependencies:**
    ```bash
-   cd backend
+   # Install root development dependencies
+   npm install
+
+   # Install backend and frontend dependencies
+   cd backend && npm install && cd ../frontend && npm install && cd ..
+   ```
+
+4. **Start both backend & frontend with a single command:**
+   ```bash
    npm run dev
    ```
+   This starts both the backend API server and frontend Vite development server concurrently with labeled output (`[backend]` and `[frontend]`).
 
-6. **Start frontend:**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+### Running Services Independently
 
-7. **Run tests (from the backend directory while the server is running):**
-   ```bash
-   cd backend
-   npm run test:phase4
-   npm run test:phase5
-   npm run test:phase6
-   npm run test:phase7
-   npm run test:phase8
-   npm run test:profile-location
-   ```
+You can also run services individually from the repository root:
 
-8. **Build frontend:**
-   ```bash
-   cd frontend
-   npm run build
-   ```
+- **Start backend only:**
+  ```bash
+  npm run dev:backend
+  ```
+  *(or `cd backend && npm run dev`)*
+
+- **Start frontend only:**
+  ```bash
+  npm run dev:frontend
+  ```
+  *(or `cd frontend && npm run dev`)*
+
+- **Build frontend:**
+  ```bash
+  npm run build
+  ```
+  *(or `cd frontend && npm run build`)*
+
+### Running Integration Tests
+
+From the `backend/` directory while the backend server is running:
+```bash
+cd backend
+npm run test:phase4
+npm run test:phase5
+npm run test:phase6
+npm run test:phase7
+npm run test:phase8
+npm run test:profile-location
+```
 
 ## Environment Variables
 The application relies on the following environment variable names (do not commit real values):
@@ -257,17 +268,17 @@ Additional detailed documentation can be found in the `docs/` directory:
 ## Limitations
 - **Messaging:** Relies on a REST polling interval rather than true WebSocket connections.
 - **Monetary Transactions:** The platform strictly enforces direct item-for-item trades; there is no monetary/payment system.
-- **Mobile Experience:** The application is a responsive web application without a native mobile app wrapper or dedicated hamburger-style mobile navigation.
-- **Swap Actions:** Confirming or rejecting swaps is handled centrally through the Swap Requests dashboard rather than via inline controls within the chat interface.
+- **Mobile Experience:** The application is a responsive web application without a native mobile app wrapper.
 - **Accessibility:** A formal WCAG accessibility audit has not been conducted.
 
 ## Future Enhancements
-- Richer mobile navigation.
-- Inline swap action controls integrated directly into the chat stream.
 - WebSocket-based realtime messaging.
-- Courier/shipping integration to support non-local exchanges.
+- Courier/shipping integration with shipment tracking to support non-local exchanges.
+- Meetup/exchange-location assistance and delivery/handoff confirmation.
+- User/listing reporting and formal dispute resolution.
+- Trust/reputation features, fraud/scam detection, and identity verification.
 - Expanded platform analytics.
-- Stronger accessibility auditing.
+- Formal WCAG accessibility compliance certification.
 
 ## Roadmap
 1. Project Scaffolding — **COMPLETE**
@@ -280,7 +291,7 @@ Additional detailed documentation can be found in the `docs/` directory:
 8. Admin Panel — **COMPLETE**
 
 ## Project Status
-The Clothing Exchange & Swap Marketplace is **feature-complete**, successfully deployed to production, and manually verified. All functionality specified in the authoritative 8-phase roadmap is fully implemented and backed by a comprehensive passing test suite.
+The ReWear clothing exchange marketplace is **feature-complete**, successfully deployed to production, and manually verified. All functionality specified in the authoritative 8-phase roadmap is fully implemented and backed by a comprehensive passing test suite.
 
 ## License
 No license has currently been specified for this repository.

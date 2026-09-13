@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getMyListings, deleteListing } from '../api/listingApi';
 import Loader from '../components/common/Loader';
 import EmptyState from '../components/common/EmptyState';
 import ErrorMessage from '../components/common/ErrorMessage';
 
 function MyListingsPage() {
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
   const [deletingId, setDeletingId] = useState(null);
@@ -58,7 +59,7 @@ function MyListingsPage() {
           title="You haven't listed anything yet"
           message="Create your first listing to start swapping clothes."
           actionLabel="Create Listing"
-          onAction={() => (window.location.href = '/listings/new')}
+          onAction={() => navigate('/listings/new')}
         />
       ) : (
         <div className="my-listings-table">

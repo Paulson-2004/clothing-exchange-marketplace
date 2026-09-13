@@ -4,6 +4,7 @@ import { getAdminStats } from '../api/adminApi';
 import StatsCard from '../components/admin/StatsCard';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
+import Icon from '../components/common/Icon';
 
 function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
@@ -40,56 +41,56 @@ function AdminDashboardPage() {
       {/* Users */}
       <div className="admin-section">
         <div className="admin-section-header">
-          <h2>👥 Users</h2>
+          <h2><Icon name="users" size={20} /> Users</h2>
           <Link to="/admin/users" className="btn btn-secondary btn-sm">
             Manage Users →
           </Link>
         </div>
         <div className="stats-grid">
-          <StatsCard label="Total Users" value={stats.users.total} icon="👤" />
-          <StatsCard label="Admins" value={stats.users.admins} icon="🛡️" />
+          <StatsCard label="Total Users" value={stats.users.total} icon={<Icon name="users" size={24} />} />
+          <StatsCard label="Admins" value={stats.users.admins} icon={<Icon name="shield" size={24} />} />
         </div>
       </div>
 
       {/* Listings */}
       <div className="admin-section">
         <div className="admin-section-header">
-          <h2>👕 Listings</h2>
+          <h2><Icon name="hanger" size={20} /> Listings</h2>
           <Link to="/admin/listings" className="btn btn-secondary btn-sm">
             Manage Listings →
           </Link>
         </div>
         <div className="stats-grid">
-          <StatsCard label="Total Listings" value={stats.listings.total} icon="📦" />
-          <StatsCard label="Available" value={stats.listings.available} icon="✅" />
-          <StatsCard label="Pending" value={stats.listings.pending} icon="⏳" />
-          <StatsCard label="Swapped" value={stats.listings.swapped} icon="🔄" />
+          <StatsCard label="Total Listings" value={stats.listings.total} icon={<Icon name="package" size={24} />} />
+          <StatsCard label="Available" value={stats.listings.available} icon={<Icon name="check" size={24} />} />
+          <StatsCard label="Pending" value={stats.listings.pending} icon={<Icon name="clock" size={24} />} />
+          <StatsCard label="Swapped" value={stats.listings.swapped} icon={<Icon name="swap" size={24} />} />
         </div>
       </div>
 
       {/* Swaps */}
       <div className="admin-section">
         <div className="admin-section-header">
-          <h2>🤝 Swap Requests</h2>
+          <h2><Icon name="swap" size={20} /> Swap Requests</h2>
           <Link to="/admin/swaps" className="btn btn-secondary btn-sm">
             View All Swaps →
           </Link>
         </div>
         <div className="stats-grid">
-          <StatsCard label="Total Swaps" value={stats.swaps.total} icon="📊" />
-          <StatsCard label="Pending" value={stats.swaps.pending} icon="⏳" />
-          <StatsCard label="Accepted" value={stats.swaps.accepted} icon="✅" />
-          <StatsCard label="Completed" value={stats.swaps.completed} icon="🎉" />
-          <StatsCard label="Rejected" value={stats.swaps.rejected} icon="❌" />
-          <StatsCard label="Cancelled" value={stats.swaps.cancelled} icon="🚫" />
+          <StatsCard label="Total Swaps" value={stats.swaps.total} icon={<Icon name="chart" size={24} />} />
+          <StatsCard label="Pending" value={stats.swaps.pending} icon={<Icon name="clock" size={24} />} />
+          <StatsCard label="Accepted" value={stats.swaps.accepted} icon={<Icon name="check" size={24} />} />
+          <StatsCard label="Completed" value={stats.swaps.completed} icon={<Icon name="check" size={24} />} />
+          <StatsCard label="Rejected" value={stats.swaps.rejected} icon={<Icon name="cross" size={24} />} />
+          <StatsCard label="Cancelled" value={stats.swaps.cancelled} icon={<Icon name="cross" size={24} />} />
         </div>
       </div>
 
       {/* Messages */}
       <div className="admin-section">
-        <h2>💬 Messages</h2>
+        <h2><Icon name="chat" size={20} /> Messages</h2>
         <div className="stats-grid">
-          <StatsCard label="Total Messages" value={stats.messages.total} icon="📨" />
+          <StatsCard label="Total Messages" value={stats.messages.total} icon={<Icon name="mail" size={24} />} />
         </div>
       </div>
     </div>

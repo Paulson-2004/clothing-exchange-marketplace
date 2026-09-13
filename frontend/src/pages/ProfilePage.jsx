@@ -160,7 +160,7 @@ function ProfilePage() {
       )}
 
       {isEditing ? (
-        <div className="profile-card">
+        <div className="profile-card profile-edit-card">
           <h2>Edit Personal Information</h2>
           {saveError && <ErrorMessage message={saveError} />}
           <form onSubmit={handleSubmit} className="profile-form">
@@ -179,7 +179,14 @@ function ProfilePage() {
 
             <div className="form-group">
               <label htmlFor="email">Email Address (Read-only)</label>
-              <input id="email" type="email" value={user.email} disabled className="input-disabled" />
+              <input
+                id="email"
+                type="email"
+                value={user.email}
+                disabled
+                readOnly
+                className="input-disabled"
+              />
               <small className="form-help-text">Email address cannot be modified.</small>
             </div>
 
@@ -188,7 +195,7 @@ function ProfilePage() {
               <input
                 id="phone"
                 name="phone"
-                type="text"
+                type="tel"
                 placeholder="e.g. +91 98765 43210"
                 value={formData.phone}
                 onChange={handleInputChange}
@@ -200,7 +207,7 @@ function ProfilePage() {
               <textarea
                 id="bio"
                 name="bio"
-                rows="3"
+                rows="4"
                 placeholder="Share your swap preferences, favourite styles, or sizing notes…"
                 value={formData.bio}
                 onChange={handleInputChange}
@@ -209,7 +216,7 @@ function ProfilePage() {
               <small className="form-help-text">{formData.bio.length} / 300 characters</small>
             </div>
 
-            <div className="form-row">
+            <div className="profile-location-row">
               <div className="form-group">
                 <label htmlFor="city">City</label>
                 <input
@@ -247,14 +254,17 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="form-actions">
+            <div className="profile-form-actions">
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 {saving ? 'Saving…' : 'Save Changes'}
               </button>
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setIsEditing(false);
+                  setSaveError(null);
+                }}
                 disabled={saving}
               >
                 Cancel

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getListings } from '../api/listingApi';
 import ListingCard from '../components/listing/ListingCard';
 import ListingFilters from '../components/listing/ListingFilters';
@@ -19,6 +19,7 @@ const initialFilters = {
 
 function HomePage() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -45,14 +46,21 @@ function HomePage() {
 
   return (
     <div className="page-container marketplace-page">
-      <div className="marketplace-header">
-        <div>
-          <h1>Browse Listings</h1>
-          <p className="marketplace-subtitle">Swap clothes sustainably — no money involved.</p>
+      <div className="marketplace-hero">
+        <div className="marketplace-hero-content">
+          <span className="marketplace-hero-badge">Direct Item-for-Item Barter</span>
+          <h1 className="marketplace-hero-title">Swap Clothes. No Money Needed.</h1>
+          <p className="marketplace-hero-desc">
+            ReWear is a peer-to-peer clothing exchange marketplace. Give unworn clothing a second life, discover compatible pieces locally, and swap directly with zero monetary transactions.
+          </p>
         </div>
-        {isAuthenticated && (
-          <Link to="/listings/new" className="btn btn-primary">
+        {isAuthenticated ? (
+          <Link to="/listings/new" className="btn btn-primary marketplace-hero-cta">
             + Create Listing
+          </Link>
+        ) : (
+          <Link to="/register" className="btn btn-primary marketplace-hero-cta">
+            Start Swapping
           </Link>
         )}
       </div>
@@ -70,7 +78,7 @@ function HomePage() {
           title="No listings match your filters"
           message="Try broadening your search, or check back later for new items."
           actionLabel={isAuthenticated ? 'Create the first listing' : undefined}
-          onAction={isAuthenticated ? () => (window.location.href = '/listings/new') : undefined}
+          onAction={isAuthenticated ? () => navigate('/listings/new') : undefined}
         />
       )}
 

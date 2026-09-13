@@ -434,8 +434,8 @@ async function main() {
     });
     createdListingIds.push(listingB._id.toString());
 
-    console.log(`  Listing A: $80 (id: ${listingA._id})`);
-    console.log(`  Listing B: $120 (id: ${listingB._id})`);
+    console.log(`  Listing A: ₹80 (id: ${listingA._id})`);
+    console.log(`  Listing B: ₹120 (id: ${listingB._id})`);
 
     // --- Endpoint validation tests ---
     await runComparatorEndpointTests(listingA._id.toString(), listingB._id.toString());

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '../../utils/currency';
 
 // Table row for the admin listing list.
 
@@ -30,7 +31,7 @@ function AdminListingRow({ listing, onDelete }) {
           {listing.status}
         </span>
       </td>
-      <td>${listing.estimatedValue}</td>
+      <td>{formatCurrency(listing.estimatedValue)}</td>
       <td>{ownerName}{ownerEmail ? ` (${ownerEmail})` : ''}</td>
       <td>{new Date(listing.createdAt).toLocaleDateString()}</td>
       <td className="admin-cell-actions">

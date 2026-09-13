@@ -8,25 +8,45 @@ function ListingFilters({ filters, onChange, onReset }) {
   };
 
   return (
-    <div className="listing-filters">
-      <input
-        type="text"
-        placeholder="Search by title or brand…"
-        value={filters.search}
-        onChange={handleFieldChange('search')}
-        className="filter-search"
-      />
+    <div className="listing-filters-container">
+      <div className="category-pills-bar" role="group" aria-label="Filter listings by category">
+        <button
+          type="button"
+          className={`category-pill ${!filters.category ? 'active' : ''}`}
+          onClick={() => onChange({ ...filters, category: '' })}
+        >
+          All Items
+        </button>
+        {CATEGORIES.map((c) => {
+          const isActive = filters.category === c;
+          return (
+            <button
+              key={c}
+              type="button"
+              className={`category-pill ${isActive ? 'active' : ''}`}
+              onClick={() => onChange({ ...filters, category: isActive ? '' : c })}
+            >
+              {c.charAt(0).toUpperCase() + c.slice(1)}
+            </button>
+          );
+        })}
+      </div>
 
-      <select value={filters.category} onChange={handleFieldChange('category')}>
-        <option value="">All Categories</option>
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {c.charAt(0).toUpperCase() + c.slice(1)}
-          </option>
-        ))}
-      </select>
+      <div className="listing-filters">
+        <input
+          type="text"
+          placeholder="Search by title or brand…"
+          value={filters.search}
+          onChange={handleFieldChange('search')}
+          className="filter-search"
+          aria-label="Search listings by title or brand"
+        />
 
-      <select value={filters.size} onChange={handleFieldChange('size')}>
+      <select
+        value={filters.size}
+        onChange={handleFieldChange('size')}
+        aria-label="Filter by size"
+      >
         <option value="">All Sizes</option>
         {SIZES.map((s) => (
           <option key={s} value={s}>
@@ -35,7 +55,11 @@ function ListingFilters({ filters, onChange, onReset }) {
         ))}
       </select>
 
-      <select value={filters.condition} onChange={handleFieldChange('condition')}>
+      <select
+        value={filters.condition}
+        onChange={handleFieldChange('condition')}
+        aria-label="Filter by condition"
+      >
         <option value="">All Conditions</option>
         {CONDITIONS.map((c) => (
           <option key={c} value={c}>
@@ -50,6 +74,7 @@ function ListingFilters({ filters, onChange, onReset }) {
         value={filters.city}
         onChange={handleFieldChange('city')}
         className="filter-location"
+        aria-label="Filter by city"
       />
 
       <input
@@ -58,11 +83,13 @@ function ListingFilters({ filters, onChange, onReset }) {
         value={filters.state}
         onChange={handleFieldChange('state')}
         className="filter-location"
+        aria-label="Filter by state"
       />
 
       <button type="button" className="btn btn-secondary" onClick={onReset}>
         Reset Filters
       </button>
+      </div>
     </div>
   );
 }

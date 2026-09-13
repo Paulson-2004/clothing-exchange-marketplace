@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { createOrFindConversation } from '../../api/chatApi';
 import { compareValues } from '../../utils/valueComparator';
+import { formatCurrency } from '../../utils/currency';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -35,7 +36,7 @@ function MiniListing({ listing, label }) {
         />
         <div>
           <p className="swap-mini-title">{listing.title}</p>
-          <p className="swap-mini-value">Est. ${listing.estimatedValue}</p>
+          <p className="swap-mini-value">Est. {formatCurrency(listing.estimatedValue)}</p>
         </div>
       </Link>
     </div>
@@ -92,15 +93,59 @@ function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, o
       </div>
 
       {comparison !== null && (
-        <p className="swap-value-diff">
-          Est. ${comparison.valueA} (requested) • Est. ${comparison.valueB} (offered)
-          {' • '}
-          {comparison.absoluteDifference === 0
-            ? 'Even value'
-            : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
-          {' • '}
-          <strong>{comparison.classification}</strong>
-        </p>
+        <div className="swap-comparison-meter-box">
+          <div className="swap-comparison-meter-header">
+            <span className="swap-meter-stat">
+              Est. {formatCurrency(comparison.valueA)} (requested) vs Est. {formatCurrency(comparison.valueB)} (offered)
+            </span>
+            <span
+              className={`swap-meter-badge swap-meter-${
+                comparison.classification === 'Close Match'
+                  ? 'close'
+                  : comparison.classification === 'Moderate Difference'
+                  ? 'moderate'
+                  : 'large'
+              }`}
+            >
+              {comparison.classification}
+            </span>
+          </div>
+
+          <div
+            className="swap-meter-track"
+            role="progressbar"
+            aria-valuenow={comparison.percentageDifference}
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-label={`Value difference: ${comparison.percentageDifference}% (${comparison.classification})`}
+          >
+            <div
+              className={`swap-meter-fill swap-meter-fill-${
+                comparison.classification === 'Close Match'
+                  ? 'close'
+                  : comparison.classification === 'Moderate Difference'
+                  ? 'moderate'
+                  : 'large'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(8, comparison.percentageDifference))}%` }}
+            />
+          </div>
+
+          <div className="swap-meter-footer">
+            <span>
+              {comparison.absoluteDifference === 0
+                ? 'Even value exchange'
+                : `Difference: ${formatCurrency(comparison.absoluteDifference)} (${comparison.percentageDifference}%)`}
+            </span>
+            <span className="swap-meter-thresholds">
+              {comparison.classification === 'Close Match'
+                ? '≤20% (Close Match)'
+                : comparison.classification === 'Moderate Difference'
+                ? '21–50% (Moderate Diff)'
+                : '>50% (Large Diff)'}
+            </span>
+          </div>
+        </div>
       )}
 
       <div className="swap-request-actions">

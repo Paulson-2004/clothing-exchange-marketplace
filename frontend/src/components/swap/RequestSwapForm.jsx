@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getMyListings } from '../../api/listingApi';
 import { createSwapRequest } from '../../api/swapApi';
 import { compareValues } from '../../utils/valueComparator';
+import { formatCurrency } from '../../utils/currency';
 import Loader from '../common/Loader';
 
 function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
@@ -91,7 +92,7 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
                 />
                 <div>
                   <p className="swap-mini-title">{listing.title}</p>
-                  <p className="swap-mini-value">Est. ${listing.estimatedValue}</p>
+                  <p className="swap-mini-value">Est. {formatCurrency(listing.estimatedValue)}</p>
                 </div>
               </label>
             ))}
@@ -100,20 +101,20 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
           {comparison && (
             <div className="swap-value-preview">
               <p>
-                <strong>Requested item:</strong> {requestedListing.title} — Est. ${comparison.valueA}
+                <strong>Requested item:</strong> {requestedListing.title} — Est. {formatCurrency(comparison.valueA)}
               </p>
               <p>
-                <strong>Your offer:</strong> {selectedListing.title} — Est. ${comparison.valueB}
+                <strong>Your offer:</strong> {selectedListing.title} — Est. {formatCurrency(comparison.valueB)}
               </p>
               <p className="swap-value-diff">
                 {comparison.absoluteDifference === 0
                   ? 'Even estimated value'
-                  : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
+                  : `Difference: ${formatCurrency(comparison.absoluteDifference)} (${comparison.percentageDifference}%)`}
                 {' · '}
                 <strong>{comparison.classification}</strong>
               </p>
               <p className="field-hint">
-                Estimated values are rough guides to help you negotiate — not guaranteed market prices.
+                Estimated values are for barter comparison only. This is a direct item-for-item exchange with no cash payments. Both users decide whether the trade is agreeable.
               </p>
             </div>
           )}

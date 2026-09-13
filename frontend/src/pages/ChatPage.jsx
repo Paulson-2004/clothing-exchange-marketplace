@@ -49,6 +49,11 @@ function ChatPage() {
     );
   };
 
+  const handleBack = () => {
+    setActiveId(null);
+    setSearchParams({}, { replace: true });
+  };
+
   const activeConversation = conversations.find((c) => c._id === activeId) || null;
 
   return (
@@ -59,7 +64,7 @@ function ChatPage() {
       {status === 'error' && <ErrorMessage message="Could not load conversations." onRetry={fetchConversations} />}
 
       {status === 'success' && (
-        <div className="chat-layout">
+        <div className={`chat-layout ${activeConversation ? 'has-active' : ''}`}>
           <div className="chat-sidebar">
             <ConversationList
               conversations={conversations}
@@ -68,7 +73,12 @@ function ChatPage() {
             />
           </div>
           <div className="chat-main">
-            <MessageThread conversation={activeConversation} currentUserId={user?.id} onRead={handleRead} />
+            <MessageThread
+              conversation={activeConversation}
+              currentUserId={user?.id}
+              onRead={handleRead}
+              onBack={handleBack}
+            />
           </div>
         </div>
       )}
