@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { createOrFindConversation } from '../../api/chatApi';
+import { compareValues } from '../../utils/valueComparator';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -40,9 +42,28 @@ function MiniListing({ listing, label }) {
 // `variant` is 'incoming' or 'sent' - controls which action buttons show.
 function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, onComplete, busy }) {
   const { _id, requester, requestedListing, offeredListing, status, createdAt } = swapRequest;
+  const navigate = useNavigate();
 
-  const valueDifference =
-    requestedListing && offeredListing ? offeredListing.estimatedValue - requestedListing.estimatedValue : null;
+  // Phase 6: use the shared comparator utility instead of a raw subtraction.
+  const comparison =
+    requestedListing && offeredListing
+      ? compareValues(requestedListing.estimatedValue, offeredListing.estimatedValue)
+      : null;
+
+  // The "other" party depends on which side of the exchange we're
+  // viewing: for an incoming request it's the requester; for a sent
+  // request it's the owner of the item we requested.
+  const otherUserId = variant === 'incoming' ? requester?._id : requestedListing?.owner?._id;
+
+  const handleOpenNegotiation = async () => {
+    if (!otherUserId) return;
+    try {
+      const data = await createOrFindConversation({ otherUserId, swapRequestId: _id });
+      navigate(`/chat?conversation=${data.conversation._id}`);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not open the conversation. Please try again.');
+    }
+  };
 
   return (
     <div className="swap-request-card">
@@ -67,14 +88,25 @@ function SwapRequestCard({ swapRequest, variant, onAccept, onReject, onCancel, o
         <MiniListing listing={offeredListing} label="You get" />
       </div>
 
-      {valueDifference !== null && (
+      {comparison !== null && (
         <p className="swap-value-diff">
-          Requested item: ${requestedListing.estimatedValue} • Offered item: ${offeredListing.estimatedValue} •{' '}
-          {valueDifference === 0 ? 'Even value' : `Difference: $${Math.abs(valueDifference)}`}
+          Est. ${comparison.valueA} (requested) • Est. ${comparison.valueB} (offered)
+          {' • '}
+          {comparison.absoluteDifference === 0
+            ? 'Even value'
+            : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
+          {' • '}
+          <strong>{comparison.classification}</strong>
         </p>
       )}
 
       <div className="swap-request-actions">
+        {otherUserId && (
+          <button className="btn btn-secondary" onClick={handleOpenNegotiation} disabled={busy}>
+            Open Negotiation
+          </button>
+        )}
+
         {variant === 'incoming' && status === 'pending' && (
           <>
             <button className="btn btn-primary" onClick={() => onAccept(_id)} disabled={busy}>

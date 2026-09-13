@@ -6,6 +6,7 @@ const healthRoutes = require('./routes/healthRoutes');
 const authRoutes = require('./routes/authRoutes');
 const listingRoutes = require('./routes/listingRoutes');
 const swapRoutes = require('./routes/swapRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -28,8 +29,9 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/swaps', swapRoutes);
+app.use('/api/chat', chatRoutes);
 
-// More route groups (chat, admin) will be mounted here in later phases.
+// More route groups (admin) will be mounted here in later phases.
 
 // --- Error handling (must be last) ---
 app.use(notFound);

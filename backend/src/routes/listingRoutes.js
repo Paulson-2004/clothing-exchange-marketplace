@@ -9,6 +9,8 @@ const {
   updateListing,
   deleteListing,
   getMyListings,
+  compareListings,
+  getListingMatches,
 } = require('../controllers/listingController');
 
 const router = express.Router();
@@ -27,9 +29,19 @@ router.get('/estimate-value', (req, res) => {
   res.status(200).json({ success: true, estimatedValue: value });
 });
 
+// GET /api/listings/compare?listingA=<id>&listingB=<id>
+// Public. Read-only. Returns a structured value comparison (Phase 6).
+// Must be before /:id to prevent Express treating "compare" as an ID.
+router.get('/compare', compareListings);
+
 router.route('/')
   .get(getListings)
   .post(protect, upload.array('images', 5), createListing);
+
+// GET /api/listings/:id/matches
+// Public. Read-only. Returns location + value compatible matches (Phase 7).
+// Must be defined before the bare /:id route.
+router.get('/:id/matches', getListingMatches);
 
 router.route('/:id')
   .get(getListingById)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getMyListings } from '../../api/listingApi';
 import { createSwapRequest } from '../../api/swapApi';
+import { compareValues } from '../../utils/valueComparator';
 import Loader from '../common/Loader';
 
 function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
@@ -25,7 +26,10 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
   }, []);
 
   const selectedListing = myListings.find((listing) => listing._id === selectedId);
-  const valueDifference = selectedListing ? selectedListing.estimatedValue - requestedListing.estimatedValue : null;
+  // Phase 6: use the shared comparator utility instead of a raw subtraction.
+  const comparison = selectedListing
+    ? compareValues(requestedListing.estimatedValue, selectedListing.estimatedValue)
+    : null;
 
   const handleSubmit = async () => {
     if (!selectedId) {
@@ -87,14 +91,23 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
             ))}
           </div>
 
-          {selectedListing && (
+          {comparison && (
             <div className="swap-value-preview">
-              <p>Requested item: {requestedListing.title} (${requestedListing.estimatedValue})</p>
-              <p>Your offer: {selectedListing.title} (${selectedListing.estimatedValue})</p>
               <p>
-                {valueDifference === 0
-                  ? 'These items have an even estimated value.'
-                  : `Estimated value difference: $${Math.abs(valueDifference)}`}
+                <strong>Requested item:</strong> {requestedListing.title} — Est. ${comparison.valueA}
+              </p>
+              <p>
+                <strong>Your offer:</strong> {selectedListing.title} — Est. ${comparison.valueB}
+              </p>
+              <p className="swap-value-diff">
+                {comparison.absoluteDifference === 0
+                  ? 'Even estimated value'
+                  : `Difference: $${comparison.absoluteDifference} (${comparison.percentageDifference}%)`}
+                {' · '}
+                <strong>{comparison.classification}</strong>
+              </p>
+              <p className="field-hint">
+                Estimated values are rough guides to help you negotiate — not guaranteed market prices.
               </p>
             </div>
           )}
