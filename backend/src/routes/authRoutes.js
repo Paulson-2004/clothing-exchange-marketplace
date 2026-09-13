@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, getMe } = require('../controllers/authController');
+const { register, login, logout, getMe, getProfile, updateProfile } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -11,5 +11,8 @@ router.post('/login', login);
 // than getting a 401 when all they want is to log out.
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
+router.get('/profile', protect, getProfile);
+router.patch('/profile', protect, updateProfile);
+router.put('/profile', protect, updateProfile);
 
 module.exports = router;

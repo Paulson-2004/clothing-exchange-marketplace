@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Listing = require('../models/Listing');
+const SwapRequest = require('../models/SwapRequest');
 const generateToken = require('../utils/generateToken');
 
 const COOKIE_NAME = 'token';
@@ -20,6 +22,8 @@ const toSafeUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  phone: user.phone || '',
+  bio: user.bio || '',
   location: user.location,
   createdAt: user.createdAt,
 });
@@ -127,4 +131,125 @@ const getMe = async (req, res) => {
   res.status(200).json({ success: true, user: toSafeUser(req.user) });
 };
 
-module.exports = { register, login, logout, getMe };
+// GET /api/auth/profile
+// Relies on `protect` middleware loading req.user.
+const getProfile = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    // Fetch user's listings to check for swaps requested on their items
+    const userListings = await Listing.find({ owner: user._id }).select('_id status');
+    const userListingIds = userListings.map((l) => l._id);
+
+    const [
+      totalListings,
+      availableListings,
+      swappedListings,
+      sentSwaps,
+      incomingSwaps,
+      completedSwaps,
+    ] = await Promise.all([
+      userListings.length,
+      userListings.filter((l) => l.status === 'available').length,
+      userListings.filter((l) => l.status === 'swapped').length,
+      SwapRequest.countDocuments({ requester: user._id }),
+      SwapRequest.countDocuments({ requestedListing: { $in: userListingIds } }),
+      SwapRequest.countDocuments({
+        $or: [{ requester: user._id }, { requestedListing: { $in: userListingIds } }],
+        status: 'completed',
+      }),
+    ]);
+
+    // Fetch up to 10 most recent swaps for the user's swap history
+    const recentSwaps = await SwapRequest.find({
+      $or: [{ requester: user._id }, { requestedListing: { $in: userListingIds } }],
+    })
+      .populate('requester', 'name email location')
+      .populate({
+        path: 'requestedListing',
+        select: 'title images estimatedValue status owner',
+        populate: { path: 'owner', select: 'name email location' },
+      })
+      .populate({
+        path: 'offeredListing',
+        select: 'title images estimatedValue status owner',
+        populate: { path: 'owner', select: 'name email location' },
+      })
+      .sort({ updatedAt: -1 })
+      .limit(10);
+
+    res.status(200).json({
+      success: true,
+      user: toSafeUser(user),
+      activity: {
+        totalListings,
+        availableListings,
+        swappedListings,
+        sentSwaps,
+        incomingSwaps,
+        completedSwaps,
+      },
+      recentSwaps,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /api/auth/profile
+// Relies on `protect` middleware loading req.user.
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, phone, bio, location } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    if (name !== undefined) {
+      if (typeof name !== 'string' || !name.trim()) {
+        res.status(400);
+        throw new Error('Name cannot be empty');
+      }
+      if (name.trim().length > 80) {
+        res.status(400);
+        throw new Error('Name cannot exceed 80 characters');
+      }
+      user.name = name.trim();
+    }
+
+    if (phone !== undefined) {
+      user.phone = typeof phone === 'string' ? phone.trim() : '';
+    }
+
+    if (bio !== undefined) {
+      if (typeof bio === 'string' && bio.trim().length > 300) {
+        res.status(400);
+        throw new Error('Bio cannot exceed 300 characters');
+      }
+      user.bio = typeof bio === 'string' ? bio.trim() : '';
+    }
+
+    if (location && typeof location === 'object') {
+      user.location = {
+        city: typeof location.city === 'string' ? location.city.trim() : (user.location?.city || ''),
+        state: typeof location.state === 'string' ? location.state.trim() : (user.location?.state || ''),
+        country: typeof location.country === 'string' ? location.country.trim() : (user.location?.country || ''),
+      };
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: toSafeUser(updatedUser),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, login, logout, getMe, getProfile, updateProfile };

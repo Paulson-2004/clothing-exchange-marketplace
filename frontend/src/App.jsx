@@ -6,11 +6,17 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
 import ItemDetailsPage from './pages/ItemDetailsPage';
 import CreateEditListingPage from './pages/CreateEditListingPage';
 import MyListingsPage from './pages/MyListingsPage';
 import SwapRequestsPage from './pages/SwapRequestsPage';
 import ChatPage from './pages/ChatPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminUserDetailPage from './pages/AdminUserDetailPage';
+import AdminListingsPage from './pages/AdminListingsPage';
+import AdminSwapsPage from './pages/AdminSwapsPage';
 
 function App() {
   return (
@@ -27,6 +33,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
@@ -67,6 +81,46 @@ function App() {
             element={
               <ProtectedRoute>
                 <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/:id"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminUserDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/listings"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminListingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/swaps"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminSwapsPage />
               </ProtectedRoute>
             }
           />

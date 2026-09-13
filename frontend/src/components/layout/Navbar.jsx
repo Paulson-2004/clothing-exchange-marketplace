@@ -19,10 +19,12 @@ function Navbar() {
       <div className="navbar-links">
         {isAuthenticated ? (
           <>
+            {user?.role === 'admin' && <Link to="/admin">Admin Panel</Link>}
             <Link to="/my-listings">My Listings</Link>
             <Link to="/swap-requests">Swap Requests</Link>
             <Link to="/chat">Chat</Link>
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/profile">Profile</Link>
             <span className="navbar-user">Hi, {user.name}</span>
             <button className="btn btn-secondary" onClick={handleLogout}>
               Logout
