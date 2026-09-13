@@ -1,330 +1,81 @@
-# ReWear — Clothing Exchange & Swap Marketplace
+# ReWear
 
-A sustainable web platform that facilitates direct, item-for-item clothing exchanges without monetary transactions.
+ReWear is a peer-to-peer clothing exchange and swap marketplace. It allows users to discover premium pre-loved clothing, trade unworn pieces directly with others, and build their wardrobes sustainably—zero money required.
 
-**Live Demo:** [https://rewear-swap.vercel.app/](https://rewear-swap.vercel.app/)  
-**GitHub Repository:** [https://github.com/Paulson-2004/clothing-exchange-marketplace](https://github.com/Paulson-2004/clothing-exchange-marketplace)  
-**Major Technical Value:** A fully verified 8-phase production application featuring deterministic swap valuation, algorithmic location-based matching, and a highly resilient state machine for conflict-free direct exchanges.
+## Live Demo
 
-## Overview
-ReWear is a sustainable peer-to-peer clothing exchange marketplace designed to promote circular fashion by enabling users to trade clothing they no longer wear. Rather than relying on traditional e-commerce models where items are bought and sold with money, this application strictly focuses on direct item-for-item swaps, powered by algorithmic location matching and deterministic value estimation.
+- **Frontend:** https://rewear-swap.vercel.app/
+- **Backend API:** https://clothing-exchange-marketplace.onrender.com
 
-## Problem
-The fashion industry generates significant waste, and individuals often have wearable clothing sitting unused in their wardrobes. While conventional marketplaces allow selling, they often require managing monetary transactions, payments, and shipping. Finding suitable exchange partners for direct swaps is challenging due to geographic barriers, uncertainty regarding the fairness of trades, and the lack of a structured platform specifically dedicated to item-for-item exchanges.
+## About
 
-## Key Features
-- **Authentication:** Secure user registration, login, and authorization.
-- **User Profiles and Location:** Comprehensive user profiles with granular city/state/country location settings.
-- **Clothing Listings:** Full CRUD operations for clothing items.
-- **Search/Filtering:** Browse the marketplace with case-insensitive filtering by category, condition, size, and explicit city/state location.
-- **Image Uploads:** Support for uploading multiple high-resolution images.
-- **Swap Requests:** Propose trades offering your own listings in exchange for desired items.
-- **Swap Lifecycle:** Strict state machine managing requests from pending to accepted or completed.
-- **Chat/Negotiation:** Contextual, swap-linked direct messaging.
-- **Value Comparison:** Algorithmic estimation and percentage-based fairness classification for trades.
-- **Location-Based Matching:** Automatic suggestion of geographically close and value-compatible items.
-- **Admin Dashboard/Moderation:** System-wide metrics, user role management, and listing moderation.
+ReWear replaces traditional e-commerce monetary transactions with a direct item-for-item swapping mechanism. Users can list items with estimated values, browse the marketplace, send swap requests proposing their own items in exchange, and negotiate via chat. The platform also includes comprehensive admin tools for moderation.
 
-## How It Works
-Register → Create profile & listings → Browse marketplace → Find compatible/nearby items → Compare values → Request swap → Negotiate via chat → Accept request → Complete swap → View in swap history.
+## Features
 
-## Screenshots
+- **Item-for-Item Swapping**: Propose trades using your own listed inventory instead of cash.
+- **Chat-based Negotiation**: Integrated polling-based chat for discussing swap details.
+- **Value Matching**: Automated warnings if proposed swaps have significant value disparities.
+- **Location-based Filtering**: Find items nearby using city/state text searches.
+- **Admin Dashboard**: Comprehensive moderation tools for users, listings, and swap requests.
+- **Dark Mode Support**: Full light and dark theme support via CSS variables.
 
-*(Note: Documentation screenshots will be stored in `docs/assets/`. You can add them here to demonstrate the UI.)*
+## Tech Stack
 
-- **Marketplace/Home page:** `<!-- Add screenshot here: ![Marketplace](docs/assets/marketplace.png) -->`
-- **Item Details + Nearby Swap Matches:** `<!-- Add screenshot here: ![Item Details](docs/assets/item-details.png) -->`
-- **Chat Interface:** `<!-- Add screenshot here: ![Chat](docs/assets/chat.png) -->`
-- **Admin Dashboard:** `<!-- Add screenshot here: ![Admin](docs/assets/admin.png) -->`
-
-## Technology Stack
-
-**Frontend**
-- React (18.3.1)
-- React Router (7.18.3)
-- Vite (5.3.4)
-- Axios
-
-**Backend**
-- Node.js
-- Express (4.19.2)
-
-**Database**
-- MongoDB (via Mongoose 8.5.0)
-
-**Authentication/Security**
-- JSON Web Tokens (jsonwebtoken)
-- bcryptjs
-- cookie-parser
-- cors
-
-**Cloud/Deployment**
-- Cloudinary (Image Hosting)
-- Vercel (Frontend Hosting)
-- Render (Backend Hosting)
-- MongoDB Atlas (Cloud Database)
-
-**Testing**
-- Native Node.js scripts (Integration/E2E API Tests)
-
-## Architecture
-The application uses a standard decoupled client-server architecture:
-
-```mermaid
-graph TD
-    Client[User Browser] -->|REST API + httpOnly Cookies| Frontend[React / Vite - Hosted on Vercel]
-    Frontend -->|JSON API Requests| Backend[Node.js / Express API - Hosted on Render]
-    Backend -->|Mongoose Queries| Database[(MongoDB Atlas)]
-    Backend -->|Image Streams| Cloudinary[Cloudinary Storage]
-```
-
-For local development, the React/Vite frontend and Node/Express backend run as separate services. The backend uses Mongoose to access MongoDB Atlas and sends listing images to Cloudinary. In the deployed architecture, Vercel hosts the frontend and Render hosts the backend API; the deployed backend connects to MongoDB Atlas and Cloudinary through server-side environment variables.
-
-## Database Environments
-
-ReWear keeps local development, automated tests, and production in separate MongoDB databases:
-
-| Environment | Variable | Database | Purpose |
-|---|---|---|---|
-| Local development | `MONGO_URI` | `rewear-dev` | Local backend runtime and development/demo data |
-| Automated tests | `TEST_MONGO_URI` | `rewear-automated-tests` | Isolated test fixtures and verification |
-| Production/Render | `MONGO_URI` | Production database (currently named `test`) | Deployed application data |
-
-Never point local development or automated tests at the production database. `MONGO_URI` is used by the local/backend runtime, while `TEST_MONGO_URI` is reserved for the automated test scripts. Keep all connection strings and credentials private; do not commit `.env` files or paste their values into documentation.
-
-## Core Modules
-
-### Authentication
-Secure identity management utilizing bcrypt for password hashing and JWTs delivered via httpOnly cookies.
-
-### Marketplace
-The central hub for browsing active clothing listings. Includes indexing for search and rigorous filtering.
-
-### Swap System
-A robust state machine governing how trades are proposed and confirmed. Prevents duplicate requests and automatically handles conflicting states when a swap is accepted.
-
-### Chat
-Provides a dedicated messaging thread tied explicitly to an active swap request, ensuring participants can securely negotiate details.
-
-### Value Comparator
-Calculates an estimated swap value for listings based on brand, category, and condition. It computes the percentage difference between two items and categorizes the trade fairness as a `Close Match`, `Moderate Difference`, or `Large Difference`.
-
-### Location Matching
-Evaluates user locations to suggest nearby items (exact city/state, or same state). It integrates with the value comparator to exclude highly incompatible items from automated suggestions.
-
-### Admin Panel
-Role-based access control grants administrators a specialized dashboard to view aggregate statistics, manage user roles (with self-demotion protections), and moderate (delete) inappropriate listings.
-
-## Swap Lifecycle
-The lifecycle follows a strictly enforced state flow:
-- `pending` → `accepted` → `completed`
-
-Alternative resolutions:
-- `pending` → `rejected`
-- `pending` → `cancelled`
-
-**Rules:** 
-Only the listing owner can propose an item. Accepting a swap safely locks the availability of both items, automatically rejecting any other pending requests involving either listing.
-
-## Location & Value Matching
-The matching algorithm works hierarchically without relying on external geocoding:
-- **City/State Matching:** Exact matches on both city and state are prioritized.
-- **Same-State Matching:** Matches within the same state provide secondary suggestions.
-- **Availability Filtering:** Only `available` items are considered.
-- **Own-Listing Exclusion:** A user's own items are explicitly excluded from their suggestions.
-- **Value Compatibility:** Potential matches are evaluated, and "Large Difference" value discrepancies are excluded.
-- **Match Scoring:** Matches are assigned a deterministic score summing location proximity and value compatibility, yielding sorted, relevant recommendations.
-
-## Security
-- **Password Hashing:** Implemented using `bcryptjs`.
-- **Authentication:** JWT stored in secure `httpOnly` cookies.
-- **Secure Production Cookies:** Automatically applies `secure: true` and `sameSite: 'none'` in production to support cross-domain Vercel/Render authentication.
-- **CORS Configuration:** Explicitly configured to allow credentials from the designated frontend origin.
-- **Protected Routes:** Express middleware `protect` validates the JWT on all sensitive endpoints.
-- **Frontend Route Protection:** React Router gating using a `ProtectedRoute` component.
-- **Ownership Enforcement:** Backend explicitly verifies that users only mutate documents (listings/swaps) they own.
-- **Admin RBAC:** `requireAdmin` middleware limits access to moderation and analytics endpoints.
-- **Secret Management:** Strict isolation of secrets using `.env` variables; no hardcoded keys in the repository.
-- **Sanitized Git History:** The repository history was meticulously scrubbed to ensure no historical credentials remain accessible.
-
-## Testing
-- **Backend automated tests:** Standalone Node.js integration scripts that use `TEST_MONGO_URI` and require the isolated `rewear-automated-tests` database.
-- **Available test commands:** `test:phase4`, `test:phase5`, `test:phase6`, `test:phase7`, `test:phase8`, and `test:profile-location` (see the commands below).
-- **Frontend production build:** Run `npm run build` from the repository root.
-- **Test safety:** Never configure `TEST_MONGO_URI` or the backend used by the tests to point at production.
-
-## Local Development
-
-### Quick Start (Recommended)
-
-1. **Clone repository:**
-   ```bash
-   git clone https://github.com/Paulson-2004/clothing-exchange-marketplace.git
-   cd clothing-exchange-marketplace
-   ```
-
-2. **Configure environment variables:**
-   - In `backend/`, copy `.env.example` to `.env` and fill in your local values.
-   - In `frontend/`, copy `.env.example` to `.env` (usually `VITE_API_BASE_URL=http://localhost:5000/api`).
-
-3. **Install dependencies:**
-   ```bash
-   # Install root development dependencies
-   npm install
-
-   # Install backend and frontend dependencies
-   cd backend && npm install && cd ../frontend && npm install && cd ..
-   ```
-
-4. **Start both backend & frontend with a single command:**
-   ```bash
-   npm run dev
-   ```
-   This starts both the backend API server and frontend Vite development server concurrently with labeled output (`[backend]` and `[frontend]`).
-
-### Development Seed Data
-
-After configuring local development to use `rewear-dev`, run the safe development/demo seeder from the repository root:
-
-```bash
-npm run seed:dev
-```
-
-It creates realistic local users, clothing listings, swaps, and chat data for exercising the UI. The seeder uses only `MONGO_URI`, verifies that the actual connected database is exactly `rewear-dev` before reading or writing records, and refuses to run against any other database. It never uses `TEST_MONGO_URI` and is not intended to seed production. The historical `npm run seed:demo` command remains a safe backward-compatible alias.
-
-### Running Services Independently
-
-You can also run services individually from the repository root:
-
-- **Start backend only:**
-  ```bash
-  npm run dev:backend
-  ```
-  *(or `cd backend && npm run dev`)*
-
-- **Start frontend only:**
-  ```bash
-  npm run dev:frontend
-  ```
-  *(or `cd frontend && npm run dev`)*
-
-- **Build frontend:**
-  ```bash
-  npm run build
-  ```
-  *(or `cd frontend && npm run build`)*
-
-### Running Integration Tests
-
-From the `backend/` directory while the backend server is running against the isolated test environment:
-```bash
-cd backend
-npm run test:phase4
-npm run test:phase5
-npm run test:phase6
-npm run test:phase7
-npm run test:phase8
-npm run test:profile-location
-```
-
-The test scripts use `TEST_MONGO_URI` for their database fixtures and verify the connected database name is `rewear-automated-tests`. Set `TEST_BASE_URL` only when the API is running somewhere other than the default `http://localhost:5000/api`.
-
-## Environment Variables
-The application relies on the following environment variable names (do not commit real values):
-
-**Backend (`backend/.env`)**
-- `NODE_ENV` (e.g., `development` or `production`)
-- `PORT` (e.g., `5000`)
-- `MONGO_URI` (MongoDB connection string; local development must use `rewear-dev`)
-- `TEST_MONGO_URI` (test-only MongoDB connection string; must use `rewear-automated-tests`)
-- `TEST_BASE_URL` (optional API URL used by the automated test scripts)
-- `JWT_SECRET` (Random string for signing tokens)
-- `CLIENT_URL` (e.g., `http://localhost:5173`)
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
-- `ADMIN_EMAIL` (For initial seeding)
-- `ADMIN_PASSWORD` (For initial seeding)
-
-**Frontend (`frontend/.env`)**
-- `VITE_API_BASE_URL` (e.g., `http://localhost:5000/api`)
-
-The development seeder also accepts the optional `REWEAR_DEV_SEED_PASSWORD` variable for local seed accounts. If it is omitted, the script uses its local-development fallback; this value is never printed by the seeder. Keep both `.env` files private and never commit real values.
-
-## Deployment
-The application is fully deployed to production:
-- **Vercel frontend:** SPA routing handled via `vercel.json`.
-- **Render backend:** Express API running as a Web Service.
-- **MongoDB Atlas:** Managed cloud database.
-- **Cloudinary:** Used for robust image storage and delivery.
-
-Render supplies the production `MONGO_URI` to the backend; it must remain pointed at the production database and must never be replaced with `rewear-dev` or `rewear-automated-tests`.
+- **Frontend**: React, React Router v6, Vite
+- **Backend**: Node.js, Express
+- **Database**: MongoDB (via Mongoose)
+- **Authentication**: JWT (HTTP-only cookies)
+- **Image Storage**: Cloudinary (via Multer)
 
 ## Project Structure
+
 ```text
-clothing-exchange-marketplace/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── scripts/
-│   │   └── utils/
-│   ├── tests/
-│   └── server.js
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── utils/
-│   └── vite.config.js
-└── docs/
-    ├── PRD.md
-    ├── architecture.md
-    ├── current-state.md
-    ├── implementation-plan.md
-    ├── PROJECT_REPORT.md
-    └── requirements.md
+frontend/         # React SPA (Vite)
+backend/          # Node.js Express API
+docs/             # Project Documentation
 ```
 
+## Quick Setup
+
+1. **Clone and Install**
+   Install dependencies for the root, frontend, and backend:
+```bash
+   npm install
+   cd frontend && npm install
+   cd ../backend && npm install
+   ```
+
+2. **Environment Variables**
+   Create a .env file in the `backend/` directory:
+   ```env
+   NODE_ENV=development
+   PORT=5001
+   MONGO_URI=mongodb://127.0.0.1:27017/rewear
+   JWT_SECRET=your_jwt_secret
+   CLOUDINARY_CLOUD_NAME=your_name
+   CLOUDINARY_API_KEY=your_key
+   CLOUDINARY_API_SECRET=your_secret
+   ```
+
+3. **Start Development Servers**
+   From the project root:
+```bash
+   npm run dev
+   ```
+   This uses concurrently to run both the Vite frontend (port 5173) and the Express backend (port 5001).
+
 ## Documentation
-Additional detailed documentation can be found in the `docs/` directory:
-- [Product Requirements Document (PRD)](docs/PRD.md)
-- [Architecture & Database Design](docs/architecture.md)
-- [Original Requirements](docs/requirements.md)
-- [Implementation Plan](docs/implementation-plan.md)
-- [Project Report](docs/PROJECT_REPORT.md)
 
-## Limitations
-- **Messaging:** Relies on a REST polling interval rather than true WebSocket connections.
-- **Monetary Transactions:** The platform strictly enforces direct item-for-item trades; there is no monetary/payment system.
-- **Mobile Experience:** The application is a responsive web application without a native mobile app wrapper.
-- **Accessibility:** A formal WCAG accessibility audit has not been conducted.
+Detailed documentation can be found in the /docs directory:
 
-## Future Enhancements
-- WebSocket-based realtime messaging.
-- Courier/shipping integration with shipment tracking to support non-local exchanges.
-- Meetup/exchange-location assistance and delivery/handoff confirmation.
-- User/listing reporting and formal dispute resolution.
-- Trust/reputation features, fraud/scam detection, and identity verification.
-- Expanded platform analytics.
-- Formal WCAG accessibility compliance certification.
+- [Setup Guide](docs/setup.md)
+- [Architecture](docs/architecture.md)
+- [Features](docs/features.md)
+- [API Reference](docs/api.md)
+- [Database Schema](docs/database.md)
+- [Development](docs/development.md)
+- [Deployment](docs/deployment.md)
+- [FAQ](docs/faq.md)
+- [Recent Changes](docs/recent-changes.md)
 
-## Roadmap
-1. Project Scaffolding — **COMPLETE**
-2. Authentication — **COMPLETE**
-3. Clothing Listings / Marketplace — **COMPLETE**
-4. Swap Request System — **COMPLETE**
-5. Chat & Negotiation — **COMPLETE**
-6. Swap Value Comparator — **COMPLETE**
-7. Location-Based Matching — **COMPLETE**
-8. Admin Panel — **COMPLETE**
-
-## Project Status
-The ReWear clothing exchange marketplace is **feature-complete**, successfully deployed to production, and manually verified. All functionality specified in the authoritative 8-phase roadmap is fully implemented and backed by a comprehensive passing test suite.
-
-## License
-No license has currently been specified for this repository.

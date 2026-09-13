@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Listing = require('../models/Listing');
+const SwapRequest = require('../models/SwapRequest');
 const asyncHandler = require('../utils/asyncHandler');
 const { estimateValue } = require('../utils/valueEstimator');
 const { compareValues, CLASSIFICATIONS } = require('../utils/valueComparator');
@@ -359,6 +360,43 @@ const deleteListing = asyncHandler(async (req, res) => {
   if (listing.owner.toString() !== req.user._id.toString()) {
     res.status(403);
     throw new Error('You are not authorized to delete this listing');
+  }
+
+  // Consistent with adminDeleteListing: cancel active swaps involving this listing
+  const listingFilter = {
+    $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
+  };
+
+  const acceptedSwaps = await SwapRequest.find({ ...listingFilter, status: 'accepted' })
+    .select('requestedListing offeredListing')
+    .lean();
+
+  await SwapRequest.updateMany(
+    {
+      ...listingFilter,
+      status: { $in: ['pending', 'accepted'] },
+    },
+    { $set: { status: 'rejected' } }
+  );
+
+  const deletedListingId = listing._id.toString();
+  const partnerListingIds = [
+    ...new Set(
+      acceptedSwaps
+        .map((swap) =>
+          swap.requestedListing.toString() === deletedListingId
+            ? swap.offeredListing.toString()
+            : swap.requestedListing.toString()
+        )
+        .filter((partnerId) => partnerId !== deletedListingId)
+    ),
+  ];
+
+  if (partnerListingIds.length > 0) {
+    await Listing.updateMany(
+      { _id: { $in: partnerListingIds }, status: 'pending' },
+      { $set: { status: 'available' } }
+    );
   }
 
   await listing.deleteOne();
