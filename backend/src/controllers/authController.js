@@ -21,6 +21,12 @@ const cookieOptions = () => {
   };
 };
 
+const clearCookieOptions = () => {
+  const options = cookieOptions();
+  delete options.maxAge;
+  return options;
+};
+
 // Strips sensitive/internal fields before sending a user back to the client.
 const toSafeUser = (user) => ({
   id: user._id,
@@ -140,7 +146,7 @@ const login = async (req, res, next) => {
 
 // POST /api/auth/logout
 const logout = async (req, res) => {
-  res.clearCookie(COOKIE_NAME, cookieOptions());
+  res.clearCookie(COOKIE_NAME, clearCookieOptions());
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 };
 
@@ -157,7 +163,9 @@ const getProfile = async (req, res, next) => {
     const user = req.user;
 
     // Fetch user's listings to check for swaps requested on their items
-    const userListings = await Listing.find({ owner: user._id }).select('_id status');
+    const userListings = await Listing.find({ owner: user._id })
+      .select('_id status')
+      .lean();
     const userListingIds = userListings.map((l) => l._id);
 
     const [
@@ -195,7 +203,8 @@ const getProfile = async (req, res, next) => {
         populate: { path: 'owner', select: 'name email location' },
       })
       .sort({ updatedAt: -1 })
-      .limit(10);
+      .limit(10)
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -303,7 +312,7 @@ const changePassword = async (req, res, next) => {
     await user.save();
 
     // Log the user out so they must re-authenticate with the new password
-    res.clearCookie(COOKIE_NAME, cookieOptions());
+    res.clearCookie(COOKIE_NAME, clearCookieOptions());
 
     res.status(200).json({ success: true, message: 'Password updated successfully. Please log in again.' });
   } catch (error) {
@@ -333,72 +342,11 @@ const deleteAccount = async (req, res, next) => {
       throw new Error('Incorrect password');
     }
 
-    // 1. Delete all available/pending listings owned by the user.
-    const listings = await Listing.find({ owner: user._id, status: { $in: ['available', 'pending'] } });
-
-    for (const listing of listings) {
-      // Cancel active swap requests involving this listing
-      await SwapRequest.updateMany(
-        {
-          $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
-          status: { $in: ['pending', 'accepted'] },
-        },
-        { $set: { status: 'cancelled' } }
-      );
-
-      // Restore counterparty listings to 'available' if they were pending
-      const affectedSwaps = await SwapRequest.find({
-        $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
-        status: 'cancelled',
-      });
-
-      for (const swap of affectedSwaps) {
-        const otherListingId = swap.requestedListing.toString() === listing._id.toString()
-          ? swap.offeredListing
-          : swap.requestedListing;
-        
-        if (otherListingId && otherListingId.toString() !== listing._id.toString()) {
-          await Listing.updateOne(
-            { _id: otherListingId, status: 'pending' },
-            { $set: { status: 'available' } }
-          );
-        }
-      }
-
-      await listing.deleteOne();
-    }
-
-    // 2. Cancel any pending/accepted swaps where the user is the requester
-    const activeSwapsAsRequester = await SwapRequest.find({
-      requester: user._id,
-      status: { $in: ['pending', 'accepted'] }
-    });
-
-    for (const swap of activeSwapsAsRequester) {
-      swap.status = 'cancelled';
-      await swap.save();
-
-      // Restore counterparty's requested listing if it was pending
-      await Listing.updateOne(
-        { _id: swap.requestedListing, status: 'pending' },
-        { $set: { status: 'available' } }
-      );
-    }
-
-    // 3. Anonymize the user record to preserve chat and completed swap history
-    // We cannot hard-delete the user because other users' chat threads would
-    // crash when trying to read properties of a null participant.
-    user.name = 'Deleted User';
-    user.email = `deleted_${Date.now()}_${user._id}@example.com`;
-    user.passwordHash = await bcrypt.hash(Math.random().toString(36), 10);
-    user.phone = '';
-    user.bio = '';
-    user.location = { city: '', state: '', country: '' };
-    
-    await user.save();
+    const { anonymizeAccount } = require('../utils/accountUtils');
+    await anonymizeAccount(user);
 
     // 4. Log out
-    res.clearCookie(COOKIE_NAME, cookieOptions());
+    res.clearCookie(COOKIE_NAME, clearCookieOptions());
 
     res.status(200).json({ success: true, message: 'Account deleted successfully' });
   } catch (error) {

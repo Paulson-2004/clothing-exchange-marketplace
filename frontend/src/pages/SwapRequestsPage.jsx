@@ -19,6 +19,7 @@ function SwapRequestsPage() {
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState('');
+  const [actionSuccess, setActionSuccess] = useState('');
 
   const fetchAll = useCallback(async () => {
     setStatus('loading');
@@ -36,14 +37,17 @@ function SwapRequestsPage() {
     fetchAll();
   }, [fetchAll]);
 
-  const runAction = async (id, actionFn, confirmMessage) => {
+  const runAction = async (id, actionFn, confirmMessage, successMessage) => {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
 
     setActionError('');
+    setActionSuccess('');
     setBusyId(id);
     try {
       await actionFn(id);
       await fetchAll();
+      setActionSuccess(successMessage);
+      setTimeout(() => setActionSuccess(''), 3000);
     } catch (err) {
       setActionError(err.response?.data?.message || 'Could not complete that action. Please try again.');
     } finally {
@@ -51,17 +55,17 @@ function SwapRequestsPage() {
     }
   };
 
-  const handleAccept = (id) => runAction(id, acceptSwapRequest, 'Accept this swap request? This will mark both items as pending.');
-  const handleReject = (id) => runAction(id, rejectSwapRequest, 'Reject this swap request?');
-  const handleCancel = (id) => runAction(id, cancelSwapRequest, 'Cancel this swap request?');
+  const handleAccept = (id) => runAction(id, acceptSwapRequest, 'Accept this swap request? This will mark both items as pending.', 'Swap request accepted! Items are now pending.');
+  const handleReject = (id) => runAction(id, rejectSwapRequest, 'Decline this swap request?', 'Swap request declined.');
+  const handleCancel = (id) => runAction(id, cancelSwapRequest, 'Cancel this swap request?', 'Swap request cancelled.');
   const handleComplete = (id) =>
-    runAction(id, completeSwapRequest, 'Mark this swap as completed? Both items will be marked as swapped.');
+    runAction(id, completeSwapRequest, 'Mark this swap as completed? Both items will be marked as swapped.', 'Swap marked as completed!');
 
   const activeList = activeTab === 'incoming' ? incoming : sent;
 
   return (
     <div className="page-container">
-      <h1>Swap Requests</h1>
+      <h1 className="editorial-title">Swap Requests</h1>
 
       <div className="swap-tabs">
         <button
@@ -76,6 +80,7 @@ function SwapRequestsPage() {
       </div>
 
       {actionError && <p className="form-error">{actionError}</p>}
+      {actionSuccess && <p className="form-success">{actionSuccess}</p>}
 
       {status === 'loading' && <Loader message="Loading swap requests…" />}
 

@@ -1,38 +1,42 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
+import ScrollToTop from './components/layout/ScrollToTop';
 import ProtectedRoute from './components/layout/ProtectedRoute';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import ProfilePage from './pages/ProfilePage';
-import ItemDetailsPage from './pages/ItemDetailsPage';
-import CreateEditListingPage from './pages/CreateEditListingPage';
-import MyListingsPage from './pages/MyListingsPage';
-import SwapRequestsPage from './pages/SwapRequestsPage';
-import ChatPage from './pages/ChatPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminUsersPage from './pages/AdminUsersPage';
-import AdminUserDetailPage from './pages/AdminUserDetailPage';
-import AdminListingsPage from './pages/AdminListingsPage';
-import AdminSwapsPage from './pages/AdminSwapsPage';
+const HomePage = lazy(() => import('./pages/HomePage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const ItemDetailsPage = lazy(() => import('./pages/ItemDetailsPage'));
+const CreateEditListingPage = lazy(() => import('./pages/CreateEditListingPage'));
+const MyListingsPage = lazy(() => import('./pages/MyListingsPage'));
+const SwapRequestsPage = lazy(() => import('./pages/SwapRequestsPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('./pages/AdminUserDetailPage'));
+const AdminListingsPage = lazy(() => import('./pages/AdminListingsPage'));
+const AdminSwapsPage = lazy(() => import('./pages/AdminSwapsPage'));
 import Footer from './components/layout/Footer';
-import FaqPage from './pages/FaqPage';
-import RecentChangesPage from './pages/RecentChangesPage';
+const FaqPage = lazy(() => import('./pages/FaqPage'));
+const RecentChangesPage = lazy(() => import('./pages/RecentChangesPage'));
 
 function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <div className="site-wrapper">
             <Navbar />
             <main className="site-content">
-              <Routes>
+              <Suspense fallback={<div className="page-loading">Loading page…</div>}>
+                <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/faq" element={<FaqPage />} />
                 <Route path="/recent-changes" element={<RecentChangesPage />} />
@@ -135,7 +139,8 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-              </Routes>
+                </Routes>
+              </Suspense>
             </main>
             <Footer />
           </div>
@@ -148,3 +153,5 @@ function App() {
 }
 
 export default App;
+
+

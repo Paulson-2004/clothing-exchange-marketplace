@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAdminUsers, toggleUserRole } from '../api/adminApi';
+import { getAdminUsers, toggleUserRole, adminDeleteUser } from '../api/adminApi';
 import AdminUserRow from '../components/admin/AdminUserRow';
 import Pagination from '../components/common/Pagination';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -20,6 +20,7 @@ function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [confirmUser, setConfirmUser] = useState(null);
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
 
   const fetchUsers = async (p = page) => {
     try {
@@ -62,37 +63,61 @@ function AdminUsersPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteConfirmUser) return;
+    try {
+      await adminDeleteUser(deleteConfirmUser._id);
+      setDeleteConfirmUser(null);
+      fetchUsers(page);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete user');
+      setDeleteConfirmUser(null);
+    }
+  };
+
   return (
-    <div className="page-container">
-      <div className="admin-header">
-        <h1>User Management</h1>
-        <Link to="/admin" className="btn btn-secondary btn-sm">← Back to Dashboard</Link>
+    <div className="page-container admin-page-wide admin-users-page">
+      <div className="admin-header" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Admin / Users</div>
+          <h1 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text)' }}>
+            Users
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', margin: 0, fontSize: '1.05rem' }}>
+            Manage the members of the ReWear exchange community.
+          </p>
+        </div>
+        <Link to="/admin" className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }}>Dashboard &rarr;</Link>
       </div>
 
       {/* Filters */}
-      <div className="admin-filters">
-        <form onSubmit={handleSearch} className="admin-search-form">
+      <div className="admin-workspace-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', minWidth: '300px', maxWidth: '400px' }}>
           <input
             type="text"
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="admin-search-input"
+            style={{ flex: 1, padding: '0.6rem 1rem', border: '1px solid var(--color-border)', borderRadius: '0', background: 'var(--color-surface)', color: 'var(--color-text)', fontFamily: 'inherit' }}
           />
-          <button type="submit" className="btn btn-primary btn-sm">Search</button>
+          <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '0' }}>Search</button>
         </form>
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="admin-filter-select"
-        >
-          <option value="">All Roles</option>
-          <option value="user">Users</option>
-          <option value="admin">Admins</option>
-        </select>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            style={{ padding: '0.6rem 1rem', border: '1px solid var(--color-border)', borderRadius: '0', background: 'var(--color-surface)', color: 'var(--color-text)', fontFamily: 'inherit' }}
+          >
+            <option value="">All Roles</option>
+            <option value="user">Users</option>
+            <option value="admin">Admins</option>
+          </select>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', whiteSpace: 'nowrap', fontWeight: 500 }}>
+            {totalCount} user{totalCount !== 1 ? 's' : ''}
+          </div>
+        </div>
       </div>
-
-      <p className="admin-count">{totalCount} user{totalCount !== 1 ? 's' : ''} found</p>
 
       {loading && <Loader message="Loading users..." />}
       {error && <ErrorMessage message={error} onRetry={() => fetchUsers(page)} />}
@@ -103,15 +128,15 @@ function AdminUsersPage() {
 
       {!loading && !error && users.length > 0 && (
         <>
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
+          <div className="admin-workspace-table-container">
+            <table className="admin-workspace-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
+                  <th style={{ width: '35%' }}>User</th>
+                  <th style={{ width: '15%' }}>Role</th>
+                  <th style={{ width: '20%' }}>Location</th>
+                  <th style={{ width: '15%' }}>Joined</th>
+                  <th style={{ width: '15%', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -121,6 +146,7 @@ function AdminUsersPage() {
                     user={u}
                     isSelf={currentUser?.id === u._id}
                     onToggleRole={(usr) => setConfirmUser(usr)}
+                    onDeleteUser={(usr) => setDeleteConfirmUser(usr)}
                   />
                 ))}
               </tbody>
@@ -134,10 +160,21 @@ function AdminUsersPage() {
         <ConfirmModal
           title="Change User Role"
           message={`Are you sure you want to ${confirmUser.role === 'admin' ? 'demote' : 'promote'} "${confirmUser.name}" ${confirmUser.role === 'admin' ? 'to regular user' : 'to admin'}?`}
-          confirmLabel={confirmUser.role === 'admin' ? 'Demote' : 'Promote'}
-          danger={confirmUser.role === 'admin'}
+          confirmLabel={confirmUser.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
           onConfirm={handleToggleRole}
           onCancel={() => setConfirmUser(null)}
+          danger={confirmUser.role === 'admin'}
+        />
+      )}
+
+      {deleteConfirmUser && (
+        <ConfirmModal
+          title="Delete User"
+          message={`Are you sure you want to completely delete "${deleteConfirmUser.name}" and all their listings/swaps? This action cannot be undone.`}
+          confirmLabel="Permanently Delete User"
+          onConfirm={handleDeleteUser}
+          onCancel={() => setDeleteConfirmUser(null)}
+          danger={true}
         />
       )}
     </div>
@@ -145,3 +182,4 @@ function AdminUsersPage() {
 }
 
 export default AdminUsersPage;
+

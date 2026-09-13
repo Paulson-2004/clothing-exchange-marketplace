@@ -4,6 +4,7 @@ import { createSwapRequest } from '../../api/swapApi';
 import { compareValues } from '../../utils/valueComparator';
 import { formatCurrency } from '../../utils/currency';
 import Loader from '../common/Loader';
+import { getOptimizedImageUrl } from '../../utils/imageUrl';
 
 function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
   const [myListings, setMyListings] = useState([]);
@@ -16,8 +17,7 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
     const fetchMyListings = async () => {
       try {
         const data = await getMyListings();
-        // Only listings that are actually available can be offered.
-        setMyListings(data.listings.filter((listing) => listing.status === 'available'));
+        setMyListings(data.listings);
         setStatus('ready');
       } catch (err) {
         setStatus('error');
@@ -70,32 +70,47 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
         <>
           <p className="field-hint">Choose one of your available listings to offer in exchange:</p>
 
-          <div className="swap-offer-options">
-            {myListings.map((listing) => (
-              <label
-                key={listing._id}
-                className={`swap-offer-option ${selectedId === listing._id ? 'selected' : ''}`}
-              >
-                <input
-                  type="radio"
-                  name="offeredListing"
-                  value={listing._id}
-                  checked={selectedId === listing._id}
-                  onChange={() => setSelectedId(listing._id)}
-                />
-                <img
-                  src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
-                  alt={listing.title}
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
-                  }}
-                />
-                <div>
-                  <p className="swap-mini-title">{listing.title}</p>
-                  <p className="swap-mini-value">Est. {formatCurrency(listing.estimatedValue)}</p>
-                </div>
-              </label>
-            ))}
+          <div className="swap-offer-grid">
+            {myListings.map((listing) => {
+              const isAvailable = listing.status === 'available';
+              const isSelected = selectedId === listing._id;
+              return (
+                <label
+                  key={listing._id}
+                  className={`swap-offer-card ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="offeredListing"
+                    value={listing._id}
+                    checked={isSelected}
+                    disabled={!isAvailable}
+                    onChange={() => setSelectedId(listing._id)}
+                    className="visually-hidden"
+                  />
+                  <div className="swap-offer-image-wrap">
+                    <img
+                      src={getOptimizedImageUrl(listing.images?.[0], { width: 300, height: 400 }) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
+                      alt={listing.title}
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                    {!isAvailable && (
+                      <div className="swap-offer-overlay">
+                        {listing.status === 'pending' ? 'Pending Swap' : 'Swapped'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="swap-offer-details">
+                    <p className="swap-offer-brand">{listing.brand}</p>
+                    <p className="swap-offer-title">{listing.title}</p>
+                    <p className="swap-offer-value">Est. {formatCurrency(listing.estimatedValue)}</p>
+                  </div>
+                </label>
+              );
+            })}
           </div>
 
           {comparison && (

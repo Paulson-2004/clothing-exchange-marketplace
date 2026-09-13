@@ -92,7 +92,7 @@ async function seedListing(ownerId, title, overrides = {}) {
     brand: overrides.brand || 'TestBrand',
     size: overrides.size || 'M',
     condition: overrides.condition || 'good',
-    description: 'Test listing description.',
+    description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
     images: [PLACEHOLDER_IMG],
     estimatedValue: overrides.estimatedValue !== undefined ? overrides.estimatedValue : 1000,
     location: overrides.location || { city: 'Bengaluru', state: 'Karnataka', country: 'India' },
@@ -108,7 +108,7 @@ async function main() {
   console.log('====================================================');
 
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
     console.log('MongoDB connected for test fixtures.');
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err.message);
@@ -361,4 +361,6 @@ async function main() {
 }
 
 main();
+
+
 

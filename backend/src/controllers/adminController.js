@@ -19,6 +19,7 @@ const Listing = require('../models/Listing');
 const SwapRequest = require('../models/SwapRequest');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
+const { anonymizeAccount, isDeletedUser } = require('../utils/accountUtils');
 
 // ─── Pagination helper ─────────────────────────────────────────────
 // Shared across all list endpoints. Defaults to page 1, 20 per page,
@@ -31,40 +32,61 @@ function parsePagination(query) {
   return { page, limit, skip };
 }
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // ─── GET /api/admin/stats ──────────────────────────────────────────
-// Dashboard aggregate statistics. All counts use countDocuments with
-// simple equality filters on indexed or low-cardinality fields.
+// Dashboard aggregate statistics. Related status totals are grouped in a
+// single collection pass per model rather than issuing one count query per
+// status.
 
 const getStats = asyncHandler(async (req, res) => {
   const [
-    totalUsers,
-    adminUsers,
-    totalListings,
-    availableListings,
-    pendingListings,
-    swappedListings,
-    totalSwaps,
-    pendingSwaps,
-    acceptedSwaps,
-    rejectedSwaps,
-    completedSwaps,
-    cancelledSwaps,
+    userStats,
+    listingStatusCounts,
+    swapStatusCounts,
     totalMessages,
   ] = await Promise.all([
-    User.countDocuments(),
-    User.countDocuments({ role: 'admin' }),
-    Listing.countDocuments(),
-    Listing.countDocuments({ status: 'available' }),
-    Listing.countDocuments({ status: 'pending' }),
-    Listing.countDocuments({ status: 'swapped' }),
-    SwapRequest.countDocuments(),
-    SwapRequest.countDocuments({ status: 'pending' }),
-    SwapRequest.countDocuments({ status: 'accepted' }),
-    SwapRequest.countDocuments({ status: 'rejected' }),
-    SwapRequest.countDocuments({ status: 'completed' }),
-    SwapRequest.countDocuments({ status: 'cancelled' }),
+    // One user collection pass replaces separate total/admin count calls.
+    User.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          admins: [{ $match: { role: 'admin' } }, { $count: 'count' }],
+        },
+      },
+    ]),
+    Listing.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }],
+        },
+      },
+    ]),
+    SwapRequest.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }],
+        },
+      },
+    ]),
     Message.countDocuments(),
   ]);
+
+  const userCounts = userStats[0] || {};
+  const totalUsers = userCounts.total?.[0]?.count || 0;
+  const adminUsers = userCounts.admins?.[0]?.count || 0;
+  const listingStats = listingStatusCounts[0] || {};
+  const swapStats = swapStatusCounts[0] || {};
+  const listingsByStatus = Object.fromEntries(
+    (listingStats.byStatus || []).map(({ _id, count }) => [_id, count])
+  );
+  const swapsByStatus = Object.fromEntries(
+    (swapStats.byStatus || []).map(({ _id, count }) => [_id, count])
+  );
+  const totalListings = listingStats.total?.[0]?.count || 0;
+  const totalSwaps = swapStats.total?.[0]?.count || 0;
 
   res.status(200).json({
     success: true,
@@ -72,17 +94,17 @@ const getStats = asyncHandler(async (req, res) => {
       users: { total: totalUsers, admins: adminUsers },
       listings: {
         total: totalListings,
-        available: availableListings,
-        pending: pendingListings,
-        swapped: swappedListings,
+        available: listingsByStatus.available || 0,
+        pending: listingsByStatus.pending || 0,
+        swapped: listingsByStatus.swapped || 0,
       },
       swaps: {
         total: totalSwaps,
-        pending: pendingSwaps,
-        accepted: acceptedSwaps,
-        rejected: rejectedSwaps,
-        completed: completedSwaps,
-        cancelled: cancelledSwaps,
+        pending: swapsByStatus.pending || 0,
+        accepted: swapsByStatus.accepted || 0,
+        rejected: swapsByStatus.rejected || 0,
+        completed: swapsByStatus.completed || 0,
+        cancelled: swapsByStatus.cancelled || 0,
       },
       messages: { total: totalMessages },
     },
@@ -103,7 +125,7 @@ const getUsers = asyncHandler(async (req, res) => {
 
   // Search by name or email (case-insensitive partial match)
   if (req.query.search && req.query.search.trim()) {
-    const searchRegex = new RegExp(req.query.search.trim(), 'i');
+    const searchRegex = new RegExp(escapeRegex(req.query.search.trim().slice(0, 100)), 'i');
     filter.$or = [{ name: searchRegex }, { email: searchRegex }];
   }
 
@@ -114,7 +136,8 @@ const getUsers = asyncHandler(async (req, res) => {
     .select('-passwordHash')
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   res.status(200).json({
     success: true,
@@ -136,7 +159,7 @@ const getUserById = asyncHandler(async (req, res) => {
     throw new Error('Invalid user ID format');
   }
 
-  const user = await User.findById(id).select('-passwordHash');
+  const user = await User.findById(id).select('-passwordHash').lean();
   if (!user) {
     res.status(404);
     throw new Error('User not found');
@@ -180,6 +203,12 @@ const toggleUserRole = asyncHandler(async (req, res) => {
     throw new Error('User not found');
   }
 
+  // Prevent modifying an anonymized/deleted user
+  if (isDeletedUser(user)) {
+    res.status(400);
+    throw new Error('Cannot change role of a deleted user');
+  }
+
   // Toggle
   user.role = user.role === 'admin' ? 'user' : 'admin';
   await user.save();
@@ -219,10 +248,13 @@ const getAdminListings = asyncHandler(async (req, res) => {
   const totalPages = Math.ceil(totalCount / limit) || 1;
 
   const listings = await Listing.find(filter)
+    .select('title category brand status estimatedValue images owner createdAt')
+    .slice('images', 1)
     .populate('owner', 'name email')
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   res.status(200).json({
     success: true,
@@ -252,39 +284,47 @@ const adminDeleteListing = asyncHandler(async (req, res) => {
     throw new Error('Listing not found');
   }
 
-  // Auto-cancel/reject active swap requests involving this listing.
-  // - Pending requests → rejected (admin moderation action)
-  // - Accepted requests → cancelled (swap can't proceed without listing)
-  // Both the requestedListing and offeredListing sides must be checked.
+  const listingFilter = {
+    $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
+  };
+
+  // Capture accepted swaps before changing their status. The previous
+  // implementation queried every historical rejected swap afterwards,
+  // which both did unnecessary work and could restore unrelated listings.
+  const acceptedSwaps = await SwapRequest.find({ ...listingFilter, status: 'accepted' })
+    .select('requestedListing offeredListing')
+    .lean();
+
+  // Auto-reject active requests involving this listing. Keep the existing
+  // moderation behavior and status values intact.
   await SwapRequest.updateMany(
     {
-      $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
+      ...listingFilter,
       status: { $in: ['pending', 'accepted'] },
     },
     { $set: { status: 'rejected' } }
   );
 
-  // If any listings were set to 'pending' status by an accepted swap
-  // that we just rejected, restore them to 'available' — but only for
-  // the OTHER listing in those swaps (not the one we're deleting).
-  const affectedSwaps = await SwapRequest.find({
-    $or: [{ requestedListing: listing._id }, { offeredListing: listing._id }],
-    status: 'rejected',
-  });
+  // Restore only the partner listings from accepted swaps that were just
+  // invalidated, in one bulk update.
+  const deletedListingId = listing._id.toString();
+  const partnerListingIds = [
+    ...new Set(
+      acceptedSwaps
+        .map((swap) =>
+          swap.requestedListing.toString() === deletedListingId
+            ? swap.offeredListing.toString()
+            : swap.requestedListing.toString()
+        )
+        .filter((partnerId) => partnerId !== deletedListingId)
+    ),
+  ];
 
-  for (const swap of affectedSwaps) {
-    // Restore the OTHER listing (not the one being deleted) to available
-    // if it was set to pending by this swap.
-    const otherListingId = swap.requestedListing.toString() === listing._id.toString()
-      ? swap.offeredListing
-      : swap.requestedListing;
-
-    if (otherListingId.toString() !== listing._id.toString()) {
-      await Listing.updateOne(
-        { _id: otherListingId, status: 'pending' },
-        { $set: { status: 'available' } }
-      );
-    }
+  if (partnerListingIds.length > 0) {
+    await Listing.updateMany(
+      { _id: { $in: partnerListingIds }, status: 'pending' },
+      { $set: { status: 'available' } }
+    );
   }
 
   await listing.deleteOne();
@@ -317,17 +357,18 @@ const getAdminSwaps = asyncHandler(async (req, res) => {
     .populate('requester', 'name email')
     .populate({
       path: 'requestedListing',
-      select: 'title images estimatedValue status owner',
-      populate: { path: 'owner', select: 'name' },
+      select: 'title owner images estimatedValue',
+      populate: { path: 'owner', select: 'name email' },
     })
     .populate({
       path: 'offeredListing',
-      select: 'title images estimatedValue status owner',
-      populate: { path: 'owner', select: 'name' },
+      select: 'title owner images estimatedValue',
+      populate: { path: 'owner', select: 'name email' },
     })
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   res.status(200).json({
     success: true,
@@ -338,11 +379,57 @@ const getAdminSwaps = asyncHandler(async (req, res) => {
   });
 });
 
+// ─── DELETE /api/admin/users/:id ──────────────────────────────────────
+// Admin-delete a user.
+const adminDeleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error('Invalid user ID format');
+  }
+
+  // Prevent self-deletion
+  if (req.user._id.toString() === id) {
+    res.status(400);
+    throw new Error('Cannot delete your own account');
+  }
+
+  const user = await User.findById(id).select('+passwordHash');
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Prevent deleting an already-deleted/anonymized user
+  if (isDeletedUser(user)) {
+    res.status(400);
+    throw new Error('User account is already deleted');
+  }
+
+  // Prevent deleting the last admin
+  if (user.role === 'admin') {
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (adminCount <= 1) {
+      res.status(400);
+      throw new Error('Cannot delete the last remaining administrator');
+    }
+  }
+
+  await anonymizeAccount(user);
+
+  res.status(200).json({
+    success: true,
+    message: 'User account deleted by admin',
+  });
+});
+
 module.exports = {
   getStats,
   getUsers,
   getUserById,
   toggleUserRole,
+  adminDeleteUser,
   getAdminListings,
   adminDeleteListing,
   getAdminSwaps,

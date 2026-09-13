@@ -66,14 +66,14 @@ function Navbar() {
             </button>
           </>
         ) : (
-          <>
-            <Link to="/login" onClick={closeMenu}>
+          <div className="navbar-auth-actions">
+            <Link to="/login" className="navbar-login-link" onClick={closeMenu}>
               Login
             </Link>
-            <Link to="/register" className="btn btn-primary" onClick={closeMenu}>
+            <Link to="/register" className="btn btn-primary navbar-register-btn" onClick={closeMenu}>
               Register
             </Link>
-          </>
+          </div>
         )}
       </div>
 

@@ -2,7 +2,7 @@
 
 A sustainable web platform that facilitates direct, item-for-item clothing exchanges without monetary transactions.
 
-**Live Demo:** [https://clothing-exchange-marketplace.vercel.app/](https://clothing-exchange-marketplace.vercel.app/)  
+**Live Demo:** [https://rewear-swap.vercel.app/](https://rewear-swap.vercel.app/)  
 **GitHub Repository:** [https://github.com/Paulson-2004/clothing-exchange-marketplace](https://github.com/Paulson-2004/clothing-exchange-marketplace)  
 **Major Technical Value:** A fully verified 8-phase production application featuring deterministic swap valuation, algorithmic location-based matching, and a highly resilient state machine for conflict-free direct exchanges.
 
@@ -78,6 +78,20 @@ graph TD
     Backend -->|Image Streams| Cloudinary[Cloudinary Storage]
 ```
 
+For local development, the React/Vite frontend and Node/Express backend run as separate services. The backend uses Mongoose to access MongoDB Atlas and sends listing images to Cloudinary. In the deployed architecture, Vercel hosts the frontend and Render hosts the backend API; the deployed backend connects to MongoDB Atlas and Cloudinary through server-side environment variables.
+
+## Database Environments
+
+ReWear keeps local development, automated tests, and production in separate MongoDB databases:
+
+| Environment | Variable | Database | Purpose |
+|---|---|---|---|
+| Local development | `MONGO_URI` | `rewear-dev` | Local backend runtime and development/demo data |
+| Automated tests | `TEST_MONGO_URI` | `rewear-automated-tests` | Isolated test fixtures and verification |
+| Production/Render | `MONGO_URI` | Production database (currently named `test`) | Deployed application data |
+
+Never point local development or automated tests at the production database. `MONGO_URI` is used by the local/backend runtime, while `TEST_MONGO_URI` is reserved for the automated test scripts. Keep all connection strings and credentials private; do not commit `.env` files or paste their values into documentation.
+
 ## Core Modules
 
 ### Authentication
@@ -134,9 +148,10 @@ The matching algorithm works hierarchically without relying on external geocodin
 - **Sanitized Git History:** The repository history was meticulously scrubbed to ensure no historical credentials remain accessible.
 
 ## Testing
-- **Backend automated tests:** 173/173 tests passing (100% test pass rate).
-- **Frontend production build:** Passing with zero compilation errors.
-- **Production manual QA:** All 8 major functional areas successfully verified on live deployed architecture.
+- **Backend automated tests:** Standalone Node.js integration scripts that use `TEST_MONGO_URI` and require the isolated `rewear-automated-tests` database.
+- **Available test commands:** `test:phase4`, `test:phase5`, `test:phase6`, `test:phase7`, `test:phase8`, and `test:profile-location` (see the commands below).
+- **Frontend production build:** Run `npm run build` from the repository root.
+- **Test safety:** Never configure `TEST_MONGO_URI` or the backend used by the tests to point at production.
 
 ## Local Development
 
@@ -167,6 +182,16 @@ The matching algorithm works hierarchically without relying on external geocodin
    ```
    This starts both the backend API server and frontend Vite development server concurrently with labeled output (`[backend]` and `[frontend]`).
 
+### Development Seed Data
+
+After configuring local development to use `rewear-dev`, run the safe development/demo seeder from the repository root:
+
+```bash
+npm run seed:dev
+```
+
+It creates realistic local users, clothing listings, swaps, and chat data for exercising the UI. The seeder uses only `MONGO_URI`, verifies that the actual connected database is exactly `rewear-dev` before reading or writing records, and refuses to run against any other database. It never uses `TEST_MONGO_URI` and is not intended to seed production. The historical `npm run seed:demo` command remains a safe backward-compatible alias.
+
 ### Running Services Independently
 
 You can also run services individually from the repository root:
@@ -191,7 +216,7 @@ You can also run services individually from the repository root:
 
 ### Running Integration Tests
 
-From the `backend/` directory while the backend server is running:
+From the `backend/` directory while the backend server is running against the isolated test environment:
 ```bash
 cd backend
 npm run test:phase4
@@ -202,13 +227,17 @@ npm run test:phase8
 npm run test:profile-location
 ```
 
+The test scripts use `TEST_MONGO_URI` for their database fixtures and verify the connected database name is `rewear-automated-tests`. Set `TEST_BASE_URL` only when the API is running somewhere other than the default `http://localhost:5000/api`.
+
 ## Environment Variables
 The application relies on the following environment variable names (do not commit real values):
 
 **Backend (`backend/.env`)**
 - `NODE_ENV` (e.g., `development` or `production`)
 - `PORT` (e.g., `5000`)
-- `MONGO_URI` (MongoDB connection string)
+- `MONGO_URI` (MongoDB connection string; local development must use `rewear-dev`)
+- `TEST_MONGO_URI` (test-only MongoDB connection string; must use `rewear-automated-tests`)
+- `TEST_BASE_URL` (optional API URL used by the automated test scripts)
 - `JWT_SECRET` (Random string for signing tokens)
 - `CLIENT_URL` (e.g., `http://localhost:5173`)
 - `CLOUDINARY_CLOUD_NAME`
@@ -220,12 +249,16 @@ The application relies on the following environment variable names (do not commi
 **Frontend (`frontend/.env`)**
 - `VITE_API_BASE_URL` (e.g., `http://localhost:5000/api`)
 
+The development seeder also accepts the optional `REWEAR_DEV_SEED_PASSWORD` variable for local seed accounts. If it is omitted, the script uses its local-development fallback; this value is never printed by the seeder. Keep both `.env` files private and never commit real values.
+
 ## Deployment
 The application is fully deployed to production:
 - **Vercel frontend:** SPA routing handled via `vercel.json`.
 - **Render backend:** Express API running as a Web Service.
 - **MongoDB Atlas:** Managed cloud database.
 - **Cloudinary:** Used for robust image storage and delivery.
+
+Render supplies the production `MONGO_URI` to the backend; it must remain pointed at the production database and must never be replaced with `rewear-dev` or `rewear-automated-tests`.
 
 ## Project Structure
 ```text

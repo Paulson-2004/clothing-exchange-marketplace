@@ -104,7 +104,9 @@ const getIncomingRequests = asyncHandler(async (req, res) => {
   const myListingIds = await Listing.find({ owner: req.user._id }).distinct('_id');
 
   const requests = await populateSwapRequest(
-    SwapRequest.find({ requestedListing: { $in: myListingIds } }).sort({ createdAt: -1 })
+    SwapRequest.find({ requestedListing: { $in: myListingIds } })
+      .sort({ createdAt: -1 })
+      .lean()
   );
 
   res.status(200).json({ success: true, count: requests.length, swapRequests: requests });
@@ -114,7 +116,9 @@ const getIncomingRequests = asyncHandler(async (req, res) => {
 // Protected. Requests created by the logged-in user.
 const getSentRequests = asyncHandler(async (req, res) => {
   const requests = await populateSwapRequest(
-    SwapRequest.find({ requester: req.user._id }).sort({ createdAt: -1 })
+    SwapRequest.find({ requester: req.user._id })
+      .sort({ createdAt: -1 })
+      .lean()
   );
 
   res.status(200).json({ success: true, count: requests.length, swapRequests: requests });

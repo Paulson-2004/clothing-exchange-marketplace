@@ -6,6 +6,7 @@ import ConversationList from '../components/chat/ConversationList';
 import MessageThread from '../components/chat/MessageThread';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
+import '../chat.css';
 
 function ChatPage() {
   const { user } = useAuth();
@@ -57,8 +58,16 @@ function ChatPage() {
   const activeConversation = conversations.find((c) => c._id === activeId) || null;
 
   return (
-    <div className="page-container chat-page-container">
-      <h1>Messages</h1>
+    <div className="chat-page page-container chat-page-container" style={{ maxWidth: '1400px' }}>
+      <div className="marketplace-header" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Negotiation Studio</div>
+        <h1 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text)' }}>
+          Exchange Chat
+        </h1>
+        <p style={{ color: 'var(--color-text-secondary)', margin: 0, fontSize: '1.05rem' }}>
+          Coordinate swaps and negotiate directly with other members.
+        </p>
+      </div>
 
       {status === 'loading' && <Loader message="Loading conversations…" />}
       {status === 'error' && <ErrorMessage message="Could not load conversations." onRetry={fetchConversations} />}

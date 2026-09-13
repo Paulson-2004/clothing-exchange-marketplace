@@ -58,7 +58,7 @@ async function runTests() {
 
   try {
     if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGO_URI);
+      if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
     }
 
     // 1. Setup Data
@@ -102,28 +102,28 @@ async function runTests() {
     // 3. Create Listings and Swaps
     // UserA Listing (Available)
     const listA1 = await Listing.create({
-      owner: userA.id, title: 'Listing A1 Available', category: 'tops', brand: 'Nike', size: 'M', condition: 'good', description: 'test',
+      owner: userA.id, title: 'Listing A1 Available', category: 'tops', brand: 'Nike', size: 'M', condition: 'good', description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.', location: { city: 'Seattle', state: 'WA', country: 'USA' },
       images: ['img.jpg'], estimatedValue: 500, status: 'available'
     });
     createdListingIds.push(listA1._id);
 
     // UserA Listing (Pending)
     const listA2 = await Listing.create({
-      owner: userA.id, title: 'Listing A2 Pending', category: 'tops', brand: 'Nike', size: 'M', condition: 'good', description: 'test',
+      owner: userA.id, title: 'Listing A2 Pending', category: 'tops', brand: 'Nike', size: 'M', condition: 'good', description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.', location: { city: 'Seattle', state: 'WA', country: 'USA' },
       images: ['img.jpg'], estimatedValue: 500, status: 'pending'
     });
     createdListingIds.push(listA2._id);
 
     // UserB Listing (Available)
     const listB1 = await Listing.create({
-      owner: userB.id, title: 'Listing B1 Available', category: 'tops', brand: 'Adidas', size: 'M', condition: 'good', description: 'test',
+      owner: userB.id, title: 'Listing B1 Available', category: 'tops', brand: 'Adidas', size: 'M', condition: 'good', description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.', location: { city: 'Seattle', state: 'WA', country: 'USA' },
       images: ['img.jpg'], estimatedValue: 500, status: 'available'
     });
     createdListingIds.push(listB1._id);
 
     // UserB Listing (Available) for swap request from UserA
     const listB2 = await Listing.create({
-      owner: userB.id, title: 'Listing B2 Available', category: 'tops', brand: 'Adidas', size: 'M', condition: 'good', description: 'test',
+      owner: userB.id, title: 'Listing B2 Available', category: 'tops', brand: 'Adidas', size: 'M', condition: 'good', description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.', location: { city: 'Seattle', state: 'WA', country: 'USA' },
       images: ['img.jpg'], estimatedValue: 500, status: 'available'
     });
     createdListingIds.push(listB2._id);
@@ -138,7 +138,7 @@ async function runTests() {
     createdSwapRequestIds.push(swapBA._id);
 
     const listA3 = await Listing.create({
-      owner: userA.id, title: 'Listing A3 Available', category: 'tops', brand: 'Nike', size: 'M', condition: 'good', description: 'test',
+      owner: userA.id, title: 'Listing A3 Available', category: 'tops', brand: 'Nike', size: 'M', condition: 'good', description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.', location: { city: 'Seattle', state: 'WA', country: 'USA' },
       images: ['img.jpg'], estimatedValue: 500, status: 'available'
     });
     createdListingIds.push(listA3._id);
@@ -216,3 +216,5 @@ async function runTests() {
 }
 
 runTests();
+
+

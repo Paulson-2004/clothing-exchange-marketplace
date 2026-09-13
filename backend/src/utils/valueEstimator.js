@@ -12,22 +12,23 @@
 // Base value per category, representing a "typical mid-range item in
 // good condition from an unrecognized brand" starting point.
 const CATEGORY_BASE_VALUES = {
-  tops: 15,
-  bottoms: 20,
-  dresses: 25,
-  outerwear: 35,
-  footwear: 30,
-  accessories: 12,
-  activewear: 18,
-  other: 15,
+  tops: 600,
+  bottoms: 800,
+  dresses: 1500,
+  outerwear: 2000,
+  formalwear: 3000,
+  footwear: 1500,
+  accessories: 500,
+  activewear: 700,
+  other: 500,
 };
 
 // Known brands grouped into tiers. This list is intentionally small
 // and illustrative - unrecognized brands fall through to the default
 // 'standard' multiplier below rather than causing an error.
 const BRAND_TIERS = {
-  luxury: ['gucci', 'prada', 'burberry', 'chanel', 'louis vuitton', 'versace'],
-  premium: ['nike', 'adidas', 'the north face', 'levi\'s', 'levis', 'patagonia', 'coach'],
+  luxury: ['gucci', 'prada', 'burberry', 'chanel', 'louis vuitton', 'versace', 'armani', 'hugo boss'],
+  premium: ['nike', 'adidas', 'the north face', 'levi\'s', 'levis', 'patagonia', 'coach', 'louis philippe', 'raymond', 'allen solly', 'peter england', 'van heusen'],
   midrange: ['h&m', 'zara', 'uniqlo', 'gap', 'old navy', 'american eagle'],
 };
 

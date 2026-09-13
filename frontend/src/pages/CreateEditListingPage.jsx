@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import ImageUploadPreview from '../components/listing/ImageUploadPreview';
 import Loader from '../components/common/Loader';
 
-const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'footwear', 'accessories', 'activewear', 'other'];
+const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'formalwear', 'footwear', 'accessories', 'activewear', 'other'];
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'];
 const CONDITIONS = ['new', 'like-new', 'good', 'fair'];
 
@@ -100,12 +100,22 @@ function CreateEditListingPage() {
     }
   };
 
+  const countWords = (text) => text.trim().split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w)).length;
+
   const validate = () => {
     if (!formData.title || !formData.category || !formData.brand || !formData.size || !formData.condition || !formData.description) {
       return 'Please fill in all required fields';
     }
+    if (formData.title.trim().length < 10) return 'Title must be at least 10 characters long';
+    if (formData.brand.trim().length < 2) return 'Brand must be at least 2 characters long';
     if (formData.description.length > 1000) {
       return 'Description cannot exceed 1000 characters';
+    }
+    if (countWords(formData.description) < 30) {
+      return 'Description must contain at least 30 words';
+    }
+    if (!formData.city.trim() || !formData.state.trim() || !formData.country.trim()) {
+      return 'City, state, and country are required';
     }
     const value = Number(formData.estimatedValue);
     if (formData.estimatedValue === '' || Number.isNaN(value) || value < 0) {
@@ -159,114 +169,155 @@ function CreateEditListingPage() {
     );
   }
 
+  const wordCount = countWords(formData.description);
+
   return (
-    <div className="page-container">
-      <form className="listing-form" onSubmit={handleSubmit}>
-        <h1>{isEditMode ? 'Edit Listing' : 'Create a Listing'}</h1>
+    <div className="page-container listing-create-page">
+      <div className="form-header-area">
+        <h1 className="editorial-title">{isEditMode ? 'Edit Listing' : 'List an Item'}</h1>
+        <p className="editorial-subtitle">Add a piece to the ReWear exchange.</p>
+      </div>
 
-        {formError && <p className="form-error">{formError}</p>}
-        {submitState === 'success' && (
-          <p className="form-success">
-            Listing {isEditMode ? 'updated' : 'created'} successfully! Redirecting…
-          </p>
-        )}
+      {formError && <p className="form-error">{formError}</p>}
+      {submitState === 'success' && (
+        <p className="form-success">
+          Listing {isEditMode ? 'updated' : 'created'} successfully! Redirecting…
+        </p>
+      )}
 
-        <label htmlFor="title">Title</label>
-        <input id="title" name="title" type="text" value={formData.title} onChange={handleChange} required />
+      <form className="listing-form-editorial" onSubmit={handleSubmit}>
+        
+        {/* 1. PHOTOS */}
+        <div className="form-section">
+          <h2 className="section-title">01. Photos</h2>
+          <p className="section-hint">High-quality photos increase your chances of a successful swap.</p>
+          <ImageUploadPreview existingImages={existingImages} onChange={setImageFiles} />
+        </div>
 
-        <div className="form-row">
-          <div>
-            <label htmlFor="category">Category</label>
-            <select id="category" name="category" value={formData.category} onChange={handleChange} required>
-              <option value="">Select category</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
-                </option>
-              ))}
-            </select>
+        {/* 2. ITEM INFORMATION */}
+        <div className="form-section">
+          <h2 className="section-title">02. Item Information</h2>
+          
+          <div className="form-group">
+            <label htmlFor="title">Title</label>
+            <input id="title" name="title" type="text" placeholder="e.g. Vintage Levis 501 Denim Jacket" value={formData.title} onChange={handleChange} required minLength={10} maxLength={100} />
           </div>
-          <div>
-            <label htmlFor="brand">Brand</label>
-            <input id="brand" name="brand" type="text" value={formData.brand} onChange={handleChange} required />
+
+          <div className="form-row-editorial">
+            <div className="form-group">
+              <label htmlFor="brand">Brand</label>
+              <input id="brand" name="brand" type="text" placeholder="e.g. Levi's, Zara, No Brand" value={formData.brand} onChange={handleChange} required minLength={2} maxLength={50} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="category">Category</label>
+              <select id="category" name="category" value={formData.category} onChange={handleChange} required>
+                <option value="">Select category</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">
+              Description
+              <span className="field-hint">Describe fit, material, and any noticeable wear.</span>
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows={4}
+              placeholder="e.g. Great condition denim jacket from the 90s. Fits slightly oversized. Small scuff on the left cuff but otherwise perfect."
+              value={formData.description}
+              onChange={handleChange}
+              maxLength={1000}
+              required
+            />
+            <div className={`word-count ${wordCount < 30 ? 'word-count-error' : 'word-count-success'}`}>
+              {wordCount} / 30 words minimum {wordCount >= 30 && '✓'}
+            </div>
           </div>
         </div>
 
-        <div className="form-row">
-          <div>
-            <label htmlFor="size">Size</label>
-            <select id="size" name="size" value={formData.size} onChange={handleChange} required>
-              <option value="">Select size</option>
-              {SIZES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="condition">Condition</label>
-            <select id="condition" name="condition" value={formData.condition} onChange={handleChange} required>
-              <option value="">Select condition</option>
-              {CONDITIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+        {/* 3. CONDITION & SIZE */}
+        <div className="form-section">
+          <h2 className="section-title">03. Condition & Size</h2>
+          <div className="form-row-editorial">
+            <div className="form-group">
+              <label htmlFor="size">Size</label>
+              <select id="size" name="size" value={formData.size} onChange={handleChange} required>
+                <option value="">Select size</option>
+                {SIZES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="condition">Condition</label>
+              <select id="condition" name="condition" value={formData.condition} onChange={handleChange} required>
+                <option value="">Select condition</option>
+                {CONDITIONS.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        <label htmlFor="description">Description</label>
-        <textarea
-          id="description"
-          name="description"
-          rows={4}
-          value={formData.description}
-          onChange={handleChange}
-          maxLength={1000}
-          required
-        />
+        {/* 4. VALUE / SWAP INFORMATION */}
+        <div className="form-section">
+          <h2 className="section-title">04. Swap Value</h2>
+          <div className="form-group">
+            <label htmlFor="estimatedValue">
+              Estimated Exchange Value (₹)
+              <span className="field-hint">Used for barter matching only, not a cash price.</span>
+            </label>
+            <div className="value-input-row">
+              <input
+                id="estimatedValue"
+                name="estimatedValue"
+                type="number"
+                min="0"
+                placeholder="e.g. 1500"
+                value={formData.estimatedValue}
+                onChange={handleChange}
+                required
+              />
+              <button type="button" className="btn btn-secondary value-suggest-btn" onClick={handleSuggestValue} disabled={suggesting}>
+                {suggesting ? 'Calculating…' : 'Suggest Value'}
+              </button>
+            </div>
+          </div>
+        </div>
 
-        <label htmlFor="estimatedValue">
-          Estimated swap value (₹) <span className="field-hint">— reference estimate for barter comparison only, not a cash price</span>
-        </label>
-        <div className="value-input-row">
-          <input
-            id="estimatedValue"
-            name="estimatedValue"
-            type="number"
-            min="0"
-            placeholder="e.g. 1500"
-            value={formData.estimatedValue}
-            onChange={handleChange}
-            required
-          />
-          <button type="button" className="btn btn-secondary" onClick={handleSuggestValue} disabled={suggesting}>
-            {suggesting ? 'Calculating…' : 'Suggest Value'}
+        {/* 5. LOCATION */}
+        <div className="form-section">
+          <h2 className="section-title">05. Location</h2>
+          <div className="form-row-editorial">
+            <div className="form-group">
+              <label htmlFor="city">City</label>
+              <input id="city" name="city" type="text" placeholder="e.g. Mumbai" value={formData.city} onChange={handleChange} required minLength={2} maxLength={100} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="state">State</label>
+              <input id="state" name="state" type="text" placeholder="e.g. Maharashtra" value={formData.state} onChange={handleChange} required minLength={2} maxLength={100} />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="country">Country</label>
+            <input id="country" name="country" type="text" placeholder="e.g. India" value={formData.country} onChange={handleChange} required minLength={2} maxLength={100} />
+          </div>
+        </div>
+
+        {/* 6. PUBLISH */}
+        <div className="form-publish-actions">
+          <button className="btn btn-primary btn-block btn-publish" type="submit" disabled={submitState === 'submitting'}>
+            {submitState === 'submitting' ? 'Publishing…' : isEditMode ? 'Update Listing' : 'Publish Listing'}
           </button>
         </div>
-
-        <div className="form-row">
-          <div>
-            <label htmlFor="city">City</label>
-            <input id="city" name="city" type="text" value={formData.city} onChange={handleChange} />
-          </div>
-          <div>
-            <label htmlFor="state">State</label>
-            <input id="state" name="state" type="text" value={formData.state} onChange={handleChange} />
-          </div>
-        </div>
-
-        <label htmlFor="country">Country</label>
-        <input id="country" name="country" type="text" value={formData.country} onChange={handleChange} />
-
-        <label>Images {isEditMode && '(optional — adds to existing photos)'}</label>
-        <ImageUploadPreview existingImages={existingImages} onChange={setImageFiles} />
-
-        <button className="btn btn-primary" type="submit" disabled={submitState === 'submitting'}>
-          {submitState === 'submitting' ? 'Saving…' : isEditMode ? 'Save Changes' : 'Create Listing'}
-        </button>
       </form>
     </div>
   );

@@ -1,46 +1,102 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Icon from '../common/Icon';
 
-// Handles selecting new image files and previewing them, plus showing
-// any images the listing already has (when editing). Calls onChange
-// with the current array of File objects whenever the selection changes.
 function ImageUploadPreview({ existingImages = [], onChange }) {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Build local object URLs for the newly selected files so the user
-    // can see what they're about to upload before submitting.
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviews(urls);
-
-    // Clean up object URLs when files change or the component unmounts,
-    // to avoid leaking memory.
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [files]);
 
-  const handleFileChange = (e) => {
-    const selected = Array.from(e.target.files || []);
-    setFiles(selected);
-    onChange(selected);
+  const handleFileChange = (selectedFiles) => {
+    const newFiles = Array.from(selectedFiles || []);
+    // Limit to 5 images total (existing + new)
+    const availableSlots = 5 - existingImages.length;
+    const allowedFiles = newFiles.slice(0, availableSlots);
+    
+    setFiles(allowedFiles);
+    onChange(allowedFiles);
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileChange(e.dataTransfer.files);
+    }
+  };
+
+  const removeFile = (indexToRemove) => {
+    const newFiles = files.filter((_, idx) => idx !== indexToRemove);
+    setFiles(newFiles);
+    onChange(newFiles);
+  };
+
+  const hasContent = existingImages.length > 0 || previews.length > 0;
+
   return (
-    <div className="image-upload">
-      <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFileChange} />
-      <p className="image-upload-hint">Up to 5 images. JPG, PNG, or WEBP. 5MB max each.</p>
-
-      {existingImages.length > 0 && (
-        <div className="image-preview-row">
-          {existingImages.map((url) => (
-            <img key={url} src={url} alt="Existing listing" className="image-preview-thumb" />
-          ))}
+    <div className="image-upload-container">
+      <div 
+        className={`dropzone ${isDragging ? 'dropzone-active' : ''} ${hasContent ? 'dropzone-compact' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <input 
+          type="file" 
+          accept="image/jpeg,image/png,image/webp" 
+          multiple 
+          onChange={(e) => handleFileChange(e.target.files)} 
+          ref={fileInputRef}
+          className="hidden-file-input" 
+        />
+        <div className="dropzone-content">
+          <Icon name="camera" size={32} />
+          <span className="dropzone-text">Click or drag photos here</span>
+          <span className="dropzone-hint">Up to 5 images (JPG, PNG, WEBP)</span>
         </div>
-      )}
+      </div>
 
-      {previews.length > 0 && (
-        <div className="image-preview-row">
-          {previews.map((url) => (
-            <img key={url} src={url} alt="New upload preview" className="image-preview-thumb" />
+      {hasContent && (
+        <div className="image-preview-gallery">
+          {existingImages.map((url, idx) => (
+            <div key={`existing-${idx}`} className="preview-wrapper existing-preview">
+              <img src={url} alt={`Existing view ${idx + 1}`} className="preview-image" />
+              <div className="preview-badge">Existing</div>
+            </div>
+          ))}
+
+          {previews.map((url, idx) => (
+            <div key={`new-${idx}`} className="preview-wrapper new-preview">
+              <img src={url} alt={`New upload ${idx + 1}`} className="preview-image" />
+              <button 
+                type="button" 
+                className="remove-btn" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeFile(idx);
+                }}
+                aria-label="Remove image"
+              >
+                ×
+              </button>
+            </div>
           ))}
         </div>
       )}

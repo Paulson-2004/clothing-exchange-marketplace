@@ -10,6 +10,7 @@ import Icon from '../components/common/Icon';
 import ListingCard from '../components/listing/ListingCard';
 import RequestSwapForm from '../components/swap/RequestSwapForm';
 import { formatCurrency } from '../utils/currency';
+import { getOptimizedImageUrl } from '../utils/imageUrl';
 
 const STATUS_LABELS = {
   available: 'Available',
@@ -99,7 +100,7 @@ function ItemDetailsPage() {
         <div className="item-details-main-image">
           {listing.images && listing.images.length > 0 ? (
             <img
-              src={listing.images[activeImage]}
+              src={getOptimizedImageUrl(listing.images[activeImage], { width: 1200, height: 1200, crop: 'limit' })}
               alt={listing.title}
               onError={(e) => {
                 e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
@@ -120,8 +121,9 @@ function ItemDetailsPage() {
                 onClick={() => setActiveImage(idx)}
               >
                 <img
-                  src={img}
+                  src={getOptimizedImageUrl(img, { width: 180, height: 180 })}
                   alt={`${listing.title} view ${idx + 1}`}
+                  loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
                   }}
@@ -133,77 +135,79 @@ function ItemDetailsPage() {
       </div>
 
       <div className="item-details-info">
-        <div className="item-details-header">
-          <h1>{listing.title}</h1>
-          <span className={`listing-status listing-status-${listing.status}`}>
-            {STATUS_LABELS[listing.status] || listing.status}
-          </span>
+        <div className="item-details-meta">
+          <span className="item-details-brand">{listing.brand}</span>
+          <span className="item-details-category">{listing.category}</span>
+        </div>
+        
+        <h1 className="item-details-title">{listing.title}</h1>
+        
+        <div className="item-details-value">
+          <span className="value-label">Est. Value:</span>
+          <span className="value-amount">{formatCurrency(listing.estimatedValue)}</span>
         </div>
 
         <div className="item-specs-grid" aria-label="Item specifications">
-          <span className="spec-chip spec-chip-category">
-            <span className="spec-chip-label">Category:</span>
-            <span className="spec-chip-value">{listing.category}</span>
-          </span>
-          <span className="spec-chip spec-chip-brand">
-            <span className="spec-chip-label">Brand:</span>
-            <span className="spec-chip-value">{listing.brand}</span>
-          </span>
-          <span className="spec-chip spec-chip-size">
-            <span className="spec-chip-label">Size:</span>
-            <span className="spec-chip-value">{listing.size}</span>
-          </span>
-          <span className="spec-chip spec-chip-condition">
-            <span className="spec-chip-label">Condition:</span>
-            <span className="spec-chip-value">{listing.condition}</span>
-          </span>
+          <div className="spec-item">
+            <span className="spec-label">Size</span>
+            <span className="spec-value">{listing.size}</span>
+          </div>
+          <div className="spec-item">
+            <span className="spec-label">Condition</span>
+            <span className="spec-value">{listing.condition}</span>
+          </div>
         </div>
 
-        <dl className="item-details-list">
-          <dt>Estimated swap value</dt>
-          <dd>
-            <strong>{formatCurrency(listing.estimatedValue)}</strong>{' '}
-            <span className="field-hint">(estimate only — for barter comparison, not a cash price)</span>
-          </dd>
-          <dt>Location</dt>
-          <dd>
-            {listing.location?.city || listing.location?.state
-              ? `${listing.location.city}${listing.location.city && listing.location.state ? ', ' : ''}${listing.location.state}`
-              : 'Not specified'}
-          </dd>
-          <dt>Listed by</dt>
-          <dd>{listing.owner?.name || 'Unknown user'}</dd>
-        </dl>
+        <div className="item-details-description-block">
+          <h3 className="section-subtitle">Description</h3>
+          <p className="item-details-description">{listing.description}</p>
+        </div>
 
-        <h3>Description</h3>
-        <p className="item-details-description">{listing.description}</p>
+        <div className="item-details-seller">
+          <h3 className="section-subtitle">Listed By</h3>
+          <div className="seller-profile">
+            <div className="seller-avatar">
+              {listing.owner?.name ? listing.owner.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="seller-info">
+              <Link to={`/profile/${listing.owner?._id}`} className="seller-name">
+                {listing.owner?.name || 'Unknown user'}
+              </Link>
+              <span className="seller-location">
+                {listing.location?.city || listing.location?.state
+                  ? `${listing.location.city}${listing.location.city && listing.location.state ? ', ' : ''}${listing.location.state}`
+                  : 'Location not specified'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {isOwner ? (
           <div className="item-details-owner-actions">
-            <Link to={`/listings/${listing._id}/edit`} className="btn btn-primary">
+            <Link to={`/listings/${listing._id}/edit`} className="btn btn-primary btn-block">
               Edit Listing
             </Link>
           </div>
         ) : !isAuthenticated ? (
-          <button className="btn btn-primary" onClick={() => navigate('/login', { state: { from: { pathname: `/listings/${id}` } } })}>
+          <button className="btn btn-primary btn-block" onClick={() => navigate('/login', { state: { from: { pathname: `/listings/${id}` } } })}>
             Log In to Request Swap
           </button>
         ) : listing.status !== 'available' ? (
           <div className="item-details-action-row">
-            <button className="btn btn-primary" disabled title="This item is not currently available">
-              Not Available
+            <button className="btn btn-primary btn-block" disabled title="This item is not currently available">
+              {STATUS_LABELS[listing.status] || 'Unavailable'}
             </button>
-            <button className="btn btn-secondary" onClick={handleMessageOwner}>
+            <button className="btn btn-secondary btn-block" onClick={handleMessageOwner}>
               Message Owner
             </button>
           </div>
         ) : (
           <div className="item-details-action-row">
-            <button className="btn btn-primary" onClick={() => setShowSwapForm(true)}>
+            <button className="btn btn-primary btn-swap btn-block" onClick={() => setShowSwapForm(true)}>
               Request Swap
             </button>
-            <button className="btn btn-secondary" onClick={handleMessageOwner}>
-              Message Owner
+            <button className="btn btn-secondary btn-block" onClick={handleMessageOwner}>
+              Message
             </button>
           </div>
         )}
@@ -246,7 +250,7 @@ function ItemDetailsPage() {
           )}
 
           {matchesStatus === 'loaded' && matches.length > 0 && (
-            <div className="matches-grid">
+            <div className={`matches-grid matches-count-${Math.min(matches.length, 4)}`}>
               {matches.map(({ listing: matchListing, matchDetails }) => (
                 <div key={matchListing._id} className="match-card-wrapper">
                   <ListingCard listing={matchListing} />

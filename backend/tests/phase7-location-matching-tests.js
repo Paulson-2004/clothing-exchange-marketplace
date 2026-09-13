@@ -100,7 +100,7 @@ async function seedListing(ownerId, suffix, overrides = {}) {
     brand: overrides.brand || 'TestBrand',
     size: overrides.size || 'M',
     condition: overrides.condition || 'good',
-    description: 'Phase 7 automated test listing.',
+    description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
     images: [PLACEHOLDER_IMG],
     estimatedValue: overrides.estimatedValue !== undefined ? overrides.estimatedValue : 50,
     location: overrides.location || { city: 'Seattle', state: 'WA', country: 'USA' },
@@ -514,7 +514,7 @@ async function main() {
   console.log(`Run ID: ${RUN_ID}`);
   console.log('='.repeat(60));
 
-  await mongoose.connect(process.env.MONGO_URI);
+  if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
   console.log('Connected to MongoDB');
 
   try {
@@ -726,3 +726,5 @@ async function main() {
 }
 
 main();
+
+

@@ -7,6 +7,12 @@ const { uploadBufferToCloudinary } = require('../middleware/upload');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+const parsePagination = (query) => {
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(query.limit, 10) || 24));
+  return { page, limit, skip: (page - 1) * limit };
+};
+
 // Fields the client is allowed to set directly. Anything else in
 // req.body (e.g. owner, status) is ignored here and handled explicitly
 // where appropriate, so a request can't smuggle in an owner override.
@@ -19,9 +25,9 @@ const pickListingFields = (body) => ({
   description: body.description,
   estimatedValue: body.estimatedValue,
   location: {
-    city: body.city || body.location?.city || '',
-    state: body.state || body.location?.state || '',
-    country: body.country || body.location?.country || '',
+    city: body.city !== undefined ? body.city : body.location?.city,
+    state: body.state !== undefined ? body.state : body.location?.state,
+    country: body.country !== undefined ? body.country : body.location?.country,
   },
 });
 
@@ -33,6 +39,49 @@ const createListing = asyncHandler(async (req, res) => {
   if (!fields.title || !fields.category || !fields.brand || !fields.size || !fields.condition || !fields.description) {
     res.status(400);
     throw new Error('Title, category, brand, size, condition, and description are all required');
+  }
+
+  if (fields.title.trim().length < 10) {
+    res.status(400);
+    throw new Error('Title must be at least 10 characters long');
+  }
+  if (fields.title.trim().length > 100) {
+    res.status(400);
+    throw new Error('Title cannot exceed 100 characters');
+  }
+
+  if (fields.brand.trim().length < 2) {
+    res.status(400);
+    throw new Error('Brand must be at least 2 characters long');
+  }
+  if (fields.brand.trim().length > 50) {
+    res.status(400);
+    throw new Error('Brand cannot exceed 50 characters');
+  }
+
+  if (fields.description.length > 1000) {
+    res.status(400);
+    throw new Error('Description cannot exceed 1000 characters');
+  }
+
+  const words = fields.description.trim().split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w));
+  if (words.length < 30) {
+    res.status(400);
+    throw new Error('Description must contain at least 30 words');
+  }
+
+  if (!fields.location.city?.trim() || !fields.location.state?.trim() || !fields.location.country?.trim()) {
+    res.status(400);
+    throw new Error('City, state, and country are required');
+  }
+  
+  if (
+    fields.location.city.trim().length < 2 || fields.location.city.trim().length > 100 ||
+    fields.location.state.trim().length < 2 || fields.location.state.trim().length > 100 ||
+    fields.location.country.trim().length < 2 || fields.location.country.trim().length > 100
+  ) {
+    res.status(400);
+    throw new Error('City, state, and country must be between 2 and 100 characters');
   }
 
   // req.files is populated by multer (memoryStorage), each with an
@@ -66,7 +115,7 @@ const createListing = asyncHandler(async (req, res) => {
     location: fields.location,
   });
 
-  const populated = await listing.populate('owner', 'name email location');
+  const populated = await listing.populate('owner', 'name');
 
   res.status(201).json({ success: true, listing: populated });
 });
@@ -77,6 +126,7 @@ const createListing = asyncHandler(async (req, res) => {
 // Defaults to only 'available' listings unless a status is explicitly requested.
 const getListings = asyncHandler(async (req, res) => {
   const { search, category, size, condition, city, state, location, status } = req.query;
+  const { page, limit, skip } = parsePagination(req.query);
 
   const query = {};
 
@@ -107,11 +157,28 @@ const getListings = asyncHandler(async (req, res) => {
 
   query.status = status || 'available';
 
-  const listings = await Listing.find(query)
-    .populate('owner', 'name email location')
-    .sort({ createdAt: -1 });
+  const [totalCount, listings] = await Promise.all([
+    Listing.countDocuments(query),
+    Listing.find(query)
+      // Cards only need the first image and public owner name. Full
+      // descriptions and galleries remain available from /:id.
+      .select('title category brand size condition estimatedValue location status owner createdAt images')
+      .slice('images', 1)
+      .populate('owner', 'name')
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+  ]);
 
-  res.status(200).json({ success: true, count: listings.length, listings });
+  res.status(200).json({
+    success: true,
+    count: totalCount,
+    page,
+    limit,
+    totalPages: Math.ceil(totalCount / limit) || 1,
+    listings,
+  });
 });
 
 // GET /api/listings/:id
@@ -124,7 +191,7 @@ const getListingById = asyncHandler(async (req, res) => {
     throw new Error('Invalid listing ID');
   }
 
-  const listing = await Listing.findById(id).populate('owner', 'name email location');
+  const listing = await Listing.findById(id).populate('owner', 'name');
 
   if (!listing) {
     res.status(404);
@@ -162,15 +229,82 @@ const updateListing = asyncHandler(async (req, res) => {
 
   // Only overwrite fields that were actually provided, so a partial
   // update doesn't blank out the rest of the listing.
-  if (fields.title) listing.title = fields.title;
+  if (fields.title !== undefined) {
+    if (fields.title.trim().length < 10) {
+      res.status(400);
+      throw new Error('Title must be at least 10 characters long');
+    }
+    if (fields.title.trim().length > 100) {
+      res.status(400);
+      throw new Error('Title cannot exceed 100 characters');
+    }
+    listing.title = fields.title;
+  }
+  
   if (fields.category) listing.category = fields.category;
-  if (fields.brand) listing.brand = fields.brand;
+  
+  if (fields.brand !== undefined) {
+    if (fields.brand.trim().length < 2) {
+      res.status(400);
+      throw new Error('Brand must be at least 2 characters long');
+    }
+    if (fields.brand.trim().length > 50) {
+      res.status(400);
+      throw new Error('Brand cannot exceed 50 characters');
+    }
+    listing.brand = fields.brand;
+  }
+
   if (fields.size) listing.size = fields.size;
   if (fields.condition) listing.condition = fields.condition;
-  if (fields.description) listing.description = fields.description;
-  if (fields.location.city) listing.location.city = fields.location.city;
-  if (fields.location.state) listing.location.state = fields.location.state;
-  if (fields.location.country) listing.location.country = fields.location.country;
+
+  if (fields.description !== undefined) {
+    if (fields.description.length > 1000) {
+      res.status(400);
+      throw new Error('Description cannot exceed 1000 characters');
+    }
+    const words = fields.description.trim().split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w));
+    if (words.length < 30) {
+      res.status(400);
+      throw new Error('Description must contain at least 30 words');
+    }
+    listing.description = fields.description;
+  }
+
+  // Location fields shouldn't be cleared to empty strings if they are required
+  if (fields.location.city !== undefined) {
+    if (!fields.location.city.trim()) {
+      res.status(400);
+      throw new Error('City is required');
+    }
+    if (fields.location.city.trim().length < 2 || fields.location.city.trim().length > 100) {
+      res.status(400);
+      throw new Error('City must be between 2 and 100 characters');
+    }
+    listing.location.city = fields.location.city;
+  }
+  if (fields.location.state !== undefined) {
+    if (!fields.location.state.trim()) {
+      res.status(400);
+      throw new Error('State is required');
+    }
+    if (fields.location.state.trim().length < 2 || fields.location.state.trim().length > 100) {
+      res.status(400);
+      throw new Error('State must be between 2 and 100 characters');
+    }
+    listing.location.state = fields.location.state;
+  }
+  if (fields.location.country !== undefined) {
+    if (!fields.location.country.trim()) {
+      res.status(400);
+      throw new Error('Country is required');
+    }
+    if (fields.location.country.trim().length < 2 || fields.location.country.trim().length > 100) {
+      res.status(400);
+      throw new Error('Country must be between 2 and 100 characters');
+    }
+    listing.location.country = fields.location.country;
+  }
 
   if (req.body.estimatedValue !== undefined) {
     const estimatedValue = Number(req.body.estimatedValue);
@@ -200,7 +334,7 @@ const updateListing = asyncHandler(async (req, res) => {
   }
 
   const updated = await listing.save();
-  const populated = await updated.populate('owner', 'name email location');
+  const populated = await updated.populate('owner', 'name');
 
   res.status(200).json({ success: true, listing: populated });
 });
@@ -236,7 +370,11 @@ const deleteListing = asyncHandler(async (req, res) => {
 // Protected. Returns all listings owned by the logged-in user
 // regardless of status (used by the "My Listings" page).
 const getMyListings = asyncHandler(async (req, res) => {
-  const listings = await Listing.find({ owner: req.user._id }).sort({ createdAt: -1 });
+  const listings = await Listing.find({ owner: req.user._id })
+    .slice('images', 1)
+    .populate('owner', 'name location')
+    .sort({ createdAt: -1 })
+    .lean();
   res.status(200).json({ success: true, count: listings.length, listings });
 });
 
@@ -358,15 +496,27 @@ const getListingMatches = asyncHandler(async (req, res) => {
 
   const sourceCity = (sourceListing.location?.city || '').trim().toLowerCase();
 
+  // The matcher rejects values above a 50% difference. Apply the equivalent
+  // broad range in MongoDB first, then keep the canonical comparator below as
+  // the final authority (including its rounding behavior). This prevents
+  // loading every same-state listing into Render memory.
+  const sourceValue = sourceListing.estimatedValue;
+  const valueRange = sourceValue > 0
+    ? { $gte: sourceValue * 0.4995, $lte: sourceValue * 2.002 }
+    : 0;
+
   // Find all available listings in the same state (case-insensitive),
   // excluding the source listing itself and the source listing's owner.
   const candidates = await Listing.find({
     _id: { $ne: sourceListing._id },
     owner: { $ne: sourceListing.owner._id || sourceListing.owner },
     status: 'available',
+    estimatedValue: valueRange,
     'location.state': new RegExp(`^${sourceState.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
   })
-    .populate('owner', 'name email location')
+    .select('title category brand size condition estimatedValue location status owner createdAt images')
+    .slice('images', 1)
+    .populate('owner', 'name')
     .lean();
 
   // Score, filter, and rank candidates.
@@ -455,4 +605,3 @@ module.exports = {
   compareListings,
   getListingMatches,
 };
-

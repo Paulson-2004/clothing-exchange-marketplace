@@ -221,9 +221,9 @@ async function runClassificationTests() {
       brand: 'TestBrand',
       size: 'M',
       condition: 'good',
-      description: 'Automated test listing — safe to delete',
+      description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
       images: [PLACEHOLDER_IMG],
-      estimatedValue: value,
+      estimatedValue: value, location: { city: 'Seattle', state: 'WA', country: 'USA' },
     });
     createdListingIds.push(listing._id.toString());
     return listing._id.toString();
@@ -374,7 +374,7 @@ async function main() {
   console.log('='.repeat(60));
 
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
     console.log('MongoDB connected (for seeding/cleanup only)');
 
     // --- Estimation regression ---
@@ -415,9 +415,9 @@ async function main() {
       brand: 'Adidas',
       size: 'M',
       condition: 'good',
-      description: 'Phase 6 test fixture',
+      description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
       images: [PLACEHOLDER],
-      estimatedValue: 80,
+      estimatedValue: 80, location: { city: 'Seattle', state: 'WA', country: 'USA' },
     });
     createdListingIds.push(listingA._id.toString());
 
@@ -428,9 +428,9 @@ async function main() {
       brand: 'Levis',
       size: 'L',
       condition: 'like-new',
-      description: 'Phase 6 test fixture',
+      description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
       images: [PLACEHOLDER],
-      estimatedValue: 120,
+      estimatedValue: 120, location: { city: 'Seattle', state: 'WA', country: 'USA' },
     });
     createdListingIds.push(listingB._id.toString());
 
@@ -487,3 +487,5 @@ async function main() {
 }
 
 main();
+
+

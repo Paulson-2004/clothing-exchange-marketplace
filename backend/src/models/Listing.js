@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'footwear', 'accessories', 'activewear', 'other'];
+const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'formalwear', 'footwear', 'accessories', 'activewear', 'other'];
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'];
 const CONDITIONS = ['new', 'like-new', 'good', 'fair'];
 const STATUSES = ['available', 'pending', 'swapped'];
@@ -17,6 +17,7 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Title is required'],
       trim: true,
+      minlength: [10, 'Title must be at least 10 characters long'],
       maxlength: [100, 'Title cannot exceed 100 characters'],
     },
     category: {
@@ -28,7 +29,8 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Brand is required'],
       trim: true,
-      maxlength: [60, 'Brand cannot exceed 60 characters'],
+      minlength: [2, 'Brand must be at least 2 characters long'],
+      maxlength: [50, 'Brand cannot exceed 50 characters'],
     },
     size: {
       type: String,
@@ -45,6 +47,14 @@ const listingSchema = new mongoose.Schema(
       required: [true, 'Description is required'],
       trim: true,
       maxlength: [1000, 'Description cannot exceed 1000 characters'],
+      validate: {
+        validator: function(v) {
+          if (!v) return false;
+          const words = v.trim().split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w));
+          return words.length >= 30;
+        },
+        message: 'Description must contain at least 30 words'
+      }
     },
     images: {
       type: [String],
@@ -60,9 +70,12 @@ const listingSchema = new mongoose.Schema(
       max: [10000, 'Estimated value seems unrealistic - please check the amount'],
     },
     location: {
-      city: { type: String, trim: true, default: '' },
-      state: { type: String, trim: true, default: '' },
-      country: { type: String, trim: true, default: '' },
+      // API controllers require complete locations for user-created listings.
+      // The schema also accepts blank legacy/imported values so the matching
+      // endpoint can safely handle listings without a location.
+      city: { type: String, trim: true, maxlength: [100, 'City is too long'], default: '' },
+      state: { type: String, trim: true, maxlength: [100, 'State is too long'], default: '' },
+      country: { type: String, trim: true, maxlength: [100, 'Country is too long'], default: '' },
     },
     status: {
       type: String,
@@ -75,6 +88,10 @@ const listingSchema = new mongoose.Schema(
 
 // Supports the marketplace search box (matches title or brand).
 listingSchema.index({ title: 'text', brand: 'text' });
+// Supports the default marketplace/admin newest-first listing queries.
+listingSchema.index({ status: 1, createdAt: -1 });
+// Supports the authenticated "My Listings" newest-first query.
+listingSchema.index({ owner: 1, createdAt: -1 });
 
 listingSchema.statics.CATEGORIES = CATEGORIES;
 listingSchema.statics.SIZES = SIZES;

@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminStats } from '../api/adminApi';
-import StatsCard from '../components/admin/StatsCard';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
-import Icon from '../components/common/Icon';
 
 function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
@@ -31,66 +29,142 @@ function AdminDashboardPage() {
   if (loading) return <Loader message="Loading admin dashboard..." />;
   if (error) return <ErrorMessage message={error} onRetry={fetchStats} />;
 
+  // Destructure for easy access
+  const { users, listings, swaps, messages } = stats;
+
   return (
-    <div className="page-container">
-      <div className="admin-header">
-        <h1>Admin Dashboard</h1>
-        <p>Platform overview and quick links</p>
+    <div className="page-container admin-page-wide admin-dashboard-page">
+      <div className="admin-header" style={{ marginBottom: '3rem' }}>
+        <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>
+          Admin Dashboard
+        </h1>
+        <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
+          Platform overview and moderation control center.
+        </p>
       </div>
 
-      {/* Users */}
-      <div className="admin-section">
-        <div className="admin-section-header">
-          <h2><Icon name="users" size={20} /> Users</h2>
-          <Link to="/admin/users" className="btn btn-secondary btn-sm">
-            Manage Users →
-          </Link>
+      {/* 2. PLATFORM OVERVIEW */}
+      <div className="admin-platform-overview">
+        <div className="admin-overview-metric">
+          <div className="admin-metric-value">{users.total}</div>
+          <div className="admin-metric-label">Users</div>
         </div>
-        <div className="stats-grid">
-          <StatsCard label="Total Users" value={stats.users.total} icon={<Icon name="users" size={24} />} />
-          <StatsCard label="Admins" value={stats.users.admins} icon={<Icon name="shield" size={24} />} />
+        <div className="admin-overview-metric">
+          <div className="admin-metric-value">{listings.total}</div>
+          <div className="admin-metric-label">Listings</div>
         </div>
-      </div>
-
-      {/* Listings */}
-      <div className="admin-section">
-        <div className="admin-section-header">
-          <h2><Icon name="hanger" size={20} /> Listings</h2>
-          <Link to="/admin/listings" className="btn btn-secondary btn-sm">
-            Manage Listings →
-          </Link>
+        <div className="admin-overview-metric">
+          <div className="admin-metric-value">{listings.available}</div>
+          <div className="admin-metric-label">Available</div>
         </div>
-        <div className="stats-grid">
-          <StatsCard label="Total Listings" value={stats.listings.total} icon={<Icon name="package" size={24} />} />
-          <StatsCard label="Available" value={stats.listings.available} icon={<Icon name="check" size={24} />} />
-          <StatsCard label="Pending" value={stats.listings.pending} icon={<Icon name="clock" size={24} />} />
-          <StatsCard label="Swapped" value={stats.listings.swapped} icon={<Icon name="swap" size={24} />} />
+        <div className="admin-overview-metric">
+          <div className="admin-metric-value">{swaps.total}</div>
+          <div className="admin-metric-label">Swap Requests</div>
         </div>
-      </div>
-
-      {/* Swaps */}
-      <div className="admin-section">
-        <div className="admin-section-header">
-          <h2><Icon name="swap" size={20} /> Swap Requests</h2>
-          <Link to="/admin/swaps" className="btn btn-secondary btn-sm">
-            View All Swaps →
-          </Link>
-        </div>
-        <div className="stats-grid">
-          <StatsCard label="Total Swaps" value={stats.swaps.total} icon={<Icon name="chart" size={24} />} />
-          <StatsCard label="Pending" value={stats.swaps.pending} icon={<Icon name="clock" size={24} />} />
-          <StatsCard label="Accepted" value={stats.swaps.accepted} icon={<Icon name="check" size={24} />} />
-          <StatsCard label="Completed" value={stats.swaps.completed} icon={<Icon name="check" size={24} />} />
-          <StatsCard label="Rejected" value={stats.swaps.rejected} icon={<Icon name="cross" size={24} />} />
-          <StatsCard label="Cancelled" value={stats.swaps.cancelled} icon={<Icon name="cross" size={24} />} />
+        <div className="admin-overview-metric">
+          <div className="admin-metric-value">{swaps.completed}</div>
+          <div className="admin-metric-label">Completed</div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="admin-section">
-        <h2><Icon name="chat" size={20} /> Messages</h2>
-        <div className="stats-grid">
-          <StatsCard label="Total Messages" value={stats.messages.total} icon={<Icon name="mail" size={24} />} />
+      <div className="admin-dashboard-grid">
+        <div className="dashboard-main-col">
+          {/* 3. NEEDS ATTENTION / MODERATION */}
+          <section className="admin-section-editorial">
+            <h2>Needs Attention</h2>
+            <div className="admin-empty-queue">
+              <h3>No Action Required</h3>
+              <p>Platform operations are running smoothly. There are currently no items flagged for manual moderation.</p>
+            </div>
+          </section>
+
+          {/* 4. LISTING OVERVIEW */}
+          <section className="admin-section-editorial">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0 }}>Listings</h2>
+              <Link to="/admin/listings" style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', textDecoration: 'none', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Manage Listings &rarr;
+              </Link>
+            </div>
+            
+            <div className="admin-status-breakdown">
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot available"></span> Available</span>
+                <span className="admin-status-count">{listings.available}</span>
+              </div>
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot pending"></span> Pending</span>
+                <span className="admin-status-count">{listings.pending}</span>
+              </div>
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot completed"></span> Swapped</span>
+                <span className="admin-status-count">{listings.swapped}</span>
+              </div>
+            </div>
+          </section>
+
+          {/* 5. SWAP ACTIVITY */}
+          <section className="admin-section-editorial">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0 }}>Swap Activity</h2>
+              <Link to="/admin/swaps" style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', textDecoration: 'none', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                View All Swaps &rarr;
+              </Link>
+            </div>
+
+            <div className="admin-status-breakdown">
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot pending"></span> Pending</span>
+                <span className="admin-status-count">{swaps.pending}</span>
+              </div>
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot available"></span> Accepted</span>
+                <span className="admin-status-count">{swaps.accepted}</span>
+              </div>
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot completed"></span> Completed</span>
+                <span className="admin-status-count">{swaps.completed}</span>
+              </div>
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot rejected"></span> Rejected</span>
+                <span className="admin-status-count">{swaps.rejected}</span>
+              </div>
+              <div className="admin-status-row">
+                <span className="admin-status-label"><span className="admin-status-dot cancelled"></span> Cancelled</span>
+                <span className="admin-status-count">{swaps.cancelled}</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="dashboard-side-col">
+          {/* 7. QUICK ADMIN ACTIONS */}
+          <section className="admin-section-editorial">
+            <h2>Admin Tools</h2>
+            <div className="admin-tool-links">
+              <Link to="/admin/users" className="admin-tool-link">Manage Users <span>&rarr;</span></Link>
+              <Link to="/admin/listings" className="admin-tool-link">Manage Listings <span>&rarr;</span></Link>
+              <Link to="/admin/swaps" className="admin-tool-link">Review Swap Requests <span>&rarr;</span></Link>
+            </div>
+          </section>
+          
+          <section className="admin-section-editorial">
+            <h2>System Summary</h2>
+            <div className="admin-status-breakdown">
+              <div className="admin-status-row" style={{ padding: '0.75rem 0' }}>
+                <span className="admin-status-label" style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)' }}>Total Users</span>
+                <span className="admin-status-count" style={{ fontSize: '1.1rem' }}>{users.total}</span>
+              </div>
+              <div className="admin-status-row" style={{ padding: '0.75rem 0' }}>
+                <span className="admin-status-label" style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)' }}>Admin Accounts</span>
+                <span className="admin-status-count" style={{ fontSize: '1.1rem' }}>{users.admins}</span>
+              </div>
+              <div className="admin-status-row" style={{ padding: '0.75rem 0' }}>
+                <span className="admin-status-label" style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)' }}>Messages Exchanged</span>
+                <span className="admin-status-count" style={{ fontSize: '1.1rem' }}>{messages.total}</span>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

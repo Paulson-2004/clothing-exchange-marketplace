@@ -1,29 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProfile, updateProfile, changePassword, deleteAccount } from '../api/authApi';
+import { getMyListings } from '../api/listingApi';
 import { useAuth } from '../context/AuthContext';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
+import ListingCard from '../components/listing/ListingCard';
 
 function ProfilePage() {
   const { user: authUser, updateUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
+  const [myListings, setMyListings] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-  
-  // Account settings state
-  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [passwordSaving, setPasswordSaving] = useState(false);
-  const [passwordError, setPasswordError] = useState(null);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteDeleting, setDeleteDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
+  const [viewMode, setViewMode] = useState('profile'); // 'profile', 'edit'
 
   const [formData, setFormData] = useState({
     name: '',
@@ -33,30 +24,47 @@ function ProfilePage() {
     state: '',
     country: '',
   });
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
-  const fetchProfile = async () => {
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteDeleting, setDeleteDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
+  const fetchProfileAndListings = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getProfile();
-      setProfileData(data);
+      const [pData, lData] = await Promise.all([
+        getProfile(),
+        getMyListings()
+      ]);
+      setProfileData(pData);
+      setMyListings(lData.listings || []);
       setFormData({
-        name: data.user.name || '',
-        phone: data.user.phone || '',
-        bio: data.user.bio || '',
-        city: data.user.location?.city || '',
-        state: data.user.location?.state || '',
-        country: data.user.location?.country || '',
+        name: pData.user.name || '',
+        phone: pData.user.phone || '',
+        bio: pData.user.bio || '',
+        city: pData.user.location?.city || '',
+        state: pData.user.location?.state || '',
+        country: pData.user.location?.country || '',
       });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load profile');
+      setError(err.response?.data?.message || 'Failed to load profile.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProfile();
+    fetchProfileAndListings();
   }, []);
 
   const handleInputChange = (e) => {
@@ -64,7 +72,7 @@ function ProfilePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       setSaveError('Name is required');
@@ -87,7 +95,7 @@ function ProfilePage() {
       setProfileData((prev) => ({ ...prev, user: res.user }));
       updateUser(res.user);
       setSaveSuccess(true);
-      setIsEditing(false);
+      setViewMode('profile');
       setTimeout(() => setSaveSuccess(false), 4000);
     } catch (err) {
       setSaveError(err.response?.data?.message || 'Failed to update profile');
@@ -123,7 +131,6 @@ function ProfilePage() {
       });
       setPasswordSuccess(true);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      // The API logged us out by clearing the cookie. Wait 2 seconds so they read the success message, then clear local state.
       setTimeout(() => {
         updateUser(null);
       }, 2000);
@@ -134,8 +141,6 @@ function ProfilePage() {
     }
   };
 
-  const [deletePassword, setDeletePassword] = useState('');
-
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
       setDeleteError('Current password is required to delete your account.');
@@ -145,7 +150,6 @@ function ProfilePage() {
     setDeleteError(null);
     try {
       await deleteAccount(deletePassword);
-      // Server cleared the cookie. Clear local state to redirect to home.
       updateUser(null);
     } catch (err) {
       setDeleteError(err.response?.data?.message || 'Failed to delete account');
@@ -156,7 +160,7 @@ function ProfilePage() {
   if (loading) {
     return (
       <div className="page-container">
-        <Loader message="Loading profile…" />
+        <Loader message="Loading profile..." />
       </div>
     );
   }
@@ -164,109 +168,59 @@ function ProfilePage() {
   if (error) {
     return (
       <div className="page-container">
-        <ErrorMessage message={error} onRetry={fetchProfile} />
+        <ErrorMessage message={error} onRetry={fetchProfileAndListings} />
       </div>
     );
   }
 
   const user = profileData?.user || authUser;
-  const activity = profileData?.activity || {};
-  const recentSwaps = profileData?.recentSwaps || [];
+  
+  // Format location string cleanly
+  const locParts = [user.location?.city, user.location?.state, user.location?.country].filter(Boolean);
+  const locationString = locParts.length > 0 ? locParts.join(', ') : 'Location not specified';
 
   return (
-    <div className="page-container profile-page">
-      <div className="profile-header-card">
-        <div className="profile-avatar-large">
-          {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-        </div>
-        <div className="profile-header-info">
-          <div className="profile-title-row">
-            <h1>{user.name}</h1>
-            <span className={`badge badge-${user.role === 'admin' ? 'admin' : 'user'}`}>
-              {user.role === 'admin' ? 'Administrator' : 'Member'}
-            </span>
-          </div>
-          <p className="profile-email">
-            <strong>Email:</strong> {user.email}
-          </p>
-          <p className="profile-joined">
-            <strong>Member since:</strong> {new Date(user.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-        <div className="profile-header-actions">
-          {!isEditing ? (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => {
-                setIsEditing(true);
-                setSaveError(null);
-              }}
-            >
-              Edit Profile
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                setIsEditing(false);
-                setSaveError(null);
-              }}
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </div>
-
+    <div className="page-container editorial-profile-page">
       {saveSuccess && (
-        <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>
+        <div className="alert alert-success" style={{ marginBottom: '2rem' }}>
           Profile updated successfully!
         </div>
       )}
 
-      {isEditing ? (
-        <div className="profile-card profile-edit-card">
-          <h2>Edit Personal Information</h2>
+      {viewMode === 'edit' ? (
+        <div className="editorial-profile-edit">
+          <div className="editorial-edit-header">
+            <h1 className="editorial-title">Edit Profile</h1>
+            <p className="editorial-subtitle">Update your personal information and location.</p>
+          </div>
+
           {saveError && <ErrorMessage message={saveError} />}
-          <form onSubmit={handleSubmit} className="profile-form">
-            <div className="form-group">
-              <label htmlFor="name">Full Name *</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                maxLength={80}
-              />
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Email Address (Read-only)</label>
-              <input
-                id="email"
-                type="email"
-                value={user.email}
-                disabled
-                readOnly
-                className="input-disabled"
-              />
-              <small className="form-help-text">Email address cannot be modified.</small>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="phone">Phone / Contact Number</label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="e.g. +91 98765 43210"
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
+          <form onSubmit={handleProfileSubmit} className="editorial-form profile-edit-form">
+            <div className="form-row-editorial">
+              <div className="form-group">
+                <label htmlFor="name">Full Name *</label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  maxLength={80}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="phone">Phone / Contact</label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="e.g. +91 98765 43210"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
 
             <div className="form-group">
@@ -275,7 +229,7 @@ function ProfilePage() {
                 id="bio"
                 name="bio"
                 rows="4"
-                placeholder="Share your swap preferences, favourite styles, or sizing notes…"
+                placeholder="Share your swap preferences, favourite styles, or sizing notes..."
                 value={formData.bio}
                 onChange={handleInputChange}
                 maxLength={300}
@@ -283,7 +237,8 @@ function ProfilePage() {
               <small className="form-help-text">{formData.bio.length} / 300 characters</small>
             </div>
 
-            <div className="profile-location-row">
+            <h3 className="editorial-section-label" style={{ marginTop: '2.5rem', marginBottom: '1.5rem' }}>Location</h3>
+            <div className="form-row-editorial">
               <div className="form-group">
                 <label htmlFor="city">City</label>
                 <input
@@ -295,7 +250,6 @@ function ProfilePage() {
                   onChange={handleInputChange}
                 />
               </div>
-
               <div className="form-group">
                 <label htmlFor="state">State / Region</label>
                 <input
@@ -307,7 +261,6 @@ function ProfilePage() {
                   onChange={handleInputChange}
                 />
               </div>
-
               <div className="form-group">
                 <label htmlFor="country">Country</label>
                 <input
@@ -321,218 +274,96 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="profile-form-actions">
+            <div className="form-actions-editorial" style={{ marginTop: '3rem', borderTop: '1px solid var(--color-border)', paddingTop: '2rem' }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
-                {saving ? 'Saving…' : 'Save Changes'}
+                {saving ? 'Saving...' : 'Save Profile'}
               </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => {
-                  setIsEditing(false);
-                  setSaveError(null);
-                }}
-                disabled={saving}
-              >
+              <button type="button" className="btn btn-secondary" onClick={() => { setViewMode('profile'); setSaveError(null); }} disabled={saving}>
                 Cancel
               </button>
             </div>
           </form>
-        </div>
-      ) : (
-        <>
-          <div className="profile-details-grid">
-            <div className="profile-card">
-              <h2>Contact & Location</h2>
-              <ul className="profile-info-list">
-                <li>
-                  <span className="profile-info-label">Phone:</span>
-                  <span className="profile-info-value">{user.phone || 'Not provided'}</span>
-                </li>
-                <li>
-                  <span className="profile-info-label">Location:</span>
-                  <span className="profile-info-value">
-                    {user.location?.city || user.location?.state || user.location?.country ? (
-                      [user.location.city, user.location.state, user.location.country]
-                        .filter(Boolean)
-                        .join(', ')
-                    ) : (
-                      'Not provided'
-                    )}
-                  </span>
-                </li>
-                <li>
-                  <span className="profile-info-label">Bio:</span>
-                  <span className="profile-info-value">{user.bio || 'No bio provided yet.'}</span>
-                </li>
-              </ul>
-            </div>
 
-            <div className="profile-card">
-              <h2>Activity Overview</h2>
-              <div className="profile-stats-grid">
-                <div className="profile-stat-box">
-                  <span className="stat-number">{activity.totalListings ?? 0}</span>
-                  <span className="stat-label">Total Listings</span>
-                </div>
-                <div className="profile-stat-box">
-                  <span className="stat-number">{activity.availableListings ?? 0}</span>
-                  <span className="stat-label">Available Items</span>
-                </div>
-                <div className="profile-stat-box">
-                  <span className="stat-number">{activity.swappedListings ?? 0}</span>
-                  <span className="stat-label">Swapped Items</span>
-                </div>
-                <div className="profile-stat-box">
-                  <span className="stat-number">{activity.completedSwaps ?? 0}</span>
-                  <span className="stat-label">Completed Swaps</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="profile-card" style={{ marginTop: '1.5rem' }}>
-            <div className="profile-card-header">
-              <h2>Recent Swap History</h2>
-              <Link to="/swap-requests" className="btn btn-secondary btn-sm">
-                View All Swap Requests →
-              </Link>
-            </div>
-
-            {recentSwaps.length === 0 ? (
-              <p className="empty-text">No swap requests yet. Browse the marketplace to start swapping!</p>
-            ) : (
-              <div className="table-responsive">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Requested Item</th>
-                      <th>Offered Item</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentSwaps.map((swap) => {
-                      const isOutgoing = swap.requester?._id?.toString() === user.id?.toString();
-                      return (
-                        <tr key={swap._id}>
-                          <td>{new Date(swap.updatedAt || swap.createdAt).toLocaleDateString()}</td>
-                          <td>
-                            <span className={`badge ${isOutgoing ? 'badge-user' : 'badge-admin'}`}>
-                              {isOutgoing ? 'Sent Request' : 'Incoming Request'}
-                            </span>
-                          </td>
-                          <td>
-                            {swap.requestedListing ? (
-                              <Link to={`/listings/${swap.requestedListing._id}`}>
-                                {swap.requestedListing.title}
-                              </Link>
-                            ) : (
-                              'Deleted Item'
-                            )}
-                          </td>
-                          <td>
-                            {swap.offeredListing ? (
-                              <Link to={`/listings/${swap.offeredListing._id}`}>
-                                {swap.offeredListing.title}
-                              </Link>
-                            ) : (
-                              'Deleted Item'
-                            )}
-                          </td>
-                          <td>
-                            <span className={`status-badge status-${swap.status}`}>
-                              {swap.status.charAt(0).toUpperCase() + swap.status.slice(1)}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="profile-card" style={{ marginTop: '1.5rem', borderColor: 'var(--color-border)' }}>
-            <h2>Account Settings</h2>
+          {/* Account Settings Section */}
+          <div style={{ marginTop: '5rem' }}>
+            <h2 className="editorial-section-title" style={{ marginBottom: '2rem' }}>Account Settings</h2>
             
-            <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Change Password</h3>
+            <div style={{ marginBottom: '4rem' }}>
+              <h3 className="editorial-section-label" style={{ marginBottom: '1.5rem' }}>Change Password</h3>
               {passwordSuccess && (
-                <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
+                <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>
                   Password updated successfully! You will be logged out momentarily.
                 </div>
               )}
               {passwordError && <ErrorMessage message={passwordError} />}
-              <form onSubmit={handlePasswordSubmit} className="profile-form" style={{ maxWidth: '400px' }}>
-                <div className="form-group">
-                  <label htmlFor="currentPassword">Current Password</label>
-                  <input
-                    id="currentPassword"
-                    name="currentPassword"
-                    type="password"
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
-                    required
-                  />
+              <form onSubmit={handlePasswordSubmit} className="editorial-form">
+                <div className="form-row-editorial">
+                  <div className="form-group">
+                    <label htmlFor="currentPassword">Current Password</label>
+                    <input
+                      id="currentPassword"
+                      name="currentPassword"
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={handlePasswordChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="newPassword">New Password</label>
+                    <input
+                      id="newPassword"
+                      name="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="confirmPassword">Confirm New Password</label>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      minLength={6}
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="newPassword">New Password</label>
-                  <input
-                    id="newPassword"
-                    name="newPassword"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="confirmPassword">Confirm New Password</label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="profile-form-actions">
+                <div style={{ marginTop: '1.5rem' }}>
                   <button type="submit" className="btn btn-secondary" disabled={passwordSaving}>
-                    {passwordSaving ? 'Updating…' : 'Update Password'}
+                    {passwordSaving ? 'Updating...' : 'Update Password'}
                   </button>
                 </div>
               </form>
             </div>
 
-            <div style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
-              <h3 style={{ fontSize: '1.1rem', color: 'var(--color-danger)', marginBottom: '0.5rem' }}>Danger Zone</h3>
-              <p style={{ color: 'var(--color-text-light)', marginBottom: '1rem', fontSize: '0.95rem' }}>
+            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '3rem' }}>
+              <h3 className="editorial-section-label" style={{ color: 'var(--color-danger)', marginBottom: '1rem' }}>Danger Zone</h3>
+              <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2rem', maxWidth: '600px', lineHeight: '1.6' }}>
                 Deleting your account is permanent. Your active listings and pending swap requests will be cancelled. Your completed swaps and chat history will be anonymized to preserve marketplace records.
               </p>
+              
               {deleteError && <ErrorMessage message={deleteError} />}
               
               {!showDeleteConfirm ? (
                 <button
                   type="button"
-                  className="btn btn-danger"
-                  style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
+                  className="btn btn-secondary btn-danger"
                   onClick={() => setShowDeleteConfirm(true)}
                 >
                   Delete Account
                 </button>
               ) : (
-                <div className="alert alert-warning" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-danger)', marginTop: '0.5rem' }}>
-                  <p style={{ color: 'var(--color-danger)', fontWeight: 'bold', marginBottom: '1rem' }}>
+                <div className="alert alert-warning" style={{ backgroundColor: 'transparent', border: '1px solid var(--color-danger)', padding: '2rem' }}>
+                  <p style={{ color: 'var(--color-danger)', fontWeight: '500', marginBottom: '1.5rem' }}>
                     Are you absolutely sure you want to delete your account? This action cannot be undone.
                   </p>
-                  <div className="form-group" style={{ maxWidth: '300px', marginBottom: '1rem' }}>
+                  <div className="form-group" style={{ maxWidth: '400px', marginBottom: '1.5rem' }}>
                     <label htmlFor="deletePassword">Confirm your current password</label>
                     <input
                       id="deletePassword"
@@ -541,18 +372,16 @@ function ProfilePage() {
                       onChange={(e) => setDeletePassword(e.target.value)}
                       placeholder="Enter current password"
                       required
-                      style={{ marginTop: '0.5rem' }}
                     />
                   </div>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div className="form-actions-editorial">
                     <button
                       type="button"
-                      className="btn btn-danger"
-                      style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
+                      className="btn btn-primary btn-danger"
                       onClick={handleDeleteAccount}
                       disabled={deleteDeleting || !deletePassword}
                     >
-                      {deleteDeleting ? 'Deleting…' : 'Yes, Delete My Account'}
+                      {deleteDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
                     </button>
                     <button
                       type="button"
@@ -571,11 +400,62 @@ function ProfilePage() {
               )}
             </div>
           </div>
-        </>
+        </div>
+      ) : (
+        <div className="editorial-profile-view">
+          <div className="editorial-profile-header">
+            <div className="profile-header-top">
+              <div className="profile-avatar-giant">
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="profile-header-text">
+                <h1 className="profile-name">{user.name}</h1>
+                <p className="profile-location">{locationString}</p>
+                {user.bio && <p className="profile-bio">{user.bio}</p>}
+                <p className="profile-member-since">Member since {new Date(user.createdAt).getFullYear()}</p>
+              </div>
+              <div className="profile-header-actions">
+                <button className="btn btn-secondary" onClick={() => setViewMode('edit')}>
+                  Edit Profile
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="editorial-profile-wardrobe">
+            <div className="wardrobe-header">
+              <h2 className="editorial-section-title">My Wardrobe</h2>
+            </div>
+            
+            {myListings.length === 0 ? (
+              <div className="empty-state editorial-empty-state">
+                <h3>Your wardrobe is empty</h3>
+                <p>List your first piece on ReWear and give it a second life.</p>
+                <Link to="/listings/new" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+                  List an Item
+                </Link>
+              </div>
+            ) : (
+              <div className="listing-grid">
+                {myListings.map(listing => (
+                  <div key={listing._id} className="wardrobe-item-wrapper">
+                    <ListingCard listing={listing} />
+                    {listing.status !== 'available' && (
+                      <div className="wardrobe-item-mask">
+                        <span className="wardrobe-item-mask-text">
+                          {listing.status === 'pending' ? 'Pending Swap' : 'Swapped'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
 export default ProfilePage;
-

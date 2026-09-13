@@ -50,7 +50,7 @@ function AdminUserDetailPage() {
           </div>
           <div className="admin-detail-item">
             <span className="admin-detail-label">Role</span>
-            <span className={`admin-badge admin-badge-${user.role}`}>{user.role}</span>
+            <span className={`admin-role-badge ${user.role}`}>{user.role}</span>
           </div>
           <div className="admin-detail-item">
             <span className="admin-detail-label">Joined</span>
@@ -98,3 +98,4 @@ function AdminUserDetailPage() {
 }
 
 export default AdminUserDetailPage;
+

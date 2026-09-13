@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAdminListings, adminDeleteListing } from '../api/adminApi';
+import { getAdminListings, adminDeleteListing, getAdminStats } from '../api/adminApi';
 import AdminListingRow from '../components/admin/AdminListingRow';
 import Pagination from '../components/common/Pagination';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -19,6 +19,16 @@ function AdminListingsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [deleteListing, setDeleteListing] = useState(null);
+  const [stats, setStats] = useState(null);
+
+  const fetchInitialData = async () => {
+    try {
+      const statsData = await getAdminStats();
+      setStats(statsData.stats.listings);
+    } catch (err) {
+      console.error("Failed to load stats", err);
+    }
+  };
 
   const fetchListings = async (p = page) => {
     try {
@@ -41,6 +51,10 @@ function AdminListingsPage() {
   };
 
   useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
     fetchListings(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, categoryFilter]);
@@ -56,6 +70,7 @@ function AdminListingsPage() {
       await adminDeleteListing(deleteListing._id);
       setDeleteListing(null);
       fetchListings(page);
+      fetchInitialData(); // Refresh stats
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete listing');
       setDeleteListing(null);
@@ -63,74 +78,108 @@ function AdminListingsPage() {
   };
 
   return (
-    <div className="page-container">
-      <div className="admin-header">
-        <h1>Listing Moderation</h1>
-        <Link to="/admin" className="btn btn-secondary btn-sm">← Back to Dashboard</Link>
+    <div className="page-container admin-page-wide admin-listings-page">
+      <div className="admin-header" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Admin / Listings</div>
+          <h1 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text)' }}>
+            Listings
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', margin: 0, fontSize: '1.05rem' }}>
+            Manage and review the clothing available on the ReWear marketplace.
+          </p>
+        </div>
+        <Link to="/admin" className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }}>Dashboard &rarr;</Link>
       </div>
 
+      {/* Inventory Overview */}
+      {stats && (
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '2.5rem', paddingBottom: '2.5rem', borderBottom: '1px solid var(--color-border)', flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)', fontWeight: 500 }}>Total</div>
+            <div style={{ fontSize: '1.75rem', color: 'var(--color-text)' }}>{stats.total}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-primary-dark)', fontWeight: 500 }}>Available</div>
+            <div style={{ fontSize: '1.75rem', color: 'var(--color-text)' }}>{stats.available}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#d97706', fontWeight: 500 }}>Pending</div>
+            <div style={{ fontSize: '1.75rem', color: 'var(--color-text)' }}>{stats.pending}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#4d7c0f', fontWeight: 500 }}>Swapped</div>
+            <div style={{ fontSize: '1.75rem', color: 'var(--color-text)' }}>{stats.swapped}</div>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="admin-filters">
-        <form onSubmit={handleSearch} className="admin-search-form">
+      <div className="admin-workspace-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', minWidth: '300px', maxWidth: '400px' }}>
           <input
             type="text"
             placeholder="Search by title or brand..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="admin-search-input"
+            style={{ flex: 1, padding: '0.6rem 1rem', border: '1px solid var(--color-border)', borderRadius: '0', background: 'var(--color-surface)', color: 'var(--color-text)', fontFamily: 'inherit' }}
           />
-          <button type="submit" className="btn btn-primary btn-sm">Search</button>
+          <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', borderRadius: '0' }}>Search</button>
         </form>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="admin-filter-select"
-        >
-          <option value="">All Statuses</option>
-          <option value="available">Available</option>
-          <option value="pending">Pending</option>
-          <option value="swapped">Swapped</option>
-        </select>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="admin-filter-select"
-        >
-          <option value="">All Categories</option>
-          <option value="tops">Tops</option>
-          <option value="bottoms">Bottoms</option>
-          <option value="dresses">Dresses</option>
-          <option value="outerwear">Outerwear</option>
-          <option value="footwear">Footwear</option>
-          <option value="accessories">Accessories</option>
-          <option value="activewear">Activewear</option>
-          <option value="other">Other</option>
-        </select>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ padding: '0.6rem 1rem', border: '1px solid var(--color-border)', borderRadius: '0', background: 'var(--color-surface)', color: 'var(--color-text)', fontFamily: 'inherit' }}
+          >
+            <option value="">All Statuses</option>
+            <option value="available">Available</option>
+            <option value="pending">Pending</option>
+            <option value="swapped">Swapped</option>
+          </select>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            style={{ padding: '0.6rem 1rem', border: '1px solid var(--color-border)', borderRadius: '0', background: 'var(--color-surface)', color: 'var(--color-text)', fontFamily: 'inherit' }}
+          >
+            <option value="">All Categories</option>
+            <option value="tops">Tops</option>
+            <option value="bottoms">Bottoms</option>
+            <option value="dresses">Dresses</option>
+            <option value="outerwear">Outerwear</option>
+            <option value="footwear">Footwear</option>
+            <option value="accessories">Accessories</option>
+            <option value="activewear">Activewear</option>
+            <option value="other">Other</option>
+          </select>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', whiteSpace: 'nowrap', fontWeight: 500 }}>
+            {totalCount} listing{totalCount !== 1 ? 's' : ''}
+          </div>
+        </div>
       </div>
-
-      <p className="admin-count">{totalCount} listing{totalCount !== 1 ? 's' : ''} found</p>
 
       {loading && <Loader message="Loading listings..." />}
       {error && <ErrorMessage message={error} onRetry={() => fetchListings(page)} />}
 
       {!loading && !error && listings.length === 0 && (
-        <EmptyState title="No listings found" message="Try adjusting your search or filters." />
+        <EmptyState title={search || statusFilter || categoryFilter ? "No listings match your filters" : "No listings yet"} message={search || statusFilter || categoryFilter ? "Try adjusting your search or filters." : "The marketplace currently has no listed items."} />
       )}
 
       {!loading && !error && listings.length > 0 && (
         <>
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
+          <div className="admin-workspace-table-container">
+            <table className="admin-workspace-table">
               <thead>
                 <tr>
-                  <th>Listing</th>
-                  <th>Category</th>
-                  <th>Brand</th>
-                  <th>Status</th>
-                  <th>Value</th>
-                  <th>Owner</th>
-                  <th>Created</th>
-                  <th>Actions</th>
+                  <th style={{ width: '60px' }}>Image</th>
+                  <th style={{ width: '25%' }}>Listing</th>
+                  <th style={{ width: '20%' }}>Owner</th>
+                  <th style={{ width: '10%' }}>Status</th>
+                  <th style={{ width: '10%' }}>Value</th>
+                  <th style={{ width: '15%' }}>Location</th>
+                  <th style={{ width: '10%' }}>Created</th>
+                  <th style={{ width: '10%', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,11 +200,11 @@ function AdminListingsPage() {
       {deleteListing && (
         <ConfirmModal
           title="Delete Listing"
-          message={`Are you sure you want to delete "${deleteListing.title}"? Any active swap requests involving this listing will be automatically cancelled. This action cannot be undone.`}
-          confirmLabel="Delete"
-          danger
+          message={`Are you sure you want to completely delete "${deleteListing.title}"? This action cannot be undone and will affect any pending swaps.`}
+          confirmLabel="Permanently Delete Listing"
           onConfirm={handleDelete}
           onCancel={() => setDeleteListing(null)}
+          danger={true}
         />
       )}
     </div>
@@ -163,3 +212,4 @@ function AdminListingsPage() {
 }
 
 export default AdminListingsPage;
+

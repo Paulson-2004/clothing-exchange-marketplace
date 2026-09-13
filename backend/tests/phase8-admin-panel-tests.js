@@ -121,7 +121,7 @@ async function seedListing(ownerId, suffix, overrides = {}) {
     brand: overrides.brand || 'TestBrand',
     size: overrides.size || 'M',
     condition: overrides.condition || 'good',
-    description: 'Phase 8 automated test listing.',
+    description: 'This is an automated test listing description that is intentionally long enough to pass the thirty word minimum requirement for new listings in the system. It contains enough words to be valid.',
     images: [PLACEHOLDER_IMG],
     estimatedValue: overrides.estimatedValue !== undefined ? overrides.estimatedValue : 50,
     location: overrides.location || { city: 'Seattle', state: 'WA', country: 'USA' },
@@ -139,7 +139,7 @@ async function main() {
   console.log('====================================================');
 
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    if (!process.env.TEST_MONGO_URI) { console.error('FATAL'); process.exit(1); } await mongoose.connect(process.env.TEST_MONGO_URI); if (mongoose.connection.name !== 'rewear-automated-tests') { console.error('FATAL 2'); process.exit(1); }
     console.log('MongoDB connected for test fixtures.');
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err.message);
@@ -394,6 +394,58 @@ async function main() {
       record('admin self-demotion blocked -> 400', 400, r.status, r.status === 400);
     }
 
+    // 27a. Admin cannot delete themselves -> 400
+    {
+      const r = await apiRequest('DELETE', `/admin/users/${admin.id}`, { cookie: admin.cookie });
+      record('admin self-deletion blocked -> 400', 400, r.status, r.status === 400);
+    }
+
+    // 27b. Admin cannot delete the last remaining admin -> 400
+    {
+      // Create a second admin just for this test
+      const admin2 = await createAdminUser('admin2');
+      // Demote them back to user so admin is the only one left
+      await apiRequest('PATCH', `/admin/users/${admin2.id}/role`, { cookie: admin.cookie });
+      
+      const r = await apiRequest('DELETE', `/admin/users/${admin.id}`, { cookie: admin.cookie });
+      record('admin cannot delete the last admin -> 400', 400, r.status, r.status === 400);
+    }
+
+    // 27c. Admin can delete a user
+    {
+      const toDelete = await registerUser('toDelete', { city: 'Test' });
+      const r = await apiRequest('DELETE', `/admin/users/${toDelete.id}`, { cookie: admin.cookie });
+      record('admin delete user -> 200', 200, r.status, r.status === 200);
+
+      // Verify the user is anonymized, not hard deleted
+      const dbUser = await User.findById(toDelete.id);
+      record('user is anonymized to "Deleted User"', 'Deleted User', dbUser?.name, dbUser?.name === 'Deleted User');
+
+      // 27d. Admin cannot delete an already-deleted user -> 400
+      const rDelAgain = await apiRequest('DELETE', `/admin/users/${toDelete.id}`, { cookie: admin.cookie });
+      record('admin delete already-deleted user blocked -> 400', 400, rDelAgain.status, rDelAgain.status === 400);
+
+      // 27e. Admin cannot change role of a deleted user -> 400
+      const rRoleAgain = await apiRequest('PATCH', `/admin/users/${toDelete.id}/role`, { cookie: admin.cookie });
+      record('admin toggle role on deleted user blocked -> 400', 400, rRoleAgain.status, rRoleAgain.status === 400);
+    }
+
+    // 27f. Strict Regex Hardening for isDeletedUser
+    {
+      const { isDeletedUser } = require('../src/utils/accountUtils');
+      const validAnonymized = { email: `deleted_1234567890123_${new mongoose.Types.ObjectId().toString()}@example.com` };
+      const normalUser = { email: 'legit.user@gmail.com' };
+      const prefixOnlyMatch = { email: 'deleted_foo@example.com' };
+      const suffixOnlyMatch = { email: 'not_deleted_1234567890123_5f8d0a7b9d3e2a1b4c5d6e7f@example.com' };
+      const oldVulnerableMatch = { email: 'deleted_foo@example.com', name: 'Deleted User' };
+
+      record('isDeletedUser: valid anonymized matches', true, isDeletedUser(validAnonymized), isDeletedUser(validAnonymized) === true);
+      record('isDeletedUser: normal user rejected', false, isDeletedUser(normalUser), isDeletedUser(normalUser) === false);
+      record('isDeletedUser: prefix-only rejected', false, isDeletedUser(prefixOnlyMatch), isDeletedUser(prefixOnlyMatch) === false);
+      record('isDeletedUser: suffix-only rejected', false, isDeletedUser(suffixOnlyMatch), isDeletedUser(suffixOnlyMatch) === false);
+      record('isDeletedUser: old vulnerable format rejected', false, isDeletedUser(oldVulnerableMatch), isDeletedUser(oldVulnerableMatch) === false);
+    }
+
     // ══════════════════════════════════════════════════════════════════
     // Suite 4: Listing Moderation
     // ══════════════════════════════════════════════════════════════════
@@ -581,3 +633,5 @@ async function main() {
 }
 
 main();
+
+
