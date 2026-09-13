@@ -26,9 +26,12 @@ function MiniListing({ listing, label }) {
       <p className="swap-mini-label">{label}</p>
       <Link to={`/listings/${listing._id}`} className="swap-mini-link">
         <img
-          src={listing.images?.[0] || ''}
+          src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'}
           alt={listing.title}
           className="swap-mini-image"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+          }}
         />
         <div>
           <p className="swap-mini-title">{listing.title}</p>
