@@ -7,6 +7,17 @@ ReWear is a peer-to-peer clothing exchange and swap marketplace. It allows users
 - **Frontend:** https://rewear-swap.vercel.app/
 - **Backend API:** https://clothing-exchange-marketplace.onrender.com
 
+## Screenshots
+
+### Marketplace
+![ReWear marketplace](docs/images/rewear-homepage.png)
+
+### Swap & Negotiation
+![ReWear swap and negotiation](docs/images/rewear-swap.png)
+
+### Admin Dashboard
+![ReWear admin dashboard](docs/images/rewear-admin.png)
+
 ## About
 
 ReWear replaces traditional e-commerce monetary transactions with a direct item-for-item swapping mechanism. Users can list items with estimated values, browse the marketplace, send swap requests proposing their own items in exchange, and negotiate via chat. The platform also includes comprehensive admin tools for moderation.
