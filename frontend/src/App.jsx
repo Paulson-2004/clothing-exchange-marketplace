@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
@@ -137,6 +139,8 @@ function App() {
             </main>
             <Footer />
           </div>
+          <Analytics />
+          <SpeedInsights />
         </BrowserRouter>
       </ThemeProvider>
     </AuthProvider>
