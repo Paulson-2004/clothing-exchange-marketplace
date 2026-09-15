@@ -1,3 +1,6 @@
+// The single source of truth for authentication in the frontend.
+// Exposes the `user` object and login/logout functions via the `useAuth()` hook
+// so any component can check if someone is logged in without re-fetching data.
 import { createContext, useContext, useEffect, useState } from 'react';
 import axiosClient from '../api/axiosClient';
 
@@ -12,9 +15,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // On first mount (including after a page refresh), ask the backend
-  // if the httpOnly cookie is still valid. This is how auth state
-  // survives a refresh even though nothing is stored in localStorage.
+  // On mount, check if there's an active session by calling /auth/me.
+  // WHY WE DO THIS: The JWT token is stored securely in an HTTP-Only cookie,
+  // meaning our frontend JavaScript cannot read it directly. Calling /auth/me
+  // asks the backend to read its own cookie and tell us who is logged in.
   useEffect(() => {
     const restoreSession = async () => {
       try {

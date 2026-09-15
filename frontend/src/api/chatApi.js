@@ -3,6 +3,9 @@
 // Keeping all URL construction here means ChatPage and MessageThread
 // never build endpoint strings directly, making it easy to update the
 // API path in one place if the backend routes change.
+// Chat API endpoints.
+// These are thin wrappers around the /chat REST routes so that ChatPage
+// and MessageThread don't have to build URLs and handle HTTP details directly.
 import axiosClient from './axiosClient';
 
 export const getConversations = async () => {

@@ -27,7 +27,10 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
   }, []);
 
   const selectedListing = myListings.find((listing) => listing._id === selectedId);
-  // Phase 6: use the shared comparator utility instead of a raw subtraction.
+  
+  // We use the shared frontend comparator utility to calculate the fairness tier
+  // instantly in the browser without making an extra API call, since we already
+  // downloaded the estimated values for both listings.
   const comparison = selectedListing
     ? compareValues(requestedListing.estimatedValue, selectedListing.estimatedValue)
     : null;
@@ -42,6 +45,7 @@ function RequestSwapForm({ requestedListing, onClose, onSuccess }) {
     try {
       await createSwapRequest({ requestedListingId: requestedListing._id, offeredListingId: selectedId });
       setSubmitState('success');
+      // Wait a moment before closing the modal so the user actually sees the "success" message.
       setTimeout(() => onSuccess(), 900);
     } catch (err) {
       setSubmitState('error');

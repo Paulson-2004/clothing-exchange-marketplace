@@ -10,22 +10,25 @@
 //                    delete so that existing conversation history and
 //                    completed swap records remain intact.
 
+// Utility functions for handling user account deletion.
+// We use a "soft delete" (anonymization) strategy instead of hard-deleting
+// the User document. Hard-deleting a user would break existing chat threads
+// and swap histories for other users who interacted with them.
 const bcrypt = require('bcryptjs');
 const Listing = require('../models/Listing');
 const SwapRequest = require('../models/SwapRequest');
 
+// Checks if an account has been soft-deleted.
+// We use a specific email pattern (deleted_<timestamp>_<id>@example.com)
+// as a sentinel value to identify anonymized accounts without needing
+// an extra 'isDeleted' boolean column in the database.
 const isDeletedUser = (user) => {
   if (!user) return false;
   const email = typeof user.email === 'string' ? user.email : '';
-  // This pattern is a sentinel value, not a real email address.
-  // When an account is deleted we overwrite the email with this format
-  // (deleted_<timestamp>_<mongoId>@example.com) instead of removing the
-  // document. The timestamp+id combo ensures uniqueness across multiple
-  // deletions, satisfying the unique-email index on the User model.
+  // Match format: deleted_<timestamp>_<24_char_hex_id>@example.com
   return /^deleted_\d+_[a-fA-F0-9]{24}@example\.com$/.test(email);
 };
 
-// Soft-delete strategy: we do NOT hard-delete the User document because
 // other users' Conversation and Message documents hold a reference to
 // this user's _id. If the document disappeared, those references would
 // resolve to null and crash any feature that tries to read the

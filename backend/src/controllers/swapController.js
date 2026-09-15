@@ -163,14 +163,19 @@ const acceptSwapRequest = asyncHandler(async (req, res) => {
     throw new Error('One of the listings is no longer available');
   }
 
+  // The swap is accepted, but NOT yet completed.
+  // We set both listings to 'pending' so they no longer appear in marketplace searches,
+  // but they aren't fully 'swapped' until the users actually exchange the items
+  // and mark it complete.
   swapRequest.status = 'accepted';
   requestedListing.status = 'pending';
   offeredListing.status = 'pending';
 
   await Promise.all([swapRequest.save(), requestedListing.save(), offeredListing.save()]);
 
-  // Any other still-pending request touching either listing can no
-  // longer be fulfilled, since both listings just became unavailable.
+  // Auto-reject conflicting requests.
+  // Because both items are now locked in an 'accepted' swap (and are 'pending'),
+  // any other pending requests involving EITHER listing can no longer be fulfilled.
   await SwapRequest.updateMany(
     {
       _id: { $ne: swapRequest._id },
@@ -285,6 +290,9 @@ const completeSwapRequest = asyncHandler(async (req, res) => {
     throw new Error('One of the listings in this request no longer exists');
   }
 
+  // Authorization check: Either participant can mark the swap as completed.
+  // We allow either side to do this to prevent a situation where one user
+  // forgets to click "complete" and leaves the items stuck in "pending" forever.
   const userId = req.user._id.toString();
   const isRequester = swapRequest.requester.toString() === userId;
   const isRequestedOwner = requestedListing.owner.toString() === userId;

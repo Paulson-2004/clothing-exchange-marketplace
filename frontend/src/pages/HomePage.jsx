@@ -28,6 +28,12 @@ function HomePage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  
+  // RACE CONDITION PREVENTION:
+  // If the user types fast, multiple API requests fire in parallel.
+  // requestIdRef increments on every search. When a request finishes,
+  // we check if its ID matches the current ID. If it doesn't, we ignore the
+  // stale data. mountedRef prevents setting state if the user navigates away.
   const requestIdRef = useRef(0);
   const mountedRef = useRef(true);
 
@@ -56,8 +62,9 @@ function HomePage() {
     }
   }, []);
 
-  // Refetch whenever filters/page change, with a short debounce so typing
-  // in the search box doesn't fire a request on every keystroke.
+  // DEBOUNCED FETCH:
+  // We wait 350ms after the user stops typing before calling the API.
+  // This prevents sending an API request for every single keystroke.
   useEffect(() => {
     const requestId = ++requestIdRef.current;
     const timeout = setTimeout(() => {
@@ -80,7 +87,11 @@ function HomePage() {
   
   const latestItems = [];
   
-  // Get the first 4 newest available items for 'Latest on ReWear'
+  // HOMEPAGE LAYOUT SPLIT:
+  // If the user is on the default view (no search, no filters, page 1), we
+  // visually pull the first 4 newest items into a featured "Latest on ReWear" section,
+  // and put the rest in the standard marketplace grid. If they are actively searching
+  // or filtering, we abandon the split and show everything in a single grid.
   for (const item of availableListings) {
     if (latestItems.length < 4) {
       latestItems.push(item);

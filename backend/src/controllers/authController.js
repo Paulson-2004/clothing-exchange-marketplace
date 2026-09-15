@@ -83,6 +83,10 @@ const register = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
+    // SECURITY: The 'role' field is intentionally never taken from req.body.
+    // It always defaults to 'user'. This prevents a malicious user from
+    // sending { "role": "admin" } during registration. Admin accounts
+    // can only be created via the backend script (seedAdmin.js).
     // role is intentionally never taken from req.body — it always
     // defaults to 'user'. Admin accounts are only created via seedAdmin.js.
     const user = await User.create({
@@ -311,7 +315,9 @@ const changePassword = async (req, res, next) => {
     user.passwordHash = await bcrypt.hash(newPassword, salt);
     await user.save();
 
-    // Log the user out so they must re-authenticate with the new password
+    // Automatically log the user out after a password change.
+    // This forces them to re-authenticate with the new credentials and
+    // immediately invalidates any intercepted or hijacked old sessions.
     res.clearCookie(COOKIE_NAME, clearCookieOptions());
 
     res.status(200).json({ success: true, message: 'Password updated successfully. Please log in again.' });
@@ -342,10 +348,13 @@ const deleteAccount = async (req, res, next) => {
       throw new Error('Incorrect password');
     }
 
+    // We call anonymizeAccount (soft delete) instead of User.deleteOne().
+    // If we hard-deleted the user, any conversations they had with other users
+    // would crash when trying to render a null participant.
     const { anonymizeAccount } = require('../utils/accountUtils');
     await anonymizeAccount(user);
 
-    // 4. Log out
+    // Log the user out after deleting their account
     res.clearCookie(COOKIE_NAME, clearCookieOptions());
 
     res.status(200).json({ success: true, message: 'Account deleted successfully' });

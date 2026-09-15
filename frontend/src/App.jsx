@@ -7,6 +7,10 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import ScrollToTop from './components/layout/ScrollToTop';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+// CODE SPLITTING:
+// We use React.lazy() and Suspense to dynamically import page components.
+// Instead of downloading one massive JavaScript bundle on initial load,
+// the browser only downloads the JS needed for the page the user is currently on.
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
@@ -26,6 +30,10 @@ import Footer from './components/layout/Footer';
 const FaqPage = lazy(() => import('./pages/FaqPage'));
 const RecentChangesPage = lazy(() => import('./pages/RecentChangesPage'));
 
+// The root component wraps the entire app in global providers:
+// 1. AuthProvider: Manages user login state so any component can access the current user.
+// 2. ThemeProvider: Manages dark/light mode toggles.
+// 3. BrowserRouter: Enables client-side routing.
 function App() {
   return (
     <AuthProvider>
@@ -99,6 +107,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Admin Routes: ProtectedRoute with adminOnly=true ensures the user is logged in AND has the 'admin' role. */}
                 <Route
                   path="/admin"
                   element={

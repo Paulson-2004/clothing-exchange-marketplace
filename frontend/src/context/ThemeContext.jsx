@@ -1,8 +1,13 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+// Manages the global light/dark mode state.
+// This works in tandem with the inline script in index.html to prevent a "flash
+// of unstyled content" (FOUC) when the page first loads.
+import { createContext, useState, useEffect, useContext } from 'react';
 
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
+  // We use a function initializer for useState so that we only read from
+  // localStorage once during the initial render, instead of on every re-render.
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem('theme');

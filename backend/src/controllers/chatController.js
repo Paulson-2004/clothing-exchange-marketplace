@@ -49,8 +49,10 @@ const getConversations = asyncHandler(async (req, res) => {
       .lean()
   );
 
-  // Fetch all sidebar summaries in one indexed aggregation instead of two
-  // message queries per conversation (the previous N+1 pattern).
+  // Solve the "N+1 query problem".
+  // Without this aggregate pipeline, we would have to run two separate database
+  // queries (one for latest message, one for unread count) for EVERY conversation
+  // in the sidebar. This single aggregate grabs all that data at once, keeping the API fast.
   const messageSummaries = conversations.length
     ? await Message.aggregate([
         { $match: { conversation: { $in: conversations.map((conversation) => conversation._id) } } },
@@ -232,7 +234,8 @@ const sendMessage = asyncHandler(async (req, res) => {
     conversation: conversation._id,
     sender: req.user._id,
     text: text.trim(),
-    readBy: [req.user._id], // sender has implicitly "read" their own message
+    // The user who sends a message has implicitly "read" their own message immediately.
+    readBy: [req.user._id],
   });
 
   conversation.lastMessageAt = message.createdAt;

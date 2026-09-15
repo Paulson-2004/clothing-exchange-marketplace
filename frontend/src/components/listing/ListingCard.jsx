@@ -13,10 +13,16 @@ const STATUS_LABELS = {
 
 function ListingCard({ listing }) {
   const { _id, title, brand, size, condition, estimatedValue, location, status, images, owner } = listing;
+  
+  // We maintain a local state for the image source.
+  // WHY: If the image fails to load (e.g. broken Cloudinary link), the onError handler
+  // below swaps this state to the DEFAULT_FALLBACK_IMAGE so the UI doesn't look broken.
   const [currentSrc, setCurrentSrc] = useState(
     getOptimizedImageUrl(images?.[0]) || DEFAULT_FALLBACK_IMAGE
   );
 
+  // When React reuses this DOM element for a DIFFERENT listing (e.g., during pagination
+  // or filtering), we must reset the local image state to the new listing's image.
   useEffect(() => {
     setCurrentSrc(getOptimizedImageUrl(images?.[0]) || DEFAULT_FALLBACK_IMAGE);
   }, [images]);

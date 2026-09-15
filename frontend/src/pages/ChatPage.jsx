@@ -14,6 +14,8 @@ function ChatPage() {
 
   const [conversations, setConversations] = useState([]);
   const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  
+  // Allow deep-linking into a specific conversation via URL param (e.g. /chat?conversation=123)
   const [activeId, setActiveId] = useState(searchParams.get('conversation') || null);
 
   const fetchConversations = useCallback(async () => {
@@ -42,8 +44,9 @@ function ChatPage() {
     setSearchParams({ conversation: id }, { replace: true });
   };
 
-  // Called by MessageThread after it marks a conversation's messages as
-  // read, so the sidebar's unread dot clears without a full refetch.
+  // Callback passed to MessageThread. When the user views a thread, MessageThread
+  // tells the backend to mark it as read, then calls this function so ChatPage
+  // can clear the "unread" dot in the sidebar instantly without a full API refetch.
   const handleRead = (conversationId) => {
     setConversations((prev) =>
       prev.map((c) => (c._id === conversationId ? { ...c, unreadCount: 0 } : c))

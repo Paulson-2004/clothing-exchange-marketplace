@@ -12,6 +12,9 @@ import ErrorMessage from '../common/ErrorMessage';
 import MessageInput from './MessageInput';
 import { getOptimizedImageUrl } from '../../utils/imageUrl';
 
+// The chat system uses POLLING (checking the server every X seconds) instead of
+// WebSockets. WebSockets require a persistent server connection, which is not
+// compatible with Render's free tier that puts idle servers to sleep.
 const POLL_INTERVAL_MS = 4000;
 
 function formatTimestamp(dateString) {
@@ -34,9 +37,11 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
   const [swapActionError, setSwapActionError] = useState('');
   const [currentSwapStatus, setCurrentSwapStatus] = useState(conversation?.relatedSwapRequest?.status);
 
-  // Each conversation gets its own generation. Async work may finish after
-  // a conversation switch, so every response and timer must prove that it
-  // still belongs to the active generation before touching component state.
+  // GENERATION COUNTER PATTERN:
+  // When a user clicks between different conversations quickly, older API requests
+  // might resolve AFTER newer ones. We increment this generation counter every time
+  // the conversation changes. If an API call finishes but its generation doesn't match
+  // the current one, we discard the data so messages don't bleed into the wrong chat.
   const conversationGenerationRef = useRef(0);
   const activeFetchRef = useRef(null);
   const pollTimeoutRef = useRef(null);
@@ -123,6 +128,8 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
       }
     };
 
+    // Pause polling when the user switches browser tabs to save their bandwidth
+    // and reduce load on our free server tier. Resume immediately when they return.
     const handleVisibilityChange = () => {
       if (document.hidden) {
         clearPoll();
@@ -163,7 +170,10 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
     // If this is the initial load of messages for a conversation
     const isInitialLoad = prevMessagesLengthRef.current === 0 && messages.length > 0;
     
-    // If the user is near the bottom (within 150px)
+    // WHY WE CHECK IF NEAR BOTTOM:
+    // If a user scrolls up to read old messages, we don't want a background poll
+    // to rudely snap their scrollbar back down to the bottom. We only auto-scroll
+    // if they are already near the bottom of the chat.
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
 
     if (isInitialLoad || isNearBottom) {
@@ -201,6 +211,9 @@ function MessageThread({ conversation, currentUserId, onRead, onBack }) {
     }, 50);
   };
 
+  // Generic helper for all swap actions (Accept, Reject, Cancel, Complete).
+  // It handles the confirmation dialog, API call, loading states, and optimistically
+  // updates the UI status immediately without waiting for the next polling cycle.
   const handleSwapAction = async (actionFn, confirmMsg, nextStatus) => {
     if (confirmMsg && !window.confirm(confirmMsg)) return;
     const generation = conversationGenerationRef.current;

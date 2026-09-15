@@ -14,6 +14,8 @@ const CATEGORIES = ['tops', 'bottoms', 'dresses', 'outerwear', 'formalwear', 'fo
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'];
 const CONDITIONS = ['new', 'like-new', 'good', 'fair'];
 
+// This single component serves double duty for both creating a new listing
+// and editing an existing one, depending on whether an `id` is present in the URL.
 const initialFormState = {
   title: '',
   category: '',
@@ -80,6 +82,9 @@ function CreateEditListingPage() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // LIVE VALUE ESTIMATION:
+  // When the user clicks "Suggest Value", we ask the backend to run its internal
+  // pricing formula so the user gets a fair, standardized starting point.
   const handleSuggestValue = async () => {
     if (!formData.category || !formData.condition) {
       setFormError('Select a category and condition first to get a value suggestion');

@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- ANTI-FLASH THEME SCRIPT -->
+    <!-- This runs synchronously BEFORE React loads. It checks localStorage and -->
+    <!-- applies the 'data-theme' attribute to the HTML tag immediately. -->
+    <!-- Without this, a user who prefers light mode would see a brief flash of -->
+    <!-- the default dark theme while waiting for the React JavaScript bundle to load. -->
+    <!-- MUST stay in sync with the logic in ThemeContext.jsx. -->
     <script>
       (function () {
         try {

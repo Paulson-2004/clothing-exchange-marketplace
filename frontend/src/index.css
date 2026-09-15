@@ -1075,8 +1075,9 @@ textarea::placeholder {
 }
 
 .item-details-main-image {
-  background: var(--color-surface-subtle);
-  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1127,6 +1128,10 @@ textarea::placeholder {
   display: flex;
   flex-direction: column;
   align-self: start;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
 }
 
 .item-details-meta {
@@ -2544,8 +2549,10 @@ textarea::placeholder {
 .matches-section {
   grid-column: 1 / -1;
   margin-top: 3rem;
-  padding-top: 3rem;
-  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
 }
 
 .matches-section h2 {
@@ -4239,12 +4246,6 @@ textarea::placeholder {
 }
 
 /* Item Details */
-[data-theme="dark"] .item-details-main-image {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: none;
-}
-
 [data-theme="dark"] .item-details-image-placeholder {
   background-color: var(--color-surface-subtle);
   color: var(--color-muted);
@@ -4259,14 +4260,6 @@ textarea::placeholder {
 [data-theme="dark"] .thumbnail-btn.active img {
   border-color: var(--color-primary);
   outline: 2px solid var(--color-primary);
-}
-
-[data-theme="dark"] .item-details-info {
-  background-color: transparent;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0;
-  box-shadow: none;
 }
 
 [data-theme="dark"] .item-details-header h1 {
@@ -4332,15 +4325,6 @@ textarea::placeholder {
 }
 
 /* Nearby Swap Matches */
-[data-theme="dark"] .matches-section {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 1.75rem 1.75rem 2rem;
-  box-shadow: none;
-  margin-top: 2.5rem;
-}
-
 [data-theme="dark"] .matches-section h2 {
   color: var(--color-text);
 }

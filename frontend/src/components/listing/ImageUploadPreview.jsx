@@ -8,8 +8,13 @@ function ImageUploadPreview({ existingImages = [], onChange }) {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+    // Generate temporary browser URLs to display the selected local files.
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviews(urls);
+    
+    // Cleanup function: Revoke the URLs when the component unmounts or files change.
+    // WHY: URL.createObjectURL allocates memory in the browser. If we don't revoke it,
+    // it causes a memory leak that lasts until the user closes the tab.
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [files]);
 
@@ -56,8 +61,10 @@ function ImageUploadPreview({ existingImages = [], onChange }) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        // Clicking the stylized dropzone triggers the hidden actual file input
         onClick={() => fileInputRef.current?.click()}
       >
+        {/* We hide the default ugly HTML file input with CSS and trigger it programmatically */}
         <input 
           type="file" 
           accept="image/jpeg,image/png,image/webp" 

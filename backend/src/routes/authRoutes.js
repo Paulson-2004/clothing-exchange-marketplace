@@ -13,6 +13,9 @@ router.post('/logout', logout);
 router.get('/me', protect, getMe);
 router.get('/profile', protect, getProfile);
 router.patch('/profile', protect, updateProfile);
+// Provide a PUT alias for the PATCH route. Some older clients, strict firewalls,
+// or badly configured proxies strip or block PATCH requests.
+router.put('/profile', protect, updateProfile);
 // PUT /profile is a fallback alias for PATCH /profile. Some older HTTP
 // clients and misconfigured reverse proxies don't support the PATCH method
 // and silently drop or reject it. Mapping PUT to the same handler means
