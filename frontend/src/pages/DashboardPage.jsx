@@ -152,16 +152,7 @@ function DashboardPage() {
         </p>
       </div>
 
-      {hasNoActivity ? (
-        <div className="empty-state editorial-empty-state" style={{ marginTop: '2rem' }}>
-          <h3>Start Your ReWear Journey</h3>
-          <p>List a piece from your wardrobe to begin exchanging.</p>
-          <Link to="/listings/new" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
-            List an Item
-          </Link>
-        </div>
-      ) : (
-        <>
+      
           <section className="dashboard-section" style={{ marginBottom: '3rem' }}>
             <h2 className="dashboard-section-title" style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>ReWear Overview</h2>
             <div className="overview-stats-row">
@@ -183,11 +174,13 @@ function DashboardPage() {
           <div className="dashboard-layout-grid">
             <div className="dashboard-main-col">
               {/* Action Required Section */}
-              {(pendingIncoming.length > 0 || activeSwaps.length > 0 || pendingSent.length > 0) && (
-                <section className="dashboard-section">
+              <section className="dashboard-section">
                   <div className="dashboard-section-header">
                     <h2 className="dashboard-section-title">Needs Your Attention</h2>
                   </div>
+                  {pendingIncoming.length === 0 && activeSwaps.length === 0 && pendingSent.length === 0 && (
+                    <p style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>You're all caught up! No swaps require your attention.</p>
+                  )}
                   
                   {pendingIncoming.length > 0 && (
                     <div className="dashboard-action-card">
@@ -231,7 +224,6 @@ function DashboardPage() {
                     </div>
                   )}
                 </section>
-              )}
 
               {/* My Wardrobe Section */}
               <section className="dashboard-section">
@@ -263,15 +255,17 @@ function DashboardPage() {
               </section>
 
               {/* Recent Exchanges Section */}
-              {recentExchanges.length > 0 && (
-                <section className="dashboard-section">
+              <section className="dashboard-section">
                   <div className="dashboard-section-header">
                     <h2 className="dashboard-section-title">Recent Exchanges</h2>
                     <Link to="/swap-requests" className="dashboard-section-link">
                       View Swap History →
                     </Link>
                   </div>
-                  <div className="history-list">
+                  {recentExchanges.length === 0 ? (
+                    <p style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>No recent exchanges.</p>
+                  ) : (
+                    <div className="history-list">
                     {recentExchanges.map((swap) => {
                       const isIncoming = swap.requestedListing?.owner === user?._id || swap.requestedListing?.owner?._id === user?._id;
                       const itemImage = isIncoming 
@@ -297,8 +291,8 @@ function DashboardPage() {
                       );
                     })}
                   </div>
+                  )}
                 </section>
-              )}
             </div>
 
             <div className="dashboard-side-col">
@@ -314,10 +308,12 @@ function DashboardPage() {
               </section>
 
               {/* Recent Activity Timeline */}
-              {recentTimeline.length > 0 && (
-                <section className="dashboard-section">
+              <section className="dashboard-section">
                   <h2 className="dashboard-section-title" style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Recent Activity</h2>
-                  <div className="dashboard-timeline">
+                  {recentTimeline.length === 0 ? (
+                    <p style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>No recent activity.</p>
+                  ) : (
+                    <div className="dashboard-timeline">
                     {recentTimeline.map((event) => (
                       <div key={event.id} className="timeline-event">
                         <div className="timeline-dot" />
@@ -327,13 +323,11 @@ function DashboardPage() {
                       </div>
                     ))}
                   </div>
+                  )}
                 </section>
-              )}
             </div>
           </div>
-        </>
-      )}
-    </div>
+        </div>
   );
 }
 
