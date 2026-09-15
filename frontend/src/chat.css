@@ -30,7 +30,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
+  
 }
 
 /* --- Sidebar --- */
@@ -254,12 +254,10 @@
 
 .chat-page .message-bubble-row.other .message-bubble {
   border-bottom-left-radius: 2px !important;
-  background: var(--color-surface) !important;
-}
-
-[data-theme="dark"] .chat-page .message-bubble-row.other .message-bubble {
   background: var(--color-surface-elevated) !important;
 }
+
+
 
 /* --- Composer Integration --- */
 .chat-page .message-input-form {
@@ -287,7 +285,7 @@
   font-family: inherit;
   font-size: 0.95rem;
   resize: none;
-  background: var(--color-bg);
+  
   color: var(--color-text);
   line-height: 1.4;
 }

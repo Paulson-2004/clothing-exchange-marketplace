@@ -13,6 +13,10 @@ router.post('/logout', logout);
 router.get('/me', protect, getMe);
 router.get('/profile', protect, getProfile);
 router.patch('/profile', protect, updateProfile);
+// PUT /profile is a fallback alias for PATCH /profile. Some older HTTP
+// clients and misconfigured reverse proxies don't support the PATCH method
+// and silently drop or reject it. Mapping PUT to the same handler means
+// those clients can still update their profile.
 router.put('/profile', protect, updateProfile);
 router.put('/password', protect, changePassword);
 router.delete('/account', protect, deleteAccount);

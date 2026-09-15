@@ -1,3 +1,15 @@
+// accountUtils.js
+// Utility functions for account lifecycle management.
+//
+// isDeletedUser  — called whenever the UI needs to know whether a user
+//                  document belongs to a deleted account (e.g., to show
+//                  "Deleted User" instead of a real name in chat).
+//
+// anonymizeAccount — called by authController.deleteAccount and
+//                    adminController.adminDeleteUser. It performs a soft
+//                    delete so that existing conversation history and
+//                    completed swap records remain intact.
+
 const bcrypt = require('bcryptjs');
 const Listing = require('../models/Listing');
 const SwapRequest = require('../models/SwapRequest');
@@ -5,10 +17,25 @@ const SwapRequest = require('../models/SwapRequest');
 const isDeletedUser = (user) => {
   if (!user) return false;
   const email = typeof user.email === 'string' ? user.email : '';
-  // Match format: deleted_<timestamp>_<24_char_hex_id>@example.com
+  // This pattern is a sentinel value, not a real email address.
+  // When an account is deleted we overwrite the email with this format
+  // (deleted_<timestamp>_<mongoId>@example.com) instead of removing the
+  // document. The timestamp+id combo ensures uniqueness across multiple
+  // deletions, satisfying the unique-email index on the User model.
   return /^deleted_\d+_[a-fA-F0-9]{24}@example\.com$/.test(email);
 };
 
+// Soft-delete strategy: we do NOT hard-delete the User document because
+// other users' Conversation and Message documents hold a reference to
+// this user's _id. If the document disappeared, those references would
+// resolve to null and crash any feature that tries to read the
+// participant's name. Instead we:
+//   Step 1 — Cancel all active swaps involving the user's listings and
+//             restore any partner listings that were locked as 'pending'.
+//   Step 2 — Hard-delete the user's own Listing documents (they are no
+//             longer needed and would be orphaned anyway).
+//   Step 3 — Anonymize (but keep) the User document so chat history
+//             can still display "Deleted User" safely.
 const anonymizeAccount = async (user) => {
   // 1. Identify the user's active listings once, then cancel all related
   // swaps in bulk. This replaces one read/update/delete loop per listing and

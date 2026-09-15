@@ -1,3 +1,9 @@
+// User profile and account management API.
+//
+// login, register, and logout are intentionally NOT here — they live in
+// AuthContext because they need to update the global React auth state
+// (e.g. setUser) in addition to making a network call. The functions
+// here are pure data operations that don't require global state changes.
 import axiosClient from './axiosClient';
 
 export const getProfile = async () => {

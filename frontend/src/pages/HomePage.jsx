@@ -78,24 +78,9 @@ function HomePage() {
   const isDefaultView = page === 1 && Object.values(filters).every(v => v === '' || v == null);
   const availableListings = listings.filter(l => l.status === 'available');
   
-  const heroItems = [];
   const latestItems = [];
-  const usedCategories = new Set();
   
-  // 1. Try to pick 3 distinct categories for the hero for visual variety
-  for (const item of availableListings) {
-    if (heroItems.length < 3 && !usedCategories.has(item.category)) {
-      heroItems.push(item);
-      usedCategories.add(item.category);
-    }
-  }
-  // 2. Fill the rest if we didn't get 3 distinct categories
-  for (const item of availableListings) {
-    if (heroItems.length < 3 && !heroItems.find(h => h._id === item._id)) {
-      heroItems.push(item);
-    }
-  }
-  // 3. Get the next 4 newest available items for 'Latest on ReWear'
+  // Get the first 4 newest available items for 'Latest on ReWear'
   for (const item of availableListings) {
     if (latestItems.length < 4) {
       latestItems.push(item);
@@ -126,32 +111,38 @@ function HomePage() {
             </Link>
           )}
         </div>
-        <div className="editorial-hero-image-container">
-          {status === 'success' && heroItems.length >= 3 ? (
-            <div className="editorial-collage">
-              <Link to={`/listings/${heroItems[0]._id}`} className="collage-main">
-                <img src={getOptimizedImageUrl(heroItems[0].images?.[0], { width: 800, height: 1000, crop: 'fill' })} alt={heroItems[0].title} />
-              </Link>
-              <div className="collage-secondary">
-                <Link to={`/listings/${heroItems[1]._id}`}>
-                  <img src={getOptimizedImageUrl(heroItems[1].images?.[0], { width: 400, height: 500, crop: 'fill' })} alt={heroItems[1].title} />
-                </Link>
-                <Link to={`/listings/${heroItems[2]._id}`}>
-                  <img src={getOptimizedImageUrl(heroItems[2].images?.[0], { width: 400, height: 500, crop: 'fill' })} alt={heroItems[2].title} />
-                </Link>
+        <div className="editorial-hero-workflow">
+          <h2 className="hero-workflow-title">How ReWear Works</h2>
+          <div className="hero-workflow-steps">
+            <div className="hero-workflow-step">
+              <span className="hero-step-number">01</span>
+              <div className="hero-step-content">
+                <h3 className="hero-step-title">List</h3>
+                <p className="hero-step-desc">Upload your premium pre-loved garments.</p>
               </div>
             </div>
-          ) : status === 'success' && heroItems.length > 0 ? (
-            <div className="editorial-collage" style={{ gridTemplateColumns: '1fr' }}>
-              <Link to={`/listings/${heroItems[0]._id}`} className="collage-main">
-                <img src={getOptimizedImageUrl(heroItems[0].images?.[0], { width: 800, height: 1000, crop: 'fill' })} alt={heroItems[0].title} />
-              </Link>
+            <div className="hero-workflow-step">
+              <span className="hero-step-number">02</span>
+              <div className="hero-step-content">
+                <h3 className="hero-step-title">Discover</h3>
+                <p className="hero-step-desc">Find pieces you love from the community.</p>
+              </div>
             </div>
-          ) : (
-            <div className="editorial-hero-image">
-              <div className="hero-placeholder-shimmer"></div>
+            <div className="hero-workflow-step">
+              <span className="hero-step-number">03</span>
+              <div className="hero-step-content">
+                <h3 className="hero-step-title">Request</h3>
+                <p className="hero-step-desc">Propose a fair exchange for the item.</p>
+              </div>
             </div>
-          )}
+            <div className="hero-workflow-step">
+              <span className="hero-step-number">04</span>
+              <div className="hero-step-content">
+                <h3 className="hero-step-title">Swap</h3>
+                <p className="hero-step-desc">Accept offers and refresh your wardrobe.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -226,36 +217,6 @@ function HomePage() {
             <div style={{ marginTop: '4rem', marginBottom: '4rem' }}>
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
-            
-            {isDefaultView && (
-              <div className="how-it-works-section">
-                <h2 className="how-it-works-title">
-                  How ReWear Works
-                </h2>
-                <div className="how-it-works-steps">
-                  <div className="step">
-                    <span className="step-number">01</span>
-                    <h3 className="step-title">List</h3>
-                    <p className="step-desc">Upload your premium pre-loved garments.</p>
-                  </div>
-                  <div className="step">
-                    <span className="step-number">02</span>
-                    <h3 className="step-title">Discover</h3>
-                    <p className="step-desc">Find pieces you love from the community.</p>
-                  </div>
-                  <div className="step">
-                    <span className="step-number">03</span>
-                    <h3 className="step-title">Request</h3>
-                    <p className="step-desc">Propose a fair exchange for the item.</p>
-                  </div>
-                  <div className="step">
-                    <span className="step-number">04</span>
-                    <h3 className="step-title">Swap</h3>
-                    <p className="step-desc">Accept offers and refresh your wardrobe.</p>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>
