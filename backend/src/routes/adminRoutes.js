@@ -1,4 +1,4 @@
-// Phase 8 — Admin routes.
+// Admin routes.
 //
 // Every route in this file is guarded by protect + requireAdmin.
 // The protect middleware verifies the JWT and loads req.user;

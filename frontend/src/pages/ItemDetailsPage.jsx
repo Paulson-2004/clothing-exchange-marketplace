@@ -28,7 +28,7 @@ function ItemDetailsPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [showSwapForm, setShowSwapForm] = useState(false);
 
-  // Phase 7: Nearby swap matches
+  // Nearby swap matches
   const [matches, setMatches] = useState([]);
   const [matchesStatus, setMatchesStatus] = useState('idle'); // 'idle' | 'loading' | 'loaded' | 'error'
 
@@ -221,7 +221,7 @@ function ItemDetailsPage() {
         )}
       </div>
 
-      {/* Phase 7: Nearby Swap Matches */}
+      {/* Nearby Swap Matches */}
       {listing.status === 'available' && (
         <div className="matches-section">
           <h2>Nearby Swap Matches</h2>

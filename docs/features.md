@@ -35,7 +35,7 @@ Users have a dedicated Dashboard and Swap Requests page to track inbound and out
 
 ## Administrative Tools
 
-ReWear includes a robust `/admin` panel accessible only to users with the `admin` role.
+ReWear includes an `/admin` panel accessible only to users with the `admin` role.
 - **Manage Users**: View, demote, or delete users.
 - **Manage Listings**: Monitor all platform inventory and remove inappropriate listings.
 - **Review Swaps**: Oversee active and completed swap transactions for moderation purposes.
@@ -44,4 +44,4 @@ ReWear includes a robust `/admin` panel accessible only to users with the `admin
 
 - **Modern Design**: The interface is designed with a premium, editorial aesthetic.
 - **Dark Mode**: Fully supported light and dark themes.
-- **Responsive**: Mobile-first layouts ensure the marketplace works seamlessly on phones, tablets, and desktops.
+- **Responsive**: Mobile-first layouts ensure the marketplace works on phones, tablets, and desktops.

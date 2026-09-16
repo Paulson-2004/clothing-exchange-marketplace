@@ -13,9 +13,7 @@ const initialFormState = {
   country: '',
 };
 
-// Robust email validation checking standard structure:
-// Requires non-whitespace local part, exactly one @, non-whitespace domain with at least one dot,
-// no consecutive dots, and a top-level domain of at least 2 characters.
+// Basic email validation.
 function isValidEmail(email) {
   if (!email || typeof email !== 'string') return false;
   const trimmed = email.trim();

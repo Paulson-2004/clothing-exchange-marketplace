@@ -62,7 +62,7 @@ npm run seed:dev
 # Seed administrative accounts
 npm run seed:admin
 
-# Seed comprehensive demo data (users, listings, swaps)
+# Seed demo data (users, listings, swaps)
 npm run seed:demo
 ```
 *Note: The dev seed creates deterministic test accounts (e.g., meera@rewear-dev.test and `admin@rewear-dev.test`) with the password `rewear-local-dev`. These credentials are for **LOCAL DEVELOPMENT ONLY** and should never be used in a production environment.*

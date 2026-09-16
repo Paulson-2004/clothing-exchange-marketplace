@@ -481,7 +481,7 @@ const compareListings = asyncHandler(async (req, res) => {
 //   - "exact": same city AND same state (case-insensitive) — score 3
 //   - "state": same state, different/missing city               — score 2
 //
-// Value compatibility reuses Phase 6's compareValues():
+// Value compatibility reuses compareValues():
 //   - "Close Match"       (≤20% difference) — included, score 3
 //   - "Moderate Difference" (≤50%)          — included, score 1
 //   - "Large Difference"   (>50%)           — excluded
@@ -580,7 +580,7 @@ const getListingMatches = asyncHandler(async (req, res) => {
       locationScore = 2;
     }
 
-    // Value compatibility via Phase 6's compareValues.
+    // Value compatibility via compareValues.
     const valueComparison = compareValues(
       sourceListing.estimatedValue,
       candidate.estimatedValue

@@ -1,6 +1,6 @@
 # ReWear
 
-ReWear is a peer-to-peer clothing exchange and swap marketplace. It allows users to discover premium pre-loved clothing, trade unworn pieces directly with others, and build their wardrobes sustainably—zero money required.
+ReWear is a web app for exchanging clothing. Instead of buying and selling, users trade their clothes directly with each other.
 
 ## Live Demo
 
@@ -39,27 +39,27 @@ Polling-based chat for coordinating accepted swaps and discussing exchange detai
 
 ![ReWear Dashboard](docs/images/rewear-dashboard.png)
 
-Monitor your exchange activity and quick actions from a personalized dashboard.
+Monitor your active swaps and wardrobe from a personal dashboard.
 
 ### Administration
 
 ![ReWear Admin Dashboard](docs/images/rewear-admin.png)
 
-Manage platform users, listings, and moderation tools.
+Manage users, listings, and swap requests.
 
 [View the complete screenshot gallery →](docs/screenshots.md)
 
 ## About
 
-ReWear replaces traditional e-commerce monetary transactions with a direct item-for-item swapping mechanism. Users can list items with estimated values, browse the marketplace, send swap requests proposing their own items in exchange, and negotiate via chat. The platform also includes comprehensive admin tools for moderation.
+ReWear is built around item-for-item exchanges instead of buying and selling. You list items you want to trade, browse for things you like, and propose swaps using your own inventory. If the other person accepts, you can chat to work out the exchange.
 
 ## Features
 
 - **Item-for-Item Swapping**: Propose trades using your own listed inventory instead of cash.
-- **Chat-based Negotiation**: Integrated polling-based chat for discussing swap details.
-- **Value Matching**: Automated warnings if proposed swaps have significant value disparities.
+- **Chat-based Negotiation**: Polling-based chat for working out exchange details.
+- **Value Matching**: Warnings if someone tries to trade a cheap item for an expensive one.
 - **Location-based Filtering**: Find items nearby using city/state text searches.
-- **Admin Dashboard**: Comprehensive moderation tools for users, listings, and swap requests.
+- **Admin Dashboard**: Tools for moderating users, listings, and swap requests.
 - **Dark Mode Support**: Full light and dark theme support via CSS variables.
 
 ## Tech Stack
@@ -100,7 +100,7 @@ ReWear/
 │   └── images/                # Screenshots and assets
 └── README.md
 ```
-*The architecture separates the frontend presentation layer from the backend RESTful API, enforcing clear modularity.*
+*The frontend and backend are decoupled and communicate via a REST API.*
 
 ## Quick Setup
 

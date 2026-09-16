@@ -1,4 +1,4 @@
-// Phase 8 — Admin API client.
+// Admin API client.
 //
 // All admin-specific API calls. Uses the shared axiosClient instance
 // (withCredentials: true) so the httpOnly JWT cookie is automatically

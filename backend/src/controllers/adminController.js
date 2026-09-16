@@ -1,4 +1,4 @@
-// Phase 8 — Admin Panel controller.
+// Admin Panel controller.
 //
 // Every function in this file is intended to run behind the
 // `protect` + `requireAdmin` middleware chain defined in
