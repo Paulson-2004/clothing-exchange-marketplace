@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getListings } from '../api/listingApi';
+import { getListings, getCachedListings } from '../api/listingApi';
 import ListingCard from '../components/listing/ListingCard';
 import ListingFilters from '../components/listing/ListingFilters';
 import Loader from '../components/common/Loader';
@@ -8,8 +8,6 @@ import EmptyState from '../components/common/EmptyState';
 import ErrorMessage from '../components/common/ErrorMessage';
 import Pagination from '../components/common/Pagination';
 import { useAuth } from '../context/AuthContext';
-
-import { getOptimizedImageUrl } from '../utils/imageUrl';
 
 const initialFilters = {
   search: '',
@@ -20,37 +18,74 @@ const initialFilters = {
   state: '',
 };
 
+// Only these filters are typed character-by-character, so only they need
+// debouncing. Pills, selects, reset, pagination and the initial load fetch
+// immediately.
+const TEXT_FILTER_KEYS = ['search', 'city', 'state'];
+const TEXT_DEBOUNCE_MS = 350;
+const PAGE_SIZE = 24;
+
 function HomePage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [listings, setListings] = useState([]);
+  // If the default marketplace page was loaded recently (e.g. the user is
+  // coming back from an item page), paint it on the very first render so
+  // there is no spinner flash. It is revalidated by the fetch effect below.
+  const [initialCached] = useState(() =>
+    getCachedListings({ ...initialFilters, page: 1, limit: PAGE_SIZE })
+  );
+  const [listings, setListings] = useState(initialCached?.listings || []);
   const [filters, setFilters] = useState(initialFilters);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [totalPages, setTotalPages] = useState(initialCached?.totalPages || 1);
+  const [status, setStatus] = useState(initialCached ? 'success' : 'loading'); // 'loading' | 'success' | 'error'
   
   // RACE CONDITION PREVENTION:
   // If the user types fast, multiple API requests fire in parallel.
   // requestIdRef increments on every search. When a request finishes,
   // we check if its ID matches the current ID. If it doesn't, we ignore the
   // stale data. mountedRef prevents setting state if the user navigates away.
+  // abortRef additionally cancels the superseded request so it stops using
+  // a browser connection slot.
   const requestIdRef = useRef(0);
   const mountedRef = useRef(true);
+  const abortRef = useRef(null);
+  const debounceNextFetchRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
       requestIdRef.current += 1;
+      abortRef.current?.abort();
     };
   }, []);
 
   const fetchListings = useCallback(async (activeFilters, requestedPage = 1, requestId) => {
     if (!mountedRef.current || requestId !== requestIdRef.current) return;
 
-    setStatus('loading');
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const params = { ...activeFilters, page: requestedPage, limit: PAGE_SIZE };
+
+    // STALE-WHILE-REVALIDATE:
+    // If this exact page was loaded recently (e.g. the user is coming back
+    // from an item page), show it immediately instead of a spinner, then
+    // refresh it from the API so status changes still show up promptly.
+    const cached = getCachedListings(params);
+    if (cached) {
+      setListings(cached.listings);
+      setPage(cached.page || requestedPage);
+      setTotalPages(cached.totalPages || 1);
+      setStatus('success');
+    } else {
+      setStatus('loading');
+    }
+
     try {
-      const data = await getListings({ ...activeFilters, page: requestedPage, limit: 24 });
+      const data = await getListings(params, { signal: controller.signal });
       if (!mountedRef.current || requestId !== requestIdRef.current) return;
       setListings(data.listings);
       setPage(data.page || requestedPage);
@@ -58,18 +93,22 @@ function HomePage() {
       setStatus('success');
     } catch (err) {
       if (!mountedRef.current || requestId !== requestIdRef.current) return;
-      setStatus('error');
+      // Keep the cached page on screen if the background refresh fails.
+      if (!cached) setStatus('error');
     }
   }, []);
 
-  // DEBOUNCED FETCH:
-  // We wait 350ms after the user stops typing before calling the API.
-  // This prevents sending an API request for every single keystroke.
+  // FETCH ON FILTER / PAGE CHANGE:
+  // Free-text edits wait 350ms after the user stops typing so we don't send
+  // a request per keystroke. Every other trigger (initial load, category
+  // pills, selects, reset, pagination) fetches right away.
   useEffect(() => {
     const requestId = ++requestIdRef.current;
+    const delay = debounceNextFetchRef.current ? TEXT_DEBOUNCE_MS : 0;
+    debounceNextFetchRef.current = false;
     const timeout = setTimeout(() => {
       fetchListings(filters, page, requestId);
-    }, 350);
+    }, delay);
     return () => {
       clearTimeout(timeout);
       // Invalidate any in-flight request from this effect, including on unmount.
@@ -78,6 +117,13 @@ function HomePage() {
   }, [filters, page, fetchListings]);
 
   const handleFiltersChange = (nextFilters) => {
+    const changedKeys = Object.keys(nextFilters).filter((key) => nextFilters[key] !== filters[key]);
+    // Clicking an already-active option would only repeat the same request.
+    if (changedKeys.length === 0 && page === 1) return;
+
+    debounceNextFetchRef.current = changedKeys.some(
+      (key) => TEXT_FILTER_KEYS.includes(key) && nextFilters[key] !== ''
+    );
     setPage(1);
     setFilters(nextFilters);
   };

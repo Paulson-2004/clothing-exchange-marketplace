@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Listing images are served from these CDNs. Opening the connections -->
+    <!-- while the app bundle loads saves a DNS + TLS round-trip on the first -->
+    <!-- listing card image. -->
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://images.unsplash.com" />
     <!-- ANTI-FLASH THEME SCRIPT -->
     <!-- This runs synchronously BEFORE React loads. It checks localStorage and -->
     <!-- applies the 'data-theme' attribute to the HTML tag immediately. -->
