@@ -31,18 +31,21 @@ function ItemDetailsPage() {
   // Nearby swap matches
   const [matches, setMatches] = useState([]);
   const [matchesStatus, setMatchesStatus] = useState('idle'); // 'idle' | 'loading' | 'loaded' | 'error'
+  const [matchesRetryCount, setMatchesRetryCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchListing = async () => {
       setStatus('loading');
-      setMatches([]);
-      setMatchesStatus('idle');
       try {
         const data = await getListingById(id);
+        if (cancelled) return;
         setListing(data.listing);
         setActiveImage(0);
         setStatus('success');
       } catch (err) {
+        if (cancelled) return;
         if (err.response?.status === 404 || err.response?.status === 400) {
           setStatus('notfound');
         } else {
@@ -51,24 +54,40 @@ function ItemDetailsPage() {
       }
     };
     fetchListing();
+
+    return () => {
+      // A late response for a previous id must not overwrite the listing the
+      // user has since navigated to (e.g. quick back/forward between items).
+      cancelled = true;
+    };
   }, [id]);
 
-  // Fetch matches once listing loads and is available
+  // Fetch matches in parallel with the listing itself. Both requests only
+  // need the route id, so the "Nearby Swap Matches" section no longer waits
+  // an extra round-trip for the listing response before it can start. The
+  // section is only rendered when the listing turns out to be available.
   useEffect(() => {
-    if (!listing || listing.status !== 'available') return;
+    let cancelled = false;
 
     const fetchMatches = async () => {
+      setMatches([]);
       setMatchesStatus('loading');
       try {
-        const data = await getListingMatches(listing._id);
+        const data = await getListingMatches(id);
+        if (cancelled) return;
         setMatches(data.matches || []);
         setMatchesStatus('loaded');
       } catch {
-        setMatchesStatus('error');
+        if (!cancelled) setMatchesStatus('error');
       }
     };
     fetchMatches();
-  }, [listing]);
+
+    return () => {
+      // Ignore a late response if the user already moved to another item.
+      cancelled = true;
+    };
+  }, [id, matchesRetryCount]);
 
   if (status === 'loading') return <Loader message="Loading item…" />;
   if (status === 'notfound') {
@@ -234,11 +253,7 @@ function ItemDetailsPage() {
           {matchesStatus === 'error' && (
             <ErrorMessage
               message="Could not load nearby matches."
-              onRetry={() => {
-                setMatchesStatus('idle');
-                // Re-trigger effect by updating listing reference
-                setListing((prev) => ({ ...prev }));
-              }}
+              onRetry={() => setMatchesRetryCount((count) => count + 1)}
             />
           )}
 
