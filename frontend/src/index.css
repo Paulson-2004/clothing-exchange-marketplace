@@ -6127,6 +6127,73 @@ textarea::placeholder {
   background: rgba(226, 97, 88, 0.18);
 }
 
+/* --- Cold-start notice (Render free-tier wake-up) --- */
+/* UX-only, non-blocking toast. Informational, never error-styled. */
+.cold-start-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: min(480px, calc(100vw - 2rem));
+  padding: 0.85rem 1.1rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: cold-start-fade-in 0.25s ease;
+}
+
+.cold-start-notice-spinner {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.cold-start-notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cold-start-notice-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cold-start-notice-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+@keyframes cold-start-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 480px) {
+  .cold-start-notice {
+    bottom: 1rem;
+  }
+}
+
 
 
 

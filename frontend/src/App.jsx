@@ -7,6 +7,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import ScrollToTop from './components/layout/ScrollToTop';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import ColdStartNotice from './components/common/ColdStartNotice';
 // CODE SPLITTING:
 // We use React.lazy() and Suspense to dynamically import page components.
 // Instead of downloading one massive JavaScript bundle on initial load,
@@ -152,6 +153,7 @@ function App() {
               </Suspense>
             </main>
             <Footer />
+            <ColdStartNotice />
           </div>
           <Analytics />
           <SpeedInsights />
